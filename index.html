@@ -53,6 +53,12 @@
                 <h1 class="text-xs uppercase opacity-80 mb-1 font-medium">Saldo del Mese</h1>
                 <div id="balance" class="text-4xl font-bold">€ 0.00</div>
             </div>
+            <!-- Tasto rapido configurazione API -->
+            <div class="text-center mt-4">
+                <button onclick="promptApiKey()" class="text-[10px] bg-indigo-500/50 px-3 py-1 rounded-full hover:bg-indigo-400 transition-colors">
+                    ⚙️ Configura Chiave API
+                </button>
+            </div>
         </header>
 
         <main class="flex-grow p-4">
@@ -125,8 +131,13 @@
 
     <script>
         // CONFIGURAZIONE CHIAVE API
-        // IMPORTANTE: Se usi l'app su GitHub o Netlify, incolla la tua chiave tra le virgolette qui sotto.
-        const apiKey = ""; 
+        // Incolla la tua chiave tra le virgolette qui sotto per salvarla nel codice.
+        let apiKey = "AIzaSyB0WE8zUxYYvAjJ1yBELmeCNcYPY10skyA"; 
+
+        // Se non è nel codice, prova a cercarla nella memoria del browser (per i test rapidi)
+        if (!apiKey) {
+            apiKey = localStorage.getItem('gemini_api_key') || "";
+        }
 
         const categories = {
             expense: [
@@ -150,6 +161,15 @@
         let currentMode = 'expense';
         let selectedCategory = 'altro';
         let chartInstance = null;
+
+        function promptApiKey() {
+            const key = prompt("Inserisci la tua Google Gemini API Key:", apiKey);
+            if (key !== null) {
+                apiKey = key;
+                localStorage.setItem('gemini_api_key', key);
+                alert("Chiave configurata! Ora prova a scannerizzare.");
+            }
+        }
 
         function updateUI() {
             const m = viewDate.getMonth();
@@ -205,7 +225,7 @@
             const status = document.getElementById('scan-status');
 
             if (!apiKey) {
-                alert("Chiave API non trovata! Devi inserirla nel codice alla variabile 'apiKey' per far funzionare lo scanner.");
+                alert("Chiave API mancante!\n\n1. Vai su Google AI Studio\n2. Crea una API Key\n3. Clicca su 'Configura Chiave API' nell'app e incollala.");
                 return;
             }
 
@@ -214,7 +234,6 @@
             status.textContent = "Elaborazione immagine...";
 
             try {
-                // Resize per ottimizzare l'invio e la lettura
                 const base64 = await resizeAndEnhanceImage(file, 1200);
                 status.textContent = "L'IA sta leggendo lo scontrino...";
 
@@ -231,7 +250,7 @@
                 }
             } catch (err) {
                 console.error(err);
-                alert("Errore scanner: Assicurati che lo scontrino sia ben illuminato e che la chiave API sia corretta.");
+                alert("Errore scanner: Assicurati che lo scontrino sia leggibile e che la chiave sia corretta.");
                 status.textContent = "Errore durante la lettura";
             } finally {
                 btn.disabled = false;
@@ -263,8 +282,6 @@
 
                 const result = await response.json();
                 let textResponse = result.candidates[0].content.parts[0].text;
-                
-                // Pulizia nel caso l'IA aggiunga markdown
                 textResponse = textResponse.replace(/```json|```/g, "").trim();
                 return JSON.parse(textResponse);
             } catch (e) { throw e; }
@@ -284,11 +301,8 @@
                         else if (h > maxSide) { w *= maxSide / h; h = maxSide; }
                         canvas.width = w; canvas.height = h;
                         const ctx = canvas.getContext('2d');
-                        
-                        // Piccolo trucco: aumento contrasto e nitidezza via CSS prima del disegno
                         ctx.filter = "contrast(1.2) brightness(1.1)";
                         ctx.drawImage(img, 0, 0, w, h);
-                        
                         resolve(canvas.toDataURL('image/jpeg', 0.9).split(',')[1]);
                     };
                 };
