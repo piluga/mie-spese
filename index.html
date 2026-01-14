@@ -4,43 +4,33 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     
-    <!-- Meta tag per PWA e Mobile -->
     <title>Gestione Spese Pro</title>
     <meta name="theme-color" content="#4f46e5">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="SpesePro">
     
-    <link rel="manifest" href="data:application/json;base64,ewogICJkZWZhdWx0X2xvY2FsZSI6ICJpdCIsCiAgIm5hbWUiOiAiR2VzdGlvbmUgU3Blc2UgUHJvIiwKICAic2hvcnRfbmFtZSI6ICJTcGVzZVBybyIsCiAgInN0YXJ0X3VybCI6ICIuIiwKICAiZGlzcGxheSI6ICJzdGFuZGFsb25lIiwKICAiYmFja2dyb3VuZF9jb2xvciI6ICIjNGY0NmU1IiwKICAidGhlbWVfY29sb3IiOiAiIzRmNDZlNSIKfQ==">
+    <link rel="manifest" href="data:application/json;base64,ewogICJkZWZhdWx0X2xvY2FsZSI6ICJpdCIsCiAgIm5hbWUiOiAiR2VzdGlvbmUgU3Blc2UgUHJvIiwKICAic2hvcnRfbmFtZSI6ICJTcGVzZVBybyIsCiAgInN0YXJ0X3VybCI6ICIuIiwKICAiaWNvbnMiOiBbIHsgInNyYyI6ICJodHRwczovL2Nkbi1pY29ucy1wbmcuZmxhdGljb24uY29tLzUxMi8yNjg4LzI2ODgxNjgucG5nIiwgInR5cGUiOiAiaW1hZ2UvcG5nIiwgInNpemVzIjogIjUxMng1MTIifSBdLAogICJkaXNwbGF5IjogInN0YW5kYWxvbmUiLAogICJiYWNrZ3JvdW5kX2NvbG9yIjogIiM0ZjQ2ZTUiLAogICJ0aGVtZV9jb2xvciI6ICIjNGY0NmU1Igp9">
 
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         body {
             background-color: #f3f4f6;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             touch-action: manipulation;
-            -webkit-tap-highlight-color: transparent;
         }
-        .safe-area-inset { padding-bottom: env(safe-area-inset-bottom); }
-        .modal-transition { transition: transform 0.3s ease-out, opacity 0.3s ease-out; }
-        .hide-scrollbar::-webkit-scrollbar { display: none; }
-        
-        /* Animazione caricamento */
         .loader {
-            border: 3px solid #f3f3f3;
-            border-top: 3px solid #4f46e5;
+            border: 2px solid #f3f3f3;
+            border-top: 2px solid #4f46e5;
             border-radius: 50%;
-            width: 20px;
-            height: 20px;
+            width: 16px;
+            height: 16px;
             animation: spin 1s linear infinite;
             display: inline-block;
         }
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .modal-transition { transition: transform 0.3s ease-out; }
     </style>
 </head>
 <body class="antialiased text-gray-900">
@@ -53,7 +43,7 @@
                 <button onclick="changeMonth(-1)" class="p-2 hover:bg-indigo-500 rounded-full">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" /></svg>
                 </button>
-                <h2 id="current-month-display" class="text-lg font-semibold uppercase tracking-wider">Caricamento...</h2>
+                <h2 id="current-month-display" class="text-lg font-semibold uppercase tracking-wider">Mese</h2>
                 <button onclick="changeMonth(1)" class="p-2 hover:bg-indigo-500 rounded-full">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>
                 </button>
@@ -77,64 +67,64 @@
                 </button>
             </div>
 
-            <!-- Sezione Grafico -->
             <div id="chart-container" class="mb-8 bg-gray-50 p-4 rounded-2xl hidden">
-                <h3 class="text-sm font-bold text-gray-500 uppercase mb-4 text-center">Distribuzione Spese</h3>
                 <canvas id="expenseChart" width="200" height="200"></canvas>
             </div>
 
-            <!-- Cronologia -->
             <div class="flex justify-between items-center mb-4">
                 <h2 class="text-xl font-bold text-gray-800">Movimenti</h2>
                 <div class="flex space-x-2">
-                    <button onclick="exportCSV()" class="text-xs bg-gray-100 px-2 py-1 rounded text-gray-600 font-bold">CSV</button>
-                    <button onclick="clearHistory()" class="text-xs text-red-400 font-bold">SVUOTA</button>
+                    <button onclick="exportCSV()" class="text-xs bg-gray-100 px-2 py-1 rounded text-gray-600 font-bold uppercase">CSV</button>
+                    <button onclick="clearHistory()" class="text-xs text-red-400 font-bold uppercase">Svuota</button>
                 </div>
             </div>
             
             <div id="transaction-list" class="space-y-3 pb-24"></div>
         </main>
 
-        <!-- Modal Inserimento -->
-        <div id="modal" class="hidden fixed inset-0 bg-black/60 z-50 flex items-end sm:items-center justify-center backdrop-blur-sm">
-            <div id="modal-content" class="bg-white w-full max-w-md p-6 rounded-t-3xl sm:rounded-3xl modal-transition transform translate-y-full">
-                <div class="flex justify-between items-center mb-6">
-                    <h3 id="modal-title" class="text-2xl font-bold">Nuovo Movimento</h3>
-                    <button onclick="closeModal()" class="text-gray-400"><svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg></button>
+        <!-- Modal -->
+        <div id="modal" class="hidden fixed inset-0 bg-black/60 z-50 flex items-end justify-center backdrop-blur-sm">
+            <div id="modal-content" class="bg-white w-full max-w-md p-6 rounded-t-3xl modal-transition transform translate-y-full">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 id="modal-title" class="text-2xl font-bold text-gray-800">Nuovo Movimento</h3>
+                    <button onclick="closeModal()" class="text-gray-400 p-2"><svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg></button>
                 </div>
 
-                <!-- Pulsante Scan (Solo per uscite) -->
-                <div id="scan-section" class="mb-4">
-                    <button id="scan-btn" onclick="triggerFileSelect()" class="w-full py-3 px-4 bg-indigo-50 border-2 border-indigo-200 border-dashed rounded-2xl text-indigo-600 font-bold flex items-center justify-center space-x-2 active:scale-95 transition-all">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
-                        <span id="scan-text">Scannerizza Scontrino</span>
-                        <div id="scan-loader" class="loader hidden"></div>
+                <div id="scan-section" class="mb-6">
+                    <button id="scan-btn" onclick="document.getElementById('file-input').click()" class="w-full py-4 border-2 border-indigo-200 border-dashed rounded-2xl bg-indigo-50 text-indigo-600 font-bold flex flex-col items-center justify-center space-y-1 hover:bg-indigo-100 transition-colors">
+                        <div class="flex items-center space-x-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" /><circle cx="12" cy="13" r="3" stroke-width="2"/></svg>
+                            <span id="scan-text">Scannerizza Scontrino</span>
+                        </div>
+                        <span id="scan-status" class="text-[10px] font-medium opacity-60">Analisi automatica con IA</span>
+                        <div id="scan-loader" class="loader hidden mt-2"></div>
                     </button>
-                    <input type="file" id="file-input" accept="image/*" class="hidden" onchange="handleReceiptScan(event)">
+                    <input type="file" id="file-input" accept="image/*" capture="environment" class="hidden" onchange="handleReceiptScan(event)">
                 </div>
 
                 <div class="space-y-4">
                     <div>
-                        <label class="block text-xs font-bold text-gray-400 uppercase mb-1 ml-1">Importo (€)</label>
-                        <input type="number" id="amount-input" step="0.01" inputmode="decimal" placeholder="0.00" class="w-full p-4 bg-gray-100 rounded-2xl text-3xl font-bold text-center focus:ring-2 focus:ring-indigo-500 outline-none">
+                        <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1 ml-1">Importo (€)</label>
+                        <input type="number" id="amount-input" step="0.01" inputmode="decimal" placeholder="0.00" class="w-full p-4 bg-gray-100 rounded-2xl text-3xl font-bold text-center focus:ring-2 focus:ring-indigo-500 outline-none transition-shadow">
                     </div>
                     <div>
-                        <label class="block text-xs font-bold text-gray-400 uppercase mb-1 ml-1">Descrizione</label>
-                        <input type="text" id="desc-input" placeholder="A cosa serve?" class="w-full p-4 bg-gray-100 rounded-2xl focus:ring-2 focus:ring-indigo-500 outline-none">
+                        <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1 ml-1">Descrizione</label>
+                        <input type="text" id="desc-input" placeholder="Esempio: Spesa settimanale" class="w-full p-4 bg-gray-100 rounded-2xl focus:ring-2 focus:ring-indigo-500 outline-none transition-shadow">
                     </div>
                     <div>
-                        <label class="block text-xs font-bold text-gray-400 uppercase mb-2 ml-1">Categoria</label>
+                        <label class="block text-[10px] font-bold text-gray-400 uppercase mb-2 ml-1">Categoria</label>
                         <div id="category-grid" class="grid grid-cols-4 gap-2"></div>
                     </div>
                     <button onclick="saveTransaction()" id="save-btn" class="w-full py-4 rounded-2xl text-white font-bold text-xl shadow-lg active:scale-95 transition-transform mt-4">Salva</button>
                 </div>
-                <div class="h-6 safe-area-inset"></div>
+                <div class="h-6"></div>
             </div>
         </div>
     </div>
 
     <script>
-        const apiKey = ""; // API Key fornita dall'ambiente
+        // Configurazione
+        const apiKey = ""; // Inserisci qui la tua chiave se lo usi fuori dall'ambiente demo
         const categories = {
             expense: [
                 { id: 'cibo', label: 'Cibo', icon: '🍎', color: '#f87171' },
@@ -148,239 +138,236 @@
             income: [
                 { id: 'stipendio', label: 'Stipendio', icon: '💰', color: '#10b981' },
                 { id: 'regalo', label: 'Regalo', icon: '🎁', color: '#f59e0b' },
-                { id: 'rimborso', label: 'Rimborso', icon: '🔄', color: '#3b82f6' },
                 { id: 'altro_in', label: 'Altro', icon: '📈', color: '#6b7280' }
             ]
         };
 
-        let transactions = JSON.parse(localStorage.getItem('transactions_v2')) || [];
-        let currentMode = 'income';
-        let selectedCategory = '';
+        let transactions = JSON.parse(localStorage.getItem('spese_v3')) || [];
         let viewDate = new Date();
+        let currentMode = 'expense';
+        let selectedCategory = 'altro';
         let chartInstance = null;
 
-        const balanceEl = document.getElementById('balance');
-        const transactionListEl = document.getElementById('transaction-list');
-        const monthDisplay = document.getElementById('current-month-display');
-        const modal = document.getElementById('modal');
-        const modalContent = document.getElementById('modal-content');
-
+        // Inizializzazione UI
         function updateUI() {
-            const month = viewDate.getMonth();
-            const year = viewDate.getFullYear();
-            monthDisplay.textContent = viewDate.toLocaleDateString('it-IT', { month: 'long', year: 'numeric' });
+            const m = viewDate.getMonth();
+            const y = viewDate.getFullYear();
+            document.getElementById('current-month-display').textContent = viewDate.toLocaleDateString('it-IT', { month: 'long', year: 'numeric' });
 
             const filtered = transactions.filter(t => {
                 const d = new Date(t.date);
-                return d.getMonth() === month && d.getFullYear() === year;
+                return d.getMonth() === m && d.getFullYear() === y;
             });
 
-            const income = filtered.filter(t => t.type === 'income').reduce((sum, t) => sum + t.amount, 0);
-            const expense = filtered.filter(t => t.type === 'expense').reduce((sum, t) => sum + t.amount, 0);
-            const total = income - expense;
+            const inc = filtered.filter(t => t.type === 'income').reduce((s, t) => s + t.amount, 0);
+            const exp = filtered.filter(t => t.type === 'expense').reduce((s, t) => s + t.amount, 0);
+            const bal = inc - exp;
 
-            balanceEl.textContent = `€ ${total.toLocaleString('it-IT', { minimumFractionDigits: 2 })}`;
-            balanceEl.className = total >= 0 ? 'text-4xl font-bold transition-all' : 'text-4xl font-bold text-red-200 transition-all';
+            const balEl = document.getElementById('balance');
+            balEl.textContent = `€ ${bal.toLocaleString('it-IT', { minimumFractionDigits: 2 })}`;
+            balEl.className = bal >= 0 ? 'text-4xl font-bold' : 'text-4xl font-bold text-red-300';
 
+            const listEl = document.getElementById('transaction-list');
             if (filtered.length === 0) {
-                transactionListEl.innerHTML = '<p class="text-center text-gray-400 py-10">Nessun movimento in questo mese</p>';
-                document.getElementById('chart-container').classList.add('hidden');
+                listEl.innerHTML = `<div class="text-center py-10 text-gray-400">Nessuna operazione questo mese</div>`;
             } else {
-                const sorted = [...filtered].sort((a, b) => b.id - a.id);
-                transactionListEl.innerHTML = sorted.map(t => {
+                listEl.innerHTML = filtered.sort((a,b) => b.id - a.id).map(t => {
                     const cat = [...categories.expense, ...categories.income].find(c => c.id === t.category);
                     return `
-                    <div class="flex items-center justify-between p-4 bg-gray-50 rounded-2xl border-l-4" style="border-color: ${cat?.color || '#ddd'}">
+                    <div class="flex items-center justify-between p-4 bg-gray-50 rounded-2xl border-l-4" style="border-color: ${cat?.color}">
                         <div class="flex items-center space-x-3">
-                            <div class="text-2xl">${cat?.icon || '❓'}</div>
+                            <span class="text-2xl">${cat?.icon}</span>
                             <div>
-                                <div class="font-bold text-gray-800 leading-tight">${t.description || cat?.label}</div>
-                                <div class="text-[10px] text-gray-400 uppercase font-bold">${new Date(t.date).toLocaleDateString('it-IT', { day: '2-digit', month: 'short' })} • ${new Date(t.date).toLocaleTimeString('it-IT', {hour: '2-digit', minute:'2-digit'})}</div>
+                                <div class="font-bold text-gray-800">${t.description || cat?.label}</div>
+                                <div class="text-[10px] text-gray-400 font-bold uppercase">${new Date(t.date).toLocaleDateString()}</div>
                             </div>
                         </div>
                         <div class="flex items-center space-x-3">
-                            <div class="font-bold text-right ${t.type === 'income' ? 'text-green-600' : 'text-red-600'}">
+                            <span class="font-bold ${t.type === 'income' ? 'text-green-600' : 'text-red-600'}">
                                 ${t.type === 'income' ? '+' : '-'} €${t.amount.toFixed(2)}
-                            </div>
-                            <button onclick="deleteTransaction(${t.id})" class="text-gray-300 p-1"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg></button>
+                            </span>
+                            <button onclick="deleteTx(${t.id})" class="text-gray-300 hover:text-red-400"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg></button>
                         </div>
                     </div>`;
                 }).join('');
-                updateChart(filtered.filter(t => t.type === 'expense'));
             }
+            renderChart(filtered.filter(t => t.type === 'expense'));
         }
 
-        // Funzioni per l'analisi dello scontrino
-        function triggerFileSelect() {
-            document.getElementById('file-input').click();
-        }
-
-        async function handleReceiptScan(event) {
-            const file = event.target.files[0];
+        async function handleReceiptScan(e) {
+            const file = e.target.files[0];
             if (!file) return;
 
-            const scanBtn = document.getElementById('scan-btn');
-            const scanText = document.getElementById('scan-text');
-            const scanLoader = document.getElementById('scan-loader');
+            const btn = document.getElementById('scan-btn');
+            const loader = document.getElementById('scan-loader');
+            const status = document.getElementById('scan-status');
 
-            // UI Feedback
-            scanBtn.disabled = true;
-            scanText.textContent = "Analisi in corso...";
-            scanLoader.classList.remove('hidden');
+            btn.disabled = true;
+            loader.classList.remove('hidden');
+            status.textContent = "Compressione immagine...";
 
             try {
-                const base64Data = await fileToBase64(file);
-                const result = await callGeminiAI(base64Data);
+                // 1. Ridimensiona immagine (fondamentale per successo API)
+                const compressedBase64 = await resizeImage(file, 1024);
+                status.textContent = "Analisi IA in corso...";
+
+                // 2. Chiama l'IA
+                const data = await callIA(compressedBase64);
                 
-                if (result) {
-                    document.getElementById('amount-input').value = result.amount;
-                    document.getElementById('desc-input').value = result.description;
-                    
-                    // Suggerimento categoria basato sull'IA se presente
-                    if (result.category) {
-                        const catMatch = categories.expense.find(c => c.id === result.category || c.label.toLowerCase() === result.category.toLowerCase());
-                        if (catMatch) selectCategory(catMatch.id);
-                    }
+                if (data && data.amount) {
+                    document.getElementById('amount-input').value = data.amount;
+                    document.getElementById('desc-input').value = data.description || "";
+                    if (data.category) selectCategory(data.category);
+                    status.textContent = "Scontrino letto con successo!";
+                    setTimeout(() => status.textContent = "Analisi automatica con IA", 3000);
+                } else {
+                    throw new Error("Dati non trovati");
                 }
-            } catch (error) {
-                console.error(error);
-                alert("Errore durante la lettura dello scontrino. Riprova.");
+            } catch (err) {
+                console.error(err);
+                alert("Errore lettura: " + (err.message.includes("403") ? "Chiave API mancante o non valida" : "Immagine poco chiara o errore server"));
+                status.textContent = "Errore durante la lettura";
             } finally {
-                scanBtn.disabled = false;
-                scanText.textContent = "Scannerizza Scontrino";
-                scanLoader.classList.add('hidden');
-                event.target.value = ''; // Reset input
+                btn.disabled = false;
+                loader.classList.add('hidden');
+                e.target.value = '';
             }
         }
 
-        function fileToBase64(file) {
-            return new Promise((resolve, reject) => {
+        async function callIA(base64, retry = 0) {
+            if (!apiKey) throw new Error("API Key non configurata. Inseriscila nel codice.");
+
+            const prompt = "Analizza lo scontrino. Restituisci JSON: { 'amount': totale_euro_numero, 'description': 'nome_negozio', 'category': 'cibo'|'casa'|'trasporti'|'svago'|'salute'|'shopping'|'altro' }. Rispondi solo JSON.";
+            
+            try {
+                const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        contents: [{ parts: [{ text: prompt }, { inlineData: { mimeType: "image/jpeg", data: base64 } }] }],
+                        generationConfig: { responseMimeType: "application/json" }
+                    })
+                });
+
+                if (res.status === 429 && retry < 3) {
+                    await new Promise(r => setTimeout(r, 2000 * (retry + 1)));
+                    return callIA(base64, retry + 1);
+                }
+
+                if (!res.ok) throw new Error(`Server error: ${res.status}`);
+                const json = await res.json();
+                return JSON.parse(json.candidates[0].content.parts[0].text);
+            } catch (e) { throw e; }
+        }
+
+        // Utility per ridimensionare l'immagine prima di inviarla
+        function resizeImage(file, maxSide) {
+            return new Promise((resolve) => {
                 const reader = new FileReader();
                 reader.readAsDataURL(file);
-                reader.onload = () => resolve(reader.result.split(',')[1]);
-                reader.onerror = error => reject(error);
+                reader.onload = (e) => {
+                    const img = new Image();
+                    img.src = e.target.result;
+                    img.onload = () => {
+                        const canvas = document.createElement('canvas');
+                        let w = img.width, h = img.height;
+                        if (w > h && w > maxSide) { h *= maxSide / w; w = maxSide; }
+                        else if (h > maxSide) { w *= maxSide / h; h = maxSide; }
+                        canvas.width = w; canvas.height = h;
+                        canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+                        resolve(canvas.toDataURL('image/jpeg', 0.8).split(',')[1]);
+                    };
+                };
             });
         }
 
-        async function callGeminiAI(base64Image, retries = 5, delay = 1000) {
-            const prompt = "Analizza questa immagine di uno scontrino. Restituisci un oggetto JSON con questi campi: { 'amount': numero_totale, 'description': 'nome_negozio_o_descrizione_breve', 'category': 'una_tra: cibo, casa, trasporti, svago, salute, shopping, altro' }. Rispondi SOLO con il JSON.";
-            
-            const payload = {
-                contents: [{
-                    parts: [
-                        { text: prompt },
-                        { inlineData: { mimeType: "image/png", data: base64Image } }
-                    ]
-                }],
-                generationConfig: {
-                    responseMimeType: "application/json"
-                }
-            };
-
-            for (let i = 0; i < retries; i++) {
-                try {
-                    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(payload)
-                    });
-
-                    if (!response.ok) throw new Error('API Error');
-
-                    const data = await response.json();
-                    const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
-                    return JSON.parse(text);
-                } catch (err) {
-                    if (i === retries - 1) throw err;
-                    await new Promise(r => setTimeout(r, delay * Math.pow(2, i)));
-                }
-            }
-        }
-
-        function updateChart(expenses) {
+        function renderChart(exps) {
+            const ctx = document.getElementById('expenseChart');
             const container = document.getElementById('chart-container');
-            if (expenses.length === 0) { container.classList.add('hidden'); return; }
+            if (exps.length === 0) { container.classList.add('hidden'); return; }
             container.classList.remove('hidden');
 
-            const dataMap = {};
-            expenses.forEach(e => {
+            const data = {};
+            exps.forEach(e => {
                 const label = categories.expense.find(c => c.id === e.category)?.label || 'Altro';
-                dataMap[label] = (dataMap[label] || 0) + e.amount;
+                data[label] = (data[label] || 0) + e.amount;
             });
 
             if (chartInstance) chartInstance.destroy();
-            chartInstance = new Chart(document.getElementById('expenseChart'), {
+            chartInstance = new Chart(ctx, {
                 type: 'doughnut',
                 data: {
-                    labels: Object.keys(dataMap),
-                    datasets: [{ data: Object.values(dataMap), backgroundColor: Object.keys(dataMap).map(l => categories.expense.find(c => c.label === l)?.color || '#999'), borderWidth: 0 }]
+                    labels: Object.keys(data),
+                    datasets: [{
+                        data: Object.values(data),
+                        backgroundColor: Object.keys(data).map(l => categories.expense.find(c => c.label === l)?.color),
+                        borderWidth: 0
+                    }]
                 },
-                options: { plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 10 } } } }, cutout: '70%' }
+                options: { plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 10 } } } }, cutout: '75%' }
             });
         }
 
-        function openModal(type) {
-            currentMode = type;
-            selectedCategory = categories[type][0].id;
-            modal.classList.remove('hidden');
+        function openModal(mode) {
+            currentMode = mode;
+            selectedCategory = categories[mode][0].id;
+            document.getElementById('modal').classList.remove('hidden');
+            document.getElementById('scan-section').style.display = mode === 'expense' ? 'block' : 'none';
+            document.getElementById('modal-title').textContent = mode === 'income' ? 'Nuova Entrata' : 'Nuova Uscita';
+            document.getElementById('save-btn').className = `w-full py-4 rounded-2xl text-white font-bold text-xl mt-4 ${mode === 'income' ? 'bg-green-500' : 'bg-red-500'}`;
             
-            // Mostra/Nascondi scan solo per uscite
-            document.getElementById('scan-section').style.display = type === 'expense' ? 'block' : 'none';
-
             const grid = document.getElementById('category-grid');
-            grid.innerHTML = categories[type].map(c => `
-                <button onclick="selectCategory('${c.id}')" id="cat-${c.id}" class="category-btn flex flex-col items-center p-2 rounded-xl border-2 transition-all ${c.id === selectedCategory ? 'border-indigo-500 bg-indigo-50' : 'border-transparent bg-gray-50'}">
+            grid.innerHTML = categories[mode].map(c => `
+                <button onclick="selectCategory('${c.id}')" id="cat-${c.id}" class="cat-btn p-2 rounded-xl border-2 flex flex-col items-center transition-all ${c.id === selectedCategory ? 'border-indigo-500 bg-indigo-50' : 'border-transparent bg-gray-50'}">
                     <span class="text-xl">${c.icon}</span>
-                    <span class="text-[10px] font-bold mt-1 text-gray-500">${c.label}</span>
+                    <span class="text-[9px] font-bold text-gray-500 mt-1">${c.label}</span>
                 </button>`).join('');
 
-            setTimeout(() => modalContent.classList.remove('translate-y-full'), 10);
-            document.getElementById('modal-title').textContent = type === 'income' ? 'Nuova Entrata' : 'Nuova Uscita';
-            document.getElementById('save-btn').className = `w-full py-4 rounded-2xl text-white font-bold text-xl mt-4 ${type === 'income' ? 'bg-green-500' : 'bg-red-500'}`;
+            setTimeout(() => document.getElementById('modal-content').classList.remove('translate-y-full'), 10);
             document.getElementById('amount-input').value = '';
             document.getElementById('desc-input').value = '';
         }
 
         function selectCategory(id) {
             selectedCategory = id;
-            document.querySelectorAll('.category-btn').forEach(btn => {
-                btn.classList.remove('border-indigo-500', 'bg-indigo-50');
-                btn.classList.add('border-transparent', 'bg-gray-50');
+            document.querySelectorAll('.cat-btn').forEach(b => {
+                b.classList.remove('border-indigo-500', 'bg-indigo-50');
+                b.classList.add('border-transparent', 'bg-gray-50');
             });
-            const target = document.getElementById('cat-' + id);
-            if(target) {
-                target.classList.add('border-indigo-500', 'bg-indigo-50');
-                target.classList.remove('border-transparent', 'bg-gray-50');
+            const active = document.getElementById('cat-' + id);
+            if (active) {
+                active.classList.add('border-indigo-500', 'bg-indigo-50');
+                active.classList.remove('border-transparent', 'bg-gray-50');
             }
         }
 
         function saveTransaction() {
-            const amount = parseFloat(document.getElementById('amount-input').value);
-            if (!amount || amount <= 0) return alert("Inserisci un importo");
-            transactions.push({ id: Date.now(), amount, description: document.getElementById('desc-input').value.trim(), category: selectedCategory, type: currentMode, date: new Date().toISOString() });
-            localStorage.setItem('transactions_v2', JSON.stringify(transactions));
+            const amt = parseFloat(document.getElementById('amount-input').value);
+            if (!amt) return alert("Inserisci l'importo");
+            transactions.push({ id: Date.now(), amount: amt, description: document.getElementById('desc-input').value, category: selectedCategory, type: currentMode, date: new Date().toISOString() });
+            localStorage.setItem('spese_v3', JSON.stringify(transactions));
             updateUI(); closeModal();
         }
 
-        function changeMonth(dir) { viewDate.setMonth(viewDate.getMonth() + dir); updateUI(); }
-        function deleteTransaction(id) { if (confirm("Eliminare?")) { transactions = transactions.filter(t => t.id !== id); localStorage.setItem('transactions_v2', JSON.stringify(transactions)); updateUI(); } }
-        function clearHistory() { if (confirm("Svuotare tutto?")) { transactions = []; localStorage.setItem('transactions_v2', JSON.stringify(transactions)); updateUI(); } }
-        function closeModal() { modalContent.classList.add('translate-y-full'); setTimeout(() => modal.classList.add('hidden'), 300); }
+        function deleteTx(id) { if(confirm("Eliminare?")) { transactions = transactions.filter(t => t.id !== id); localStorage.setItem('spese_v3', JSON.stringify(transactions)); updateUI(); } }
+        function changeMonth(d) { viewDate.setMonth(viewDate.getMonth() + d); updateUI(); }
+        function closeModal() { document.getElementById('modal-content').classList.add('translate-y-full'); setTimeout(() => document.getElementById('modal').classList.add('hidden'), 300); }
+        function clearHistory() { if(confirm("Svuotare tutto?")) { transactions = []; localStorage.setItem('spese_v3', JSON.stringify(transactions)); updateUI(); } }
 
         function exportCSV() {
             let csv = "Data,Tipo,Descrizione,Categoria,Importo\n";
             transactions.forEach(t => {
-                const cat = [...categories.expense, ...categories.income].find(c => c.id === t.category)?.label || '';
-                csv += `${new Date(t.date).toLocaleDateString()},${t.type},"${t.description}",${cat},${t.amount}\n`;
+                const c = [...categories.expense, ...categories.income].find(x => x.id === t.category)?.label;
+                csv += `${new Date(t.date).toLocaleDateString()},${t.type},"${t.description}",${c},${t.amount}\n`;
             });
-            const a = document.createElement('a');
-            a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv' }));
-            a.download = `spese.csv`;
-            a.click();
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv' }));
+            link.download = `report_spese.csv`;
+            link.click();
         }
 
         window.onload = updateUI;
-        modal.onclick = (e) => { if(e.target === modal) closeModal(); };
+        document.getElementById('modal').onclick = (e) => { if(e.target === document.getElementById('modal')) closeModal(); };
     </script>
 </body>
 </html>
