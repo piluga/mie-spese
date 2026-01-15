@@ -1,356 +1,312 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useMemo } from 'react';
 import { 
   PlusCircle, 
   Wallet, 
   ArrowUpCircle, 
   ArrowDownCircle, 
   Trash2, 
-  ChevronRight, 
-  LayoutDashboard,
   History,
+  CreditCard,
+  Banknote,
+  TrendingUp,
+  LayoutDashboard,
   PieChart,
-  Settings
+  ArrowRightLeft,
+  X,
+  Menu
 } from 'lucide-react';
 
 const App = () => {
-  // Stato principale: array di conti
-  // Ogni conto ha: id, nome, icona, transazioni, budget
+  // --- STATE MANAGEMENT ---
   const [accounts, setAccounts] = useState([
     {
-      id: '1',
-      name: 'Conto Principale',
-      balance: 2500,
+      id: 'acc_main_01',
+      name: 'Conto Corrente',
+      icon: 'card',
       transactions: [
-        { id: 't1', type: 'in', amount: 3000, description: 'Stipendio', date: '2023-10-01' },
-        { id: 't2', type: 'out', amount: 500, description: 'Affitto', date: '2023-10-05' }
+        { id: 'tx_01', type: 'in', amount: 2500, description: 'Stipendio', date: '2024-05-01', category: 'Lavoro' },
+        { id: 'tx_02', type: 'out', amount: 850, description: 'Affitto', date: '2024-05-05', category: 'Casa' }
       ]
     },
     {
-      id: '2',
+      id: 'acc_save_02',
       name: 'Risparmi',
-      balance: 12000,
-      transactions: []
+      icon: 'savings',
+      transactions: [
+        { id: 'tx_04', type: 'in', amount: 5000, description: 'Fondo Emergenza', date: '2024-01-01', category: 'Risparmio' }
+      ]
     }
   ]);
 
-  const [activeAccountId, setActiveAccountId] = useState('1');
-  const [isNewAccountModalOpen, setIsNewAccountModalOpen] = useState(false);
-  const [isTransactionModalOpen, setIsTransactionModalOpen] = useState(false);
+  const [activeAccountId, setActiveAccountId] = useState('acc_main_01');
+  const [isAccountModalOpen, setIsAccountModalOpen] = useState(false);
+  const [isTxModalOpen, setIsTxModalOpen] = useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   
-  // Form stati
-  const [newAccName, setNewAccName] = useState('');
-  const [newTrans, setNewTrans] = useState({ description: '', amount: '', type: 'out' });
+  const [newAccountData, setNewAccountData] = useState({ name: '', type: 'card' });
+  const [newTxData, setNewTxData] = useState({ description: '', amount: '', type: 'out', category: 'Generale' });
 
+  // --- LOGIC ---
   const activeAccount = useMemo(() => 
-    accounts.find(acc => acc.id === activeAccountId) || accounts[0], 
+    accounts.find(a => a.id === activeAccountId) || accounts[0], 
   [accounts, activeAccountId]);
 
-  // Funzioni di gestione
-  const addAccount = () => {
-    if (!newAccName.trim()) return;
+  const stats = useMemo(() => {
+    const txs = activeAccount.transactions;
+    const totalIn = txs.filter(t => t.type === 'in').reduce((sum, t) => sum + t.amount, 0);
+    const totalOut = txs.filter(t => t.type === 'out').reduce((sum, t) => sum + t.amount, 0);
+    return {
+      balance: totalIn - totalOut,
+      in: totalIn,
+      out: totalOut
+    };
+  }, [activeAccount]);
+
+  const handleAddAccount = () => {
+    if (!newAccountData.name.trim()) return;
     const newAcc = {
-      id: Date.now().toString(),
-      name: newAccName,
-      balance: 0,
+      id: `acc_${Date.now()}`,
+      name: newAccountData.name,
+      icon: newAccountData.type,
       transactions: []
     };
     setAccounts([...accounts, newAcc]);
-    setNewAccName('');
-    setIsNewAccountModalOpen(false);
+    setActiveAccountId(newAcc.id);
+    setIsAccountModalOpen(false);
+    setNewAccountData({ name: '', type: 'card' });
   };
 
-  const addTransaction = () => {
-    if (!newTrans.description || !newTrans.amount) return;
-    
-    const amount = parseFloat(newTrans.amount);
-    const updatedAccounts = accounts.map(acc => {
+  const handleAddTransaction = () => {
+    if (!newTxData.description || !newTxData.amount) return;
+    const updated = accounts.map(acc => {
       if (acc.id === activeAccountId) {
-        const updatedBalance = newTrans.type === 'in' 
-          ? acc.balance + amount 
-          : acc.balance - amount;
-          
         return {
           ...acc,
-          balance: updatedBalance,
-          transactions: [
-            {
-              id: Date.now().toString(),
-              description: newTrans.description,
-              amount: amount,
-              type: newTrans.type,
-              date: new Date().toISOString().split('T')[0]
-            },
-            ...acc.transactions
-          ]
+          transactions: [{
+            ...newTxData,
+            id: `tx_${Date.now()}`,
+            amount: parseFloat(newTxData.amount),
+            date: new Date().toISOString().split('T')[0]
+          }, ...acc.transactions]
         };
       }
       return acc;
     });
-
-    setAccounts(updatedAccounts);
-    setNewTrans({ description: '', amount: '', type: 'out' });
-    setIsTransactionModalOpen(false);
+    setAccounts(updated);
+    setIsTxModalOpen(false);
+    setNewTxData({ description: '', amount: '', type: 'out', category: 'Generale' });
   };
 
-  const deleteTransaction = (transId) => {
-    const updatedAccounts = accounts.map(acc => {
-      if (acc.id === activeAccountId) {
-        const transToDelete = acc.transactions.find(t => t.id === transId);
-        const newBalance = transToDelete.type === 'in' 
-          ? acc.balance - transToDelete.amount 
-          : acc.balance + transToDelete.amount;
-          
-        return {
-          ...acc,
-          balance: newBalance,
-          transactions: acc.transactions.filter(t => t.id !== transId)
-        };
-      }
-      return acc;
-    });
-    setAccounts(updatedAccounts);
+  const deleteTx = (id) => {
+    setAccounts(accounts.map(acc => ({
+      ...acc,
+      transactions: acc.transactions.filter(t => t.id !== id)
+    })));
+  };
+
+  const openTxModal = (type) => {
+    setNewTxData({ ...newTxData, type });
+    setIsTxModalOpen(true);
   };
 
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col md:flex-row font-sans text-slate-900">
       
-      {/* Sidebar Navigazione Conti */}
-      <aside className="w-full md:w-72 bg-white border-r border-slate-200 p-6 flex flex-col gap-6">
-        <div className="flex items-center gap-2 mb-4">
-          <div className="p-2 bg-indigo-600 rounded-lg text-white">
-            <Wallet size={24} />
-          </div>
-          <h1 className="text-xl font-bold tracking-tight">FinanzaPersonale</h1>
+      {/* MOBILE SIDEBAR OVERLAY */}
+      {isSidebarOpen && (
+        <div className="fixed inset-0 bg-slate-900/50 z-40 md:hidden" onClick={() => setIsSidebarOpen(false)} />
+      )}
+
+      {/* SIDEBAR */}
+      <aside className={`fixed md:relative w-72 h-full bg-white border-r border-slate-200 flex flex-col z-50 transition-transform duration-300 ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}`}>
+        <div className="p-6 flex items-center gap-3 border-b border-slate-50">
+          <TrendingUp className="text-indigo-600" size={28} />
+          <h1 className="text-xl font-bold tracking-tight">FinanzaPro <span className="text-[10px] text-indigo-500 font-black ml-1">v3.1.1</span></h1>
         </div>
 
-        <div>
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-xs font-semibold text-slate-400 uppercase tracking-wider">I Tuoi Conti</h2>
-            <button 
-              onClick={() => setIsNewAccountModalOpen(true)}
-              className="text-indigo-600 hover:bg-indigo-50 p-1 rounded-full transition-colors"
-            >
-              <PlusCircle size={18} />
+        <div className="flex-1 overflow-y-auto p-4 space-y-6">
+          <nav className="space-y-1">
+            <button className="w-full flex items-center gap-3 p-3 rounded-xl bg-indigo-50 text-indigo-700 font-bold text-sm">
+              <LayoutDashboard size={18} /> Dashboard
             </button>
-          </div>
-          
-          <div className="space-y-2">
-            {accounts.map(acc => (
-              <button
-                key={acc.id}
-                onClick={() => setActiveAccountId(acc.id)}
-                className={`w-full flex items-center justify-between p-3 rounded-xl transition-all ${
-                  activeAccountId === acc.id 
-                    ? 'bg-indigo-50 text-indigo-700 ring-1 ring-indigo-200' 
-                    : 'hover:bg-slate-100 text-slate-600'
-                }`}
-              >
-                <div className="flex items-center gap-3">
-                  <div className={`w-2 h-2 rounded-full ${activeAccountId === acc.id ? 'bg-indigo-600' : 'bg-slate-300'}`} />
-                  <span className="font-medium text-sm">{acc.name}</span>
-                </div>
-                <span className="text-xs font-bold">€{acc.balance.toLocaleString()}</span>
-              </button>
-            ))}
-          </div>
-        </div>
+            <button className="w-full flex items-center gap-3 p-3 rounded-xl text-slate-500 font-bold text-sm hover:bg-slate-50">
+              <PieChart size={18} /> Statistiche
+            </button>
+          </nav>
 
-        <div className="mt-auto pt-6 border-t border-slate-100">
-          <div className="flex items-center gap-3 text-slate-500 hover:text-slate-800 cursor-pointer transition-colors p-2">
-            <Settings size={20} />
-            <span className="text-sm font-medium">Impostazioni</span>
-          </div>
+          <section>
+            <div className="flex items-center justify-between px-2 mb-3">
+              <h2 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">I Tuoi Conti</h2>
+              <button onClick={() => setIsAccountModalOpen(true)} className="text-indigo-600 hover:rotate-90 transition-transform">
+                <PlusCircle size={18} />
+              </button>
+            </div>
+            <div className="space-y-1">
+              {accounts.map(acc => (
+                <button
+                  key={acc.id}
+                  onClick={() => { setActiveAccountId(acc.id); setIsSidebarOpen(false); }}
+                  className={`w-full flex items-center justify-between p-3 rounded-xl transition-all ${activeAccountId === acc.id ? 'bg-slate-900 text-white shadow-lg shadow-slate-200' : 'hover:bg-slate-50 text-slate-600'}`}
+                >
+                  <div className="flex items-center gap-3 truncate">
+                    {acc.icon === 'savings' ? <Banknote size={16}/> : <CreditCard size={16}/>}
+                    <span className="text-sm font-bold truncate">{acc.name}</span>
+                  </div>
+                  {activeAccountId === acc.id && <div className="w-1.5 h-1.5 bg-indigo-400 rounded-full" />}
+                </button>
+              ))}
+            </div>
+          </section>
         </div>
       </aside>
 
-      {/* Main Content Area */}
-      <main className="flex-1 p-4 md:p-10 overflow-y-auto">
-        <header className="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div>
-            <h2 className="text-2xl font-bold text-slate-800">{activeAccount.name}</h2>
-            <p className="text-slate-500">Gestisci le tue transazioni e monitora il saldo.</p>
+      {/* MAIN CONTENT */}
+      <main className="flex-1 flex flex-col min-h-screen">
+        
+        {/* HEADER - STILE CLASSICO VESTE NUOVA */}
+        <header className="bg-indigo-600 text-white p-6 md:p-10 rounded-b-[2.5rem] shadow-xl relative overflow-hidden">
+          <div className="absolute top-0 right-0 p-10 opacity-10 rotate-12">
+            <Wallet size={120} />
           </div>
-          <button 
-            onClick={() => setIsTransactionModalOpen(true)}
-            className="bg-indigo-600 text-white px-5 py-2.5 rounded-xl font-semibold hover:bg-indigo-700 transition-all shadow-sm flex items-center justify-center gap-2"
-          >
-            <PlusCircle size={20} />
-            Nuova Operazione
-          </button>
+
+          <div className="flex justify-between items-center mb-6 relative z-10">
+            <button onClick={() => setIsSidebarOpen(true)} className="md:hidden p-2 hover:bg-white/10 rounded-full">
+              <Menu size={24} />
+            </button>
+            <div className="text-center flex-1">
+              <p className="text-[10px] uppercase font-black tracking-[0.2em] opacity-80 mb-1">Saldo {activeAccount.name}</p>
+              <h2 className="text-4xl md:text-5xl font-black tracking-tighter">
+                € {stats.balance.toLocaleString('it-IT', { minimumFractionDigits: 2 })}
+              </h2>
+            </div>
+            <div className="w-10 md:hidden"></div>
+          </div>
         </header>
 
-        {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
-            <div className="text-slate-400 text-sm font-medium mb-1">Saldo Attuale</div>
-            <div className="text-3xl font-bold text-slate-800">€{activeAccount.balance.toLocaleString()}</div>
-          </div>
-          <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
-            <div className="text-emerald-500 text-sm font-medium mb-1 flex items-center gap-1">
-              <ArrowUpCircle size={14} /> Entrate
-            </div>
-            <div className="text-2xl font-bold text-slate-800">
-              €{activeAccount.transactions.filter(t => t.type === 'in').reduce((acc, t) => acc + t.amount, 0).toLocaleString()}
-            </div>
-          </div>
-          <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
-            <div className="text-rose-500 text-sm font-medium mb-1 flex items-center gap-1">
-              <ArrowDownCircle size={14} /> Uscite
-            </div>
-            <div className="text-2xl font-bold text-slate-800">
-              €{activeAccount.transactions.filter(t => t.type === 'out').reduce((acc, t) => acc + t.amount, 0).toLocaleString()}
-            </div>
+        <div className="px-6 -mt-10 mb-10 relative z-20">
+          <div className="max-w-4xl mx-auto grid grid-cols-2 gap-4">
+            <button 
+              onClick={() => openTxModal('in')}
+              className="bg-emerald-500 text-white p-5 rounded-3xl shadow-lg shadow-emerald-200 flex items-center justify-center gap-3 hover:scale-[1.02] active:scale-95 transition-all"
+            >
+              <ArrowUpCircle size={24} />
+              <span className="font-black text-sm uppercase tracking-wider">Entrata</span>
+            </button>
+            <button 
+              onClick={() => openTxModal('out')}
+              className="bg-rose-500 text-white p-5 rounded-3xl shadow-lg shadow-rose-200 flex items-center justify-center gap-3 hover:scale-[1.02] active:scale-95 transition-all"
+            >
+              <ArrowDownCircle size={24} />
+              <span className="font-black text-sm uppercase tracking-wider">Uscita</span>
+            </button>
           </div>
         </div>
 
-        {/* Transaction History */}
-        <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
-          <div className="p-6 border-b border-slate-100 flex items-center justify-between">
-            <h3 className="font-bold text-lg text-slate-800 flex items-center gap-2">
-              <History size={20} className="text-indigo-600" />
-              Ultime Operazioni
+        <div className="flex-1 px-6 max-w-4xl mx-auto w-full pb-10">
+          <div className="flex items-center justify-between mb-6">
+            <h3 className="text-lg font-black text-slate-800 flex items-center gap-2 italic">
+              <History size={20} className="text-indigo-600" /> Movimenti Recenti
             </h3>
           </div>
-          <div className="overflow-x-auto">
-            <table className="w-full text-left">
-              <thead>
-                <tr className="bg-slate-50 text-slate-400 text-xs uppercase tracking-wider font-semibold">
-                  <th className="px-6 py-4">Descrizione</th>
-                  <th className="px-6 py-4">Data</th>
-                  <th className="px-6 py-4">Tipo</th>
-                  <th className="px-6 py-4 text-right">Importo</th>
-                  <th className="px-6 py-4 text-center">Azioni</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100">
-                {activeAccount.transactions.length === 0 ? (
-                  <tr>
-                    <td colSpan="5" className="px-6 py-10 text-center text-slate-400 italic">
-                      Nessuna transazione registrata per questo conto.
-                    </td>
-                  </tr>
-                ) : (
-                  activeAccount.transactions.map((t) => (
-                    <tr key={t.id} className="hover:bg-slate-50 transition-colors group">
-                      <td className="px-6 py-4 font-medium text-slate-700">{t.description}</td>
-                      <td className="px-6 py-4 text-slate-500 text-sm">{t.date}</td>
-                      <td className="px-6 py-4">
-                        <span className={`px-2 py-1 rounded-md text-[10px] font-bold uppercase ${
-                          t.type === 'in' ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'
-                        }`}>
-                          {t.type === 'in' ? 'Entrata' : 'Uscita'}
-                        </span>
-                      </td>
-                      <td className={`px-6 py-4 text-right font-bold ${
-                        t.type === 'in' ? 'text-emerald-600' : 'text-rose-600'
-                      }`}>
-                        {t.type === 'in' ? '+' : '-'}€{t.amount.toLocaleString()}
-                      </td>
-                      <td className="px-6 py-4 text-center">
-                        <button 
-                          onClick={() => deleteTransaction(t.id)}
-                          className="text-slate-300 hover:text-rose-600 p-2 transition-colors"
-                        >
-                          <Trash2 size={16} />
-                        </button>
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
+
+          <div className="bg-white rounded-[2rem] shadow-sm border border-slate-100 overflow-hidden">
+            {activeAccount.transactions.length === 0 ? (
+              <div className="p-20 text-center text-slate-300 italic font-bold">Nessun movimento registrato.</div>
+            ) : (
+              <div className="divide-y divide-slate-50">
+                {activeAccount.transactions.map(t => (
+                  <div key={t.id} className="group flex items-center justify-between p-5 hover:bg-slate-50 transition-colors">
+                    <div className="flex items-center gap-4">
+                      <div className={`w-10 h-10 rounded-full flex items-center justify-center ${t.type === 'in' ? 'bg-emerald-50 text-emerald-600' : 'bg-slate-50 text-slate-400'}`}>
+                        {t.type === 'in' ? <ArrowUpCircle size={20}/> : <ArrowDownCircle size={20}/>}
+                      </div>
+                      <div>
+                        <p className="font-bold text-slate-800 text-sm">{t.description}</p>
+                        <p className="text-[10px] font-bold text-slate-400 uppercase">{t.category} • {t.date}</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-4">
+                      <p className={`font-black ${t.type === 'in' ? 'text-emerald-600' : 'text-slate-900'}`}>
+                        {t.type === 'in' ? '+' : '-'} €{t.amount.toLocaleString('it-IT', { minimumFractionDigits: 2 })}
+                      </p>
+                      <button onClick={() => deleteTx(t.id)} className="p-2 text-slate-200 hover:text-rose-500 transition-colors opacity-0 group-hover:opacity-100">
+                        <Trash2 size={16} />
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </div>
       </main>
 
-      {/* Modal Nuovo Conto */}
-      {isNewAccountModalOpen && (
-        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-3xl p-8 w-full max-w-md shadow-2xl border border-slate-100">
-            <h3 className="text-xl font-bold mb-4">Crea Nuovo Conto</h3>
-            <p className="text-slate-500 text-sm mb-6">Dai un nome al tuo nuovo fondo o conto corrente.</p>
-            <input 
-              type="text" 
-              placeholder="Esempio: Fondo Viaggi"
-              className="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl mb-6 outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all"
-              value={newAccName}
-              onChange={(e) => setNewAccName(e.target.value)}
-            />
-            <div className="flex gap-3">
+      {/* MODAL TRANSAZIONE */}
+      {isTxModalOpen && (
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] flex items-end md:items-center justify-center p-0 md:p-4">
+          <div className="bg-white w-full max-w-md rounded-t-[2.5rem] md:rounded-[2.5rem] p-8 animate-in slide-in-from-bottom duration-300">
+            <div className="flex justify-between items-center mb-8">
+              <h3 className="text-xl font-black text-slate-800 italic">{newTxData.type === 'in' ? 'Nuova Entrata' : 'Nuova Uscita'}</h3>
+              <button onClick={() => setIsTxModalOpen(false)} className="p-2 text-slate-400 hover:bg-slate-50 rounded-full"><X size={20}/></button>
+            </div>
+            
+            <div className="space-y-5">
+              <div className="bg-slate-50 p-6 rounded-3xl text-center">
+                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-1">Importo (€)</label>
+                <input 
+                  type="number" 
+                  autoFocus
+                  className="bg-transparent text-4xl font-black text-center w-full outline-none"
+                  placeholder="0,00"
+                  value={newTxData.amount}
+                  onChange={(e) => setNewTxData({...newTxData, amount: e.target.value})}
+                />
+              </div>
+
+              <div>
+                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-2 ml-1">Descrizione</label>
+                <input 
+                  type="text" 
+                  className="w-full p-4 bg-slate-50 border border-slate-100 rounded-2xl font-bold outline-none"
+                  value={newTxData.description}
+                  onChange={(e) => setNewTxData({...newTxData, description: e.target.value})}
+                />
+              </div>
+
               <button 
-                onClick={() => setIsNewAccountModalOpen(false)}
-                className="flex-1 py-3 text-slate-600 font-semibold hover:bg-slate-100 rounded-xl transition-all"
+                onClick={handleAddTransaction}
+                className={`w-full py-5 rounded-2xl text-white font-black text-lg shadow-xl transition-all ${newTxData.type === 'in' ? 'bg-emerald-500 shadow-emerald-100 hover:bg-emerald-600' : 'bg-rose-500 shadow-rose-100 hover:bg-rose-600'}`}
               >
-                Annulla
-              </button>
-              <button 
-                onClick={addAccount}
-                className="flex-1 py-3 bg-indigo-600 text-white font-semibold rounded-xl hover:bg-indigo-700 transition-all"
-              >
-                Crea Conto
+                Salva Movimento
               </button>
             </div>
           </div>
         </div>
       )}
 
-      {/* Modal Nuova Transazione */}
-      {isTransactionModalOpen && (
-        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-3xl p-8 w-full max-w-md shadow-2xl border border-slate-100">
-            <h3 className="text-xl font-bold mb-6 text-center">Registra Operazione</h3>
-            
-            <div className="flex bg-slate-100 p-1 rounded-xl mb-6">
-              <button 
-                onClick={() => setNewTrans({...newTrans, type: 'out'})}
-                className={`flex-1 py-2 rounded-lg text-sm font-bold transition-all ${newTrans.type === 'out' ? 'bg-white text-rose-600 shadow-sm' : 'text-slate-500'}`}
-              >
-                Spesa
-              </button>
-              <button 
-                onClick={() => setNewTrans({...newTrans, type: 'in'})}
-                className={`flex-1 py-2 rounded-lg text-sm font-bold transition-all ${newTrans.type === 'in' ? 'bg-white text-emerald-600 shadow-sm' : 'text-slate-500'}`}
-              >
-                Entrata
-              </button>
-            </div>
-
-            <div className="space-y-4 mb-8">
-              <div>
-                <label className="text-xs font-bold text-slate-400 uppercase ml-1">Descrizione</label>
-                <input 
-                  type="text" 
-                  placeholder="Cosa hai acquistato?"
-                  className="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all"
-                  value={newTrans.description}
-                  onChange={(e) => setNewTrans({...newTrans, description: e.target.value})}
-                />
+      {/* MODAL NUOVO CONTO */}
+      {isAccountModalOpen && (
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
+          <div className="bg-white w-full max-w-md rounded-[2.5rem] p-8 shadow-2xl">
+            <h3 className="text-xl font-black text-slate-800 mb-6 italic">Aggiungi Portafoglio</h3>
+            <div className="space-y-4">
+              <input 
+                type="text" 
+                placeholder="Nome Conto (es. Cash, Fineco...)"
+                className="w-full p-4 bg-slate-50 border border-slate-100 rounded-2xl font-bold outline-none"
+                value={newAccountData.name}
+                onChange={(e) => setNewAccountData({...newAccountData, name: e.target.value})}
+              />
+              <div className="grid grid-cols-2 gap-3">
+                <button onClick={() => setNewAccountData({...newAccountData, type: 'card'})} className={`p-4 rounded-2xl border-2 flex flex-col items-center gap-2 ${newAccountData.type === 'card' ? 'border-indigo-600 bg-indigo-50 text-indigo-600' : 'border-slate-100 text-slate-400'}`}>
+                  <CreditCard size={20} /> <span className="text-[10px] font-black uppercase">Carta</span>
+                </button>
+                <button onClick={() => setNewAccountData({...newAccountData, type: 'savings'})} className={`p-4 rounded-2xl border-2 flex flex-col items-center gap-2 ${newAccountData.type === 'savings' ? 'border-indigo-600 bg-indigo-50 text-indigo-600' : 'border-slate-100 text-slate-400'}`}>
+                  <Banknote size={20} /> <span className="text-[10px] font-black uppercase">Risparmi</span>
+                </button>
               </div>
-              <div>
-                <label className="text-xs font-bold text-slate-400 uppercase ml-1">Importo (€)</label>
-                <input 
-                  type="number" 
-                  placeholder="0.00"
-                  className="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all"
-                  value={newTrans.amount}
-                  onChange={(e) => setNewTrans({...newTrans, amount: e.target.value})}
-                />
-              </div>
-            </div>
-
-            <div className="flex gap-3">
-              <button 
-                onClick={() => setIsTransactionModalOpen(false)}
-                className="flex-1 py-3 text-slate-600 font-semibold hover:bg-slate-100 rounded-xl transition-all"
-              >
-                Chiudi
-              </button>
-              <button 
-                onClick={addTransaction}
-                className="flex-1 py-3 bg-indigo-600 text-white font-semibold rounded-xl hover:bg-indigo-700 transition-all shadow-md"
-              >
-                Conferma
-              </button>
+              <button onClick={handleAddAccount} className="w-full py-5 bg-slate-900 text-white font-black rounded-2xl">Crea Conto</button>
+              <button onClick={() => setIsAccountModalOpen(false)} className="w-full py-2 text-slate-400 font-bold text-xs uppercase">Annulla</button>
             </div>
           </div>
         </div>
