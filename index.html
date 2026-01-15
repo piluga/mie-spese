@@ -5,8 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Gestione Spese Pro</title>
     
-    <script src="[https://cdn.tailwindcss.com](https://cdn.tailwindcss.com)"></script>
-    <script src="[https://cdn.jsdelivr.net/npm/chart.js](https://cdn.jsdelivr.net/npm/chart.js)"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
     <style>
         body { background-color: #f3f4f6; font-family: system-ui, -apple-system, sans-serif; touch-action: manipulation; }
@@ -21,16 +21,16 @@
 
     <div id="app" class="max-w-md mx-auto min-h-screen flex flex-col bg-white shadow-lg relative">
         
-        <!-- View Principale -->
+        <!-- Vista Principale -->
         <div id="main-view">
             <header class="bg-indigo-600 text-white p-6 rounded-b-[2.5rem] shadow-xl pt-10">
                 <div class="flex justify-between items-center mb-4">
                     <button onclick="changeMonth(-1)" class="p-2 hover:bg-indigo-500 rounded-full transition-colors">
-                        <svg xmlns="[http://www.w3.org/2000/svg](http://www.w3.org/2000/svg)" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" /></svg>
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" /></svg>
                     </button>
                     <h2 id="current-month-display" class="text-lg font-semibold uppercase tracking-wider">Mese</h2>
                     <button onclick="changeMonth(1)" class="p-2 hover:bg-indigo-500 rounded-full transition-colors">
-                        <svg xmlns="[http://www.w3.org/2000/svg](http://www.w3.org/2000/svg)" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>
                     </button>
                 </div>
                 <div class="text-center">
@@ -39,7 +39,7 @@
                 </div>
                 <div class="text-center mt-4">
                     <button onclick="toggleSettings(true)" class="text-[10px] bg-indigo-500/50 px-3 py-1 rounded-full hover:bg-indigo-400 transition-colors inline-flex items-center space-x-1">
-                        <svg xmlns="[http://www.w3.org/2000/svg](http://www.w3.org/2000/svg)" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
                         <span>Impostazioni</span>
                     </button>
                 </div>
@@ -48,11 +48,11 @@
             <main class="flex-grow p-4">
                 <div class="grid grid-cols-2 gap-4 -mt-10 mb-8">
                     <button onclick="openModal('income')" class="bg-green-500 text-white p-4 rounded-2xl shadow-lg flex items-center justify-center space-x-2 active:scale-95 transition-transform">
-                        <svg xmlns="[http://www.w3.org/2000/svg](http://www.w3.org/2000/svg)" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" /></svg>
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" /></svg>
                         <span class="font-bold">Entrata</span>
                     </button>
                     <button onclick="openModal('expense')" class="bg-red-500 text-white p-4 rounded-2xl shadow-lg flex items-center justify-center space-x-2 active:scale-95 transition-transform">
-                        <svg xmlns="[http://www.w3.org/2000/svg](http://www.w3.org/2000/svg)" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4" /></svg>
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4" /></svg>
                         <span class="font-bold">Uscita</span>
                     </button>
                 </div>
@@ -70,11 +70,11 @@
             </main>
         </div>
 
-        <!-- View Impostazioni -->
+        <!-- Vista Impostazioni -->
         <div id="settings-view" class="hidden absolute inset-0 bg-gray-50 z-40 overflow-y-auto">
             <header class="bg-white p-6 border-b sticky top-0 flex items-center justify-between">
                 <button onclick="toggleSettings(false)" class="p-2 text-indigo-600">
-                    <svg xmlns="[http://www.w3.org/2000/svg](http://www.w3.org/2000/svg)" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7 7-7" /></svg>
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7 7-7" /></svg>
                 </button>
                 <h2 class="text-lg font-bold">Impostazioni</h2>
                 <div class="w-10"></div>
@@ -90,13 +90,13 @@
                 </div>
 
                 <div class="settings-card">
-                    <h3 class="text-xs font-bold text-gray-400 uppercase mb-3">Backup</h3>
+                    <h3 class="text-xs font-bold text-gray-400 uppercase mb-3">Backup Dati</h3>
                     <div class="grid grid-cols-1 gap-3">
                         <button onclick="exportJSON()" class="w-full flex items-center justify-between p-3 bg-indigo-600 text-white rounded-xl text-sm font-bold shadow-md active:scale-95 transition-transform">
-                            <span>Esporta Backup</span>
+                            <span>Esporta Backup (.json)</span>
                         </button>
                         <label class="w-full flex items-center justify-between p-3 bg-white border-2 border-indigo-600 text-indigo-600 rounded-xl text-sm font-bold cursor-pointer active:scale-95 transition-transform">
-                            <span>Importa Backup</span>
+                            <span>Importa Backup (.json)</span>
                             <input type="file" id="import-json" class="hidden" accept=".json" onchange="importJSON(event)">
                         </label>
                     </div>
@@ -113,16 +113,16 @@
             <div id="modal-content" class="bg-white w-full max-w-md p-6 rounded-t-3xl modal-transition transform translate-y-full">
                 <div class="flex justify-between items-center mb-4">
                     <h3 id="modal-title" class="text-2xl font-bold text-gray-800">Nuovo Movimento</h3>
-                    <button onclick="closeModal()" class="text-gray-400 p-2"><svg xmlns="[http://www.w3.org/2000/svg](http://www.w3.org/2000/svg)" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg></button>
+                    <button onclick="closeModal()" class="text-gray-400 p-2"><svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg></button>
                 </div>
 
                 <div id="scan-section" class="mb-6">
                     <button id="scan-btn" onclick="document.getElementById('file-input').click()" class="w-full py-4 border-2 border-indigo-200 border-dashed rounded-2xl bg-indigo-50 text-indigo-600 font-bold flex flex-col items-center justify-center space-y-1 hover:bg-indigo-100 transition-colors">
                         <div class="flex items-center space-x-2">
-                            <svg xmlns="[http://www.w3.org/2000/svg](http://www.w3.org/2000/svg)" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812-1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" /><circle cx="12" cy="13" r="3" stroke-width="2"/></svg>
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812-1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" /><circle cx="12" cy="13" r="3" stroke-width="2"/></svg>
                             <span id="scan-text">Analizza Scontrino</span>
                         </div>
-                        <span id="scan-status" class="text-[10px] font-medium opacity-60 italic">Attendi 2-3 secondi per analisi</span>
+                        <span id="scan-status" class="text-[10px] font-medium opacity-60 italic">L'analisi richiede 2-5 secondi</span>
                         <div id="scan-loader" class="loader hidden mt-2"></div>
                     </button>
                     <input type="file" id="file-input" accept="image/*" capture="environment" class="hidden" onchange="handleReceiptScan(event)">
@@ -135,7 +135,7 @@
                     </div>
                     <div>
                         <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1 ml-1">Descrizione</label>
-                        <input type="text" id="desc-input" placeholder="Es. Cena pizzeria" class="w-full p-4 bg-gray-100 rounded-2xl focus:ring-2 focus:ring-indigo-500 outline-none">
+                        <input type="text" id="desc-input" placeholder="Es. Spesa settimanale" class="w-full p-4 bg-gray-100 rounded-2xl focus:ring-2 focus:ring-indigo-500 outline-none">
                     </div>
                     <div>
                         <label class="block text-[10px] font-bold text-gray-400 uppercase mb-2 ml-1">Categoria</label>
@@ -179,7 +179,7 @@
         function checkApiKeyStatus() {
             const statusBox = document.getElementById('api-status-box');
             if (!apiKey) {
-                statusBox.textContent = "Chiave non configurata";
+                statusBox.textContent = "Chiave mancante";
                 statusBox.className = "p-3 rounded-lg mb-3 text-sm font-medium bg-yellow-100 text-yellow-700";
             } else {
                 statusBox.textContent = "Chiave configurata";
@@ -193,7 +193,7 @@
         }
 
         function promptApiKey() {
-            const key = prompt("Inserisci la tua API Key Gemini (Piano Gratuito):", apiKey);
+            const key = prompt("Inserisci la tua API Key Gemini:", apiKey);
             if (key !== null) {
                 apiKey = key.trim();
                 localStorage.setItem('gemini_api_key', apiKey);
@@ -221,7 +221,7 @@
 
             const listEl = document.getElementById('transaction-list');
             listEl.innerHTML = filtered.length === 0 
-                ? `<div class="text-center py-10 text-gray-400">Nessun movimento</div>`
+                ? `<div class="text-center py-10 text-gray-400">Nessun movimento trovato</div>`
                 : filtered.sort((a,b) => b.id - a.id).map(t => {
                     const cat = [...categories.expense, ...categories.income].find(c => c.id === t.category);
                     return `
@@ -237,8 +237,8 @@
                             <span class="font-bold ${t.type === 'income' ? 'text-green-600' : 'text-red-600'}">
                                 ${t.type === 'income' ? '+' : '-'} €${t.amount.toFixed(2)}
                             </span>
-                            <button onclick="event.stopPropagation(); deleteTx(${t.id})" class="text-gray-300 p-1">
-                                <svg xmlns="[http://www.w3.org/2000/svg](http://www.w3.org/2000/svg)" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                            <button onclick="event.stopPropagation(); deleteTx(${t.id})" class="text-gray-300 p-1 hover:text-red-500">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
                             </button>
                         </div>
                     </div>`;
@@ -251,7 +251,7 @@
             const file = e.target.files[0];
             if (!file) return;
             if (!apiKey) {
-                alert("Configura l'API Key nelle impostazioni!");
+                alert("Per favore, inserisci un'API Key nelle impostazioni per usare la scansione.");
                 toggleSettings(true);
                 return;
             }
@@ -260,7 +260,7 @@
             const loader = document.getElementById('scan-loader');
             const scanBtn = document.getElementById('scan-btn');
             
-            status.textContent = "Lettura scontrino...";
+            status.textContent = "Analisi in corso...";
             loader.classList.remove('hidden');
             scanBtn.classList.add('opacity-50', 'pointer-events-none');
 
@@ -272,16 +272,16 @@
                     if (data.amount) document.getElementById('amount-input').value = data.amount;
                     if (data.description) document.getElementById('desc-input').value = data.description;
                     if (data.category) selectCategory(data.category);
-                    status.textContent = "Completato!";
+                    status.textContent = "Analisi completata!";
                 }
             } catch (err) { 
-                console.error("Scan Error:", err);
-                alert("Errore AI: " + err.message);
-                status.textContent = "Riprova tra poco";
+                console.error("Errore Scan:", err);
+                alert("Errore durante l'analisi: " + err.message);
+                status.textContent = "Riprova tra qualche secondo";
             } finally { 
                 loader.classList.add('hidden'); 
                 scanBtn.classList.remove('opacity-50', 'pointer-events-none');
-                setTimeout(() => status.textContent = "Attendi 2-3 secondi per analisi", 3000);
+                setTimeout(() => status.textContent = "L'analisi richiede 2-5 secondi", 3000);
             }
         }
 
@@ -300,10 +300,9 @@
         }
 
         async function callGemini(base64) {
-            // v1beta endpoint è spesso più stabile per test rapidi
             const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
             
-            const prompt = "Analyze this receipt. Respond ONLY with a JSON object: {\"amount\": number, \"description\": \"store name\", \"category\": \"one of [cibo, casa, trasporti, svago, salute, shopping, altro]\"}. No markdown, no comments.";
+            const prompt = "Analizza questo scontrino. Rispondi ESCLUSIVAMENTE con un oggetto JSON: {\"amount\": numero, \"description\": \"nome negozio\", \"category\": \"una tra [cibo, casa, trasporti, svago, salute, shopping, altro]\"}. Non aggiungere commenti o testo extra.";
 
             const response = await fetch(url, {
                 method: 'POST',
@@ -316,17 +315,17 @@
 
             if (!response.ok) {
                 const err = await response.json().catch(() => ({}));
-                throw new Error(err.error?.message || `HTTP ${response.status}`);
+                throw new Error(err.error?.message || `Errore HTTP ${response.status}`);
             }
 
             const result = await response.json();
             const text = result.candidates?.[0]?.content?.parts?.[0]?.text;
-            if (!text) throw new Error("Risposta vuota dall'IA");
+            if (!text) throw new Error("Risposta vuota dall'IA.");
 
-            // Pulizia estrema del JSON per evitare errori di parsing
+            // Pulizia JSON per gestire eventuali output formattati male
             const cleanJson = text.replace(/```json|```/g, "").trim();
             const match = cleanJson.match(/\{[\s\S]*\}/);
-            if (!match) throw new Error("Formato dati non valido");
+            if (!match) throw new Error("L'IA non ha restituito dati validi.");
             
             return JSON.parse(match[0]);
         }
@@ -344,7 +343,7 @@
                         canvas.width = w; canvas.height = h;
                         const ctx = canvas.getContext('2d');
                         ctx.drawImage(img, 0, 0, w, h);
-                        resolve(canvas.toDataURL('image/jpeg', 0.7).split(',')[1]);
+                        resolve(canvas.toDataURL('image/jpeg', 0.8).split(',')[1]);
                     };
                     img.src = e.target.result;
                 };
@@ -359,7 +358,7 @@
             
             document.getElementById('modal').classList.remove('hidden');
             document.getElementById('scan-section').classList.toggle('hidden', mode !== 'expense' || editingTxId);
-            document.getElementById('modal-title').textContent = editingTxId ? 'Modifica' : (mode === 'income' ? 'Entrata' : 'Uscita');
+            document.getElementById('modal-title').textContent = editingTxId ? 'Modifica Voce' : (mode === 'income' ? 'Nuova Entrata' : 'Nuova Uscita');
             
             const grid = document.getElementById('category-grid');
             grid.innerHTML = categories[mode].map(c => `
@@ -387,7 +386,7 @@
 
         function saveTransaction() {
             const amt = parseFloat(document.getElementById('amount-input').value);
-            if (!amt || amt <= 0) return alert("Inserisci un importo");
+            if (isNaN(amt) || amt <= 0) return alert("Inserisci un importo valido");
             const desc = document.getElementById('desc-input').value.trim();
 
             if (editingTxId) {
@@ -401,15 +400,44 @@
             updateUI(); closeModal();
         }
 
-        function editTransaction(id) { const tx = transactions.find(t => t.id === id); if (tx) openModal(tx.type, tx); }
-        function deleteTx(id) { if(confirm("Eliminare movimento?")) { transactions = transactions.filter(t => t.id !== id); localStorage.setItem(STORAGE_KEY, JSON.stringify(transactions)); updateUI(); } }
-        function changeMonth(d) { viewDate.setMonth(viewDate.getMonth() + d); updateUI(); }
-        function closeModal() { document.getElementById('modal-content').classList.add('translate-y-full'); setTimeout(() => document.getElementById('modal').classList.add('hidden'), 300); }
-        function clearHistory() { if(confirm("Cancellare tutto?")) { transactions = []; localStorage.setItem(STORAGE_KEY, JSON.stringify([])); updateUI(); toggleSettings(false); }}
+        function editTransaction(id) { 
+            const tx = transactions.find(t => t.id === id); 
+            if (tx) openModal(tx.type, tx); 
+        }
+
+        function deleteTx(id) { 
+            if(confirm("Vuoi davvero eliminare questo movimento?")) { 
+                transactions = transactions.filter(t => t.id !== id); 
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(transactions)); 
+                updateUI(); 
+            } 
+        }
+
+        function changeMonth(d) { 
+            viewDate.setMonth(viewDate.getMonth() + d); 
+            updateUI(); 
+        }
+
+        function closeModal() { 
+            document.getElementById('modal-content').classList.add('translate-y-full'); 
+            setTimeout(() => document.getElementById('modal').classList.add('hidden'), 300); 
+        }
+
+        function clearHistory() { 
+            if(confirm("Attenzione: questa azione cancellerà tutti i dati locali. Procedere?")) { 
+                transactions = []; 
+                localStorage.setItem(STORAGE_KEY, JSON.stringify([])); 
+                updateUI(); 
+                toggleSettings(false); 
+            }
+        }
 
         function exportJSON() {
             const blob = new Blob([JSON.stringify({ transactions })], { type: 'application/json' });
-            const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `backup_spese.json`; a.click();
+            const a = document.createElement('a'); 
+            a.href = URL.createObjectURL(blob); 
+            a.download = `backup_spese_${new Date().toISOString().slice(0,10)}.json`; 
+            a.click();
         }
 
         function importJSON(e) {
@@ -420,9 +448,10 @@
                     if (data.transactions) {
                         transactions = data.transactions;
                         localStorage.setItem(STORAGE_KEY, JSON.stringify(transactions));
-                        updateUI(); toggleSettings(false);
+                        updateUI(); 
+                        toggleSettings(false);
                     }
-                } catch(err) { alert("File corrotto"); }
+                } catch(err) { alert("File non valido o corrotto."); }
             };
             reader.readAsText(e.target.files[0]);
         }
@@ -430,18 +459,35 @@
         function renderChart(exps) {
             const ctx = document.getElementById('expenseChart');
             const container = document.getElementById('chart-container');
-            if (exps.length === 0) { container.classList.add('hidden'); return; }
+            if (exps.length === 0) { 
+                container.classList.add('hidden'); 
+                return; 
+            }
             container.classList.remove('hidden');
             const dataMap = {};
-            exps.forEach(e => { const cat = categories.expense.find(c => c.id === e.category); const label = cat ? cat.label : 'Altro'; dataMap[label] = (dataMap[label] || 0) + e.amount; });
+            exps.forEach(e => { 
+                const cat = categories.expense.find(c => c.id === e.category); 
+                const label = cat ? cat.label : 'Altro'; 
+                dataMap[label] = (dataMap[label] || 0) + e.amount; 
+            });
             if (chartInstance) chartInstance.destroy();
             chartInstance = new Chart(ctx, {
                 type: 'doughnut',
                 data: {
                     labels: Object.keys(dataMap),
-                    datasets: [{ data: Object.values(dataMap), backgroundColor: Object.keys(dataMap).map(l => categories.expense.find(c => c.label === l)?.color || '#9ca3af'), borderWidth: 0 }]
+                    datasets: [{ 
+                        data: Object.values(dataMap), 
+                        backgroundColor: Object.keys(dataMap).map(l => categories.expense.find(c => c.label === l)?.color || '#9ca3af'), 
+                        borderWidth: 0 
+                    }]
                 },
-                options: { plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 10 } } } }, cutout: '75%', maintainAspectRatio: false }
+                options: { 
+                    plugins: { 
+                        legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 10 } } } 
+                    }, 
+                    cutout: '75%', 
+                    maintainAspectRatio: false 
+                }
             });
         }
 
