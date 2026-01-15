@@ -3,37 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    
     <title>Gestione Spese Pro</title>
     
-    <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/6039/6039232.png">
-    <meta name="theme-color" content="#4f46e5">
-    <meta name="mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <script src="[https://cdn.tailwindcss.com](https://cdn.tailwindcss.com)"></script>
+    <script src="[https://cdn.jsdelivr.net/npm/chart.js](https://cdn.jsdelivr.net/npm/chart.js)"></script>
     
-    <link rel="manifest" href="data:application/json;base64,ewogICJkZWZhdWx0X2xvY2FsZSI6ICJpdCIsCiAgIm5hbWUiOiAiR2VzdGlvbmUgU3Blc2UgUHJvIiwKICAic2hvcnRfbmFtZSI6ICJTcGVzZVBybyIsCiAgInN0YXJ0X3VybCI6ICIuIiwKICAiaWNvbnMiOiBbCiAgICB7CiAgICAgICJzcmMiOiAiaHR0cHM6Ly9jZG4taWNvbnMtcG5nLmZsYXRpY29uLmNvbS81MTIvNjAzOS82MDM5MjMyLnBuZyIsCiAgICAgICJ0eXBlIjogImltYWdlL3BuZyIsCiAgICAgICJzaXplcyI6ICI1MTJ4NTEyIiwKICAgICAgInB1cnBvc2UiOiAiYW55IG1hc2thYmxlIgogICAgfQogIF0sCiAgImRpc3BsYXkiOiAic3RhbmRhbG9uZSIsCiAgImJhY2tncm91bmRfY29sb3IiOiAiIzRmNDZlNSIsCiAgInRoZW1lX2NvbG9yIjogIiM0ZjQ2ZTUiCn0=">
-
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        body {
-            background-color: #f3f4f6;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            touch-action: manipulation;
-        }
-        .loader {
-            border: 2px solid #f3f3f3;
-            border-top: 2px solid #4f46e5;
-            border-radius: 50%;
-            width: 16px;
-            height: 16px;
-            animation: spin 1s linear infinite;
-            display: inline-block;
-        }
+        body { background-color: #f3f4f6; font-family: system-ui, -apple-system, sans-serif; touch-action: manipulation; }
+        .loader { border: 2px solid #f3f3f3; border-top: 2px solid #4f46e5; border-radius: 50%; width: 16px; height: 16px; animation: spin 1s linear infinite; display: inline-block; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         .modal-transition { transition: transform 0.3s ease-out; }
-        input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
         .transaction-card:active { transform: scale(0.98); background-color: #f9fafb; }
         .settings-card { background: white; border-radius: 1rem; padding: 1rem; margin-bottom: 1rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
     </style>
@@ -46,12 +25,12 @@
         <div id="main-view">
             <header class="bg-indigo-600 text-white p-6 rounded-b-[2.5rem] shadow-xl pt-10">
                 <div class="flex justify-between items-center mb-4">
-                    <button onclick="changeMonth(-1)" class="p-2 hover:bg-indigo-500 rounded-full transition-colors active:bg-indigo-400">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" /></svg>
+                    <button onclick="changeMonth(-1)" class="p-2 hover:bg-indigo-500 rounded-full transition-colors">
+                        <svg xmlns="[http://www.w3.org/2000/svg](http://www.w3.org/2000/svg)" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" /></svg>
                     </button>
                     <h2 id="current-month-display" class="text-lg font-semibold uppercase tracking-wider">Mese</h2>
-                    <button onclick="changeMonth(1)" class="p-2 hover:bg-indigo-500 rounded-full transition-colors active:bg-indigo-400">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>
+                    <button onclick="changeMonth(1)" class="p-2 hover:bg-indigo-500 rounded-full transition-colors">
+                        <svg xmlns="[http://www.w3.org/2000/svg](http://www.w3.org/2000/svg)" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>
                     </button>
                 </div>
                 <div class="text-center">
@@ -60,8 +39,8 @@
                 </div>
                 <div class="text-center mt-4">
                     <button onclick="toggleSettings(true)" class="text-[10px] bg-indigo-500/50 px-3 py-1 rounded-full hover:bg-indigo-400 transition-colors inline-flex items-center space-x-1">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
-                        <span>Impostazioni & Backup</span>
+                        <svg xmlns="[http://www.w3.org/2000/svg](http://www.w3.org/2000/svg)" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+                        <span>Impostazioni</span>
                     </button>
                 </div>
             </header>
@@ -69,11 +48,11 @@
             <main class="flex-grow p-4">
                 <div class="grid grid-cols-2 gap-4 -mt-10 mb-8">
                     <button onclick="openModal('income')" class="bg-green-500 text-white p-4 rounded-2xl shadow-lg flex items-center justify-center space-x-2 active:scale-95 transition-transform">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" /></svg>
+                        <svg xmlns="[http://www.w3.org/2000/svg](http://www.w3.org/2000/svg)" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" /></svg>
                         <span class="font-bold">Entrata</span>
                     </button>
                     <button onclick="openModal('expense')" class="bg-red-500 text-white p-4 rounded-2xl shadow-lg flex items-center justify-center space-x-2 active:scale-95 transition-transform">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4" /></svg>
+                        <svg xmlns="[http://www.w3.org/2000/svg](http://www.w3.org/2000/svg)" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4" /></svg>
                         <span class="font-bold">Uscita</span>
                     </button>
                 </div>
@@ -82,11 +61,9 @@
                     <canvas id="expenseChart" width="200" height="200"></canvas>
                 </div>
 
-                <div class="flex justify-between items-center mb-4">
-                    <div class="flex flex-col">
-                        <h2 class="text-xl font-bold text-gray-800">Movimenti</h2>
-                        <span class="text-[10px] text-gray-400 font-bold uppercase">Tocca per modificare</span>
-                    </div>
+                <div class="flex flex-col mb-4">
+                    <h2 class="text-xl font-bold text-gray-800">Movimenti</h2>
+                    <span class="text-[10px] text-gray-400 font-bold uppercase">Tocca per modificare o eliminare</span>
                 </div>
                 
                 <div id="transaction-list" class="space-y-3 pb-24"></div>
@@ -97,43 +74,37 @@
         <div id="settings-view" class="hidden absolute inset-0 bg-gray-50 z-40 overflow-y-auto">
             <header class="bg-white p-6 border-b sticky top-0 flex items-center justify-between">
                 <button onclick="toggleSettings(false)" class="p-2 text-indigo-600">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7 7-7" /></svg>
+                    <svg xmlns="[http://www.w3.org/2000/svg](http://www.w3.org/2000/svg)" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7 7-7" /></svg>
                 </button>
-                <h2 class="text-lg font-bold">Impostazioni & Backup</h2>
+                <h2 class="text-lg font-bold">Impostazioni</h2>
                 <div class="w-10"></div>
             </header>
             
             <div class="p-6 space-y-6">
                 <div class="settings-card">
-                    <h3 class="text-xs font-bold text-gray-400 uppercase mb-3">Intelligenza Artificiale (Free Tier)</h3>
-                    <div class="space-y-3">
-                        <p class="text-[11px] text-gray-500">Usa una chiave Gemini Gratuita. Se ricevi errori "429", attendi qualche secondo tra le scansioni.</p>
-                        <button onclick="promptApiKey()" class="w-full py-2 bg-indigo-100 text-indigo-700 rounded-lg text-sm font-bold">Modifica API Key</button>
+                    <h3 class="text-xs font-bold text-gray-400 uppercase mb-3">Stato Intelligenza Artificiale</h3>
+                    <div id="api-status-box" class="p-3 rounded-lg mb-3 text-sm font-medium">
+                        Verifica API Key...
                     </div>
+                    <button onclick="promptApiKey()" class="w-full py-2 bg-indigo-100 text-indigo-700 rounded-lg text-sm font-bold">Configura API Key</button>
                 </div>
 
                 <div class="settings-card">
-                    <h3 class="text-xs font-bold text-gray-400 uppercase mb-3">Backup e Ripristino</h3>
+                    <h3 class="text-xs font-bold text-gray-400 uppercase mb-3">Backup</h3>
                     <div class="grid grid-cols-1 gap-3">
                         <button onclick="exportJSON()" class="w-full flex items-center justify-between p-3 bg-indigo-600 text-white rounded-xl text-sm font-bold shadow-md active:scale-95 transition-transform">
-                            <span>Esporta Backup (JSON)</span>
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
+                            <span>Esporta Backup</span>
                         </button>
-                        
                         <label class="w-full flex items-center justify-between p-3 bg-white border-2 border-indigo-600 text-indigo-600 rounded-xl text-sm font-bold cursor-pointer active:scale-95 transition-transform">
-                            <span>Importa Backup (JSON)</span>
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" /></svg>
+                            <span>Importa Backup</span>
                             <input type="file" id="import-json" class="hidden" accept=".json" onchange="importJSON(event)">
                         </label>
                     </div>
                 </div>
 
-                <div class="settings-card">
-                    <h3 class="text-xs font-bold text-gray-400 uppercase mb-3">Area Pericolo</h3>
-                    <button onclick="clearHistory()" class="w-full p-3 bg-red-100 text-red-600 rounded-xl text-sm font-bold border border-red-200 active:scale-95 transition-transform">
-                        Svuota Cronologia
-                    </button>
-                </div>
+                <button onclick="clearHistory()" class="w-full p-3 bg-red-100 text-red-600 rounded-xl text-sm font-bold border border-red-200">
+                    Svuota Cronologia
+                </button>
             </div>
         </div>
 
@@ -142,16 +113,16 @@
             <div id="modal-content" class="bg-white w-full max-w-md p-6 rounded-t-3xl modal-transition transform translate-y-full">
                 <div class="flex justify-between items-center mb-4">
                     <h3 id="modal-title" class="text-2xl font-bold text-gray-800">Nuovo Movimento</h3>
-                    <button onclick="closeModal()" class="text-gray-400 p-2"><svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg></button>
+                    <button onclick="closeModal()" class="text-gray-400 p-2"><svg xmlns="[http://www.w3.org/2000/svg](http://www.w3.org/2000/svg)" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg></button>
                 </div>
 
                 <div id="scan-section" class="mb-6">
                     <button id="scan-btn" onclick="document.getElementById('file-input').click()" class="w-full py-4 border-2 border-indigo-200 border-dashed rounded-2xl bg-indigo-50 text-indigo-600 font-bold flex flex-col items-center justify-center space-y-1 hover:bg-indigo-100 transition-colors">
                         <div class="flex items-center space-x-2">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812-1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" /><circle cx="12" cy="13" r="3" stroke-width="2"/></svg>
-                            <span id="scan-text">Scannerizza Scontrino</span>
+                            <svg xmlns="[http://www.w3.org/2000/svg](http://www.w3.org/2000/svg)" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812-1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" /><circle cx="12" cy="13" r="3" stroke-width="2"/></svg>
+                            <span id="scan-text">Analizza Scontrino</span>
                         </div>
-                        <span id="scan-status" class="text-[10px] font-medium opacity-60">IA Scanner (Free Mode)</span>
+                        <span id="scan-status" class="text-[10px] font-medium opacity-60 italic">Attendi 2-3 secondi per analisi</span>
                         <div id="scan-loader" class="loader hidden mt-2"></div>
                     </button>
                     <input type="file" id="file-input" accept="image/*" capture="environment" class="hidden" onchange="handleReceiptScan(event)">
@@ -160,17 +131,17 @@
                 <div class="space-y-4">
                     <div>
                         <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1 ml-1">Importo (€)</label>
-                        <input type="number" id="amount-input" step="0.01" inputmode="decimal" placeholder="0.00" class="w-full p-4 bg-gray-100 rounded-2xl text-3xl font-bold text-center focus:ring-2 focus:ring-indigo-500 outline-none transition-shadow">
+                        <input type="number" id="amount-input" step="0.01" inputmode="decimal" placeholder="0.00" class="w-full p-4 bg-gray-100 rounded-2xl text-3xl font-bold text-center focus:ring-2 focus:ring-indigo-500 outline-none">
                     </div>
                     <div>
                         <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1 ml-1">Descrizione</label>
-                        <input type="text" id="desc-input" placeholder="Esempio: Spesa Conad" class="w-full p-4 bg-gray-100 rounded-2xl focus:ring-2 focus:ring-indigo-500 outline-none transition-shadow">
+                        <input type="text" id="desc-input" placeholder="Es. Cena pizzeria" class="w-full p-4 bg-gray-100 rounded-2xl focus:ring-2 focus:ring-indigo-500 outline-none">
                     </div>
                     <div>
                         <label class="block text-[10px] font-bold text-gray-400 uppercase mb-2 ml-1">Categoria</label>
                         <div id="category-grid" class="grid grid-cols-4 gap-2"></div>
                     </div>
-                    <button onclick="saveTransaction()" id="save-btn" class="w-full py-4 rounded-2xl text-white font-bold text-xl shadow-lg active:scale-95 transition-transform mt-4">Salva</button>
+                    <button onclick="saveTransaction()" id="save-btn" class="w-full py-4 rounded-2xl text-white font-bold text-xl shadow-lg active:scale-95 transition-transform mt-4 bg-indigo-600">Salva</button>
                 </div>
                 <div class="h-6"></div>
             </div>
@@ -205,23 +176,28 @@
         let editingTxId = null;
         let chartInstance = null;
 
-        function toggleSettings(show) { document.getElementById('settings-view').classList.toggle('hidden', !show); }
-
-        function promptApiKey() {
-            const key = prompt("Inserisci la tua API Key Gemini:", apiKey);
-            if (key !== null) {
-                apiKey = key.trim();
-                localStorage.setItem('gemini_api_key', apiKey);
-                alert("Chiave aggiornata!");
+        function checkApiKeyStatus() {
+            const statusBox = document.getElementById('api-status-box');
+            if (!apiKey) {
+                statusBox.textContent = "Chiave non configurata";
+                statusBox.className = "p-3 rounded-lg mb-3 text-sm font-medium bg-yellow-100 text-yellow-700";
+            } else {
+                statusBox.textContent = "Chiave configurata";
+                statusBox.className = "p-3 rounded-lg mb-3 text-sm font-medium bg-green-100 text-green-700";
             }
         }
 
-        function clearHistory() {
-            if (confirm("Vuoi davvero cancellare TUTTI i movimenti?")) {
-                transactions = [];
-                localStorage.setItem(STORAGE_KEY, JSON.stringify(transactions));
-                updateUI();
-                toggleSettings(false);
+        function toggleSettings(show) { 
+            document.getElementById('settings-view').classList.toggle('hidden', !show); 
+            if (show) checkApiKeyStatus();
+        }
+
+        function promptApiKey() {
+            const key = prompt("Inserisci la tua API Key Gemini (Piano Gratuito):", apiKey);
+            if (key !== null) {
+                apiKey = key.trim();
+                localStorage.setItem('gemini_api_key', apiKey);
+                checkApiKeyStatus();
             }
         }
 
@@ -244,31 +220,30 @@
             balEl.className = bal >= 0 ? 'text-4xl font-bold' : 'text-4xl font-bold text-red-300';
 
             const listEl = document.getElementById('transaction-list');
-            if (filtered.length === 0) {
-                listEl.innerHTML = `<div class="text-center py-10 text-gray-400">Nessun movimento</div>`;
-            } else {
-                listEl.innerHTML = filtered.sort((a,b) => b.id - a.id).map(t => {
+            listEl.innerHTML = filtered.length === 0 
+                ? `<div class="text-center py-10 text-gray-400">Nessun movimento</div>`
+                : filtered.sort((a,b) => b.id - a.id).map(t => {
                     const cat = [...categories.expense, ...categories.income].find(c => c.id === t.category);
                     return `
-                    <div onclick="editTransaction(${t.id})" class="transaction-card flex items-center justify-between p-4 bg-gray-50 rounded-2xl border-l-4 cursor-pointer transition-all active:scale-95" style="border-color: ${cat?.color}">
-                        <div class="flex items-center space-x-3">
-                            <span class="text-2xl shrink-0">${cat?.icon}</span>
-                            <div class="overflow-hidden">
+                    <div onclick="editTransaction(${t.id})" class="transaction-card flex items-center justify-between p-4 bg-gray-50 rounded-2xl border-l-4 cursor-pointer mb-3" style="border-color: ${cat?.color}">
+                        <div class="flex items-center space-x-3 overflow-hidden">
+                            <span class="text-2xl">${cat?.icon}</span>
+                            <div class="truncate">
                                 <div class="font-bold text-gray-800 truncate">${t.description || cat?.label}</div>
-                                <div class="text-[10px] text-gray-400 font-bold uppercase">${new Date(t.date).toLocaleDateString()}</div>
+                                <div class="text-[9px] text-gray-400 font-bold uppercase">${new Date(t.date).toLocaleDateString()}</div>
                             </div>
                         </div>
-                        <div class="flex items-center space-x-3 shrink-0">
+                        <div class="flex items-center space-x-2">
                             <span class="font-bold ${t.type === 'income' ? 'text-green-600' : 'text-red-600'}">
                                 ${t.type === 'income' ? '+' : '-'} €${t.amount.toFixed(2)}
                             </span>
                             <button onclick="event.stopPropagation(); deleteTx(${t.id})" class="text-gray-300 p-1">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                                <svg xmlns="[http://www.w3.org/2000/svg](http://www.w3.org/2000/svg)" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
                             </button>
                         </div>
                     </div>`;
                 }).join('');
-            }
+            
             renderChart(filtered.filter(t => t.type === 'expense'));
         }
 
@@ -276,52 +251,47 @@
             const file = e.target.files[0];
             if (!file) return;
             if (!apiKey) {
-                alert("Devi prima inserire l'API Key nelle impostazioni!");
+                alert("Configura l'API Key nelle impostazioni!");
                 toggleSettings(true);
                 return;
             }
             
             const status = document.getElementById('scan-status');
             const loader = document.getElementById('scan-loader');
-            status.textContent = "Analisi (Piano Gratuito)...";
+            const scanBtn = document.getElementById('scan-btn');
+            
+            status.textContent = "Lettura scontrino...";
             loader.classList.remove('hidden');
+            scanBtn.classList.add('opacity-50', 'pointer-events-none');
 
             try {
-                // Ridimensioniamo l'immagine per risparmiare token e tempo nel piano free
-                const base64 = await resizeAndEnhanceImage(file, 800);
+                const base64 = await resizeImage(file, 800);
                 const data = await callGeminiWithRetry(base64);
                 
-                if (data && data.amount) {
-                    document.getElementById('amount-input').value = data.amount;
-                    document.getElementById('desc-input').value = data.description || "";
+                if (data) {
+                    if (data.amount) document.getElementById('amount-input').value = data.amount;
+                    if (data.description) document.getElementById('desc-input').value = data.description;
                     if (data.category) selectCategory(data.category);
-                    status.textContent = "Scontrino letto!";
-                } else {
-                    throw new Error("Dati non trovati nello scontrino.");
+                    status.textContent = "Completato!";
                 }
             } catch (err) { 
-                console.error("Errore API:", err);
-                let errorMsg = "Errore scanner.";
-                if (err.message.includes("429")) errorMsg = "Limite raggiunto. Attendi 1 minuto.";
-                else if (err.message.includes("403")) errorMsg = "Chiave non valida o non abilitata.";
-                
-                alert("IA Error: " + err.message);
-                status.textContent = errorMsg;
+                console.error("Scan Error:", err);
+                alert("Errore AI: " + err.message);
+                status.textContent = "Riprova tra poco";
             } finally { 
                 loader.classList.add('hidden'); 
-                setTimeout(() => status.textContent = "IA Scanner (Free Mode)", 4000); 
+                scanBtn.classList.remove('opacity-50', 'pointer-events-none');
+                setTimeout(() => status.textContent = "Attendi 2-3 secondi per analisi", 3000);
             }
         }
 
-        async function callGeminiWithRetry(base64, retries = 3) {
-            const delays = [2000, 4000, 8000]; // Delay più lunghi per il piano gratuito
-            for (let i = 0; i < retries; i++) {
+        async function callGeminiWithRetry(base64, retries = 2) {
+            for (let i = 0; i <= retries; i++) {
                 try {
                     return await callGemini(base64);
                 } catch (err) {
-                    // Se è un errore di quota (429), aspettiamo e riproviamo
-                    if (err.message.includes("429") && i < retries - 1) {
-                        await new Promise(res => setTimeout(res, delays[i]));
+                    if (err.message.includes("429") && i < retries) {
+                        await new Promise(r => setTimeout(r, 2000 * (i + 1)));
                         continue;
                     }
                     throw err;
@@ -330,55 +300,38 @@
         }
 
         async function callGemini(base64) {
-            // Utilizzo del modello v1beta che spesso è più permissivo per le chiavi free appena create
+            // v1beta endpoint è spesso più stabile per test rapidi
             const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
             
-            const prompt = "Extract from receipt: total amount (number), shop name (description), and one category from [cibo, casa, trasporti, svago, salute, shopping, altro]. Output ONLY JSON format: {\"amount\": 0.0, \"description\": \"\", \"category\": \"\"}";
-
-            const payload = {
-                contents: [{
-                    parts: [
-                        { text: prompt },
-                        { inlineData: { mimeType: "image/jpeg", data: base64 } }
-                    ]
-                }],
-                generationConfig: {
-                    temperature: 0.1,
-                    topP: 1,
-                    topK: 1,
-                    maxOutputTokens: 100,
-                    responseMimeType: "application/json"
-                }
-            };
+            const prompt = "Analyze this receipt. Respond ONLY with a JSON object: {\"amount\": number, \"description\": \"store name\", \"category\": \"one of [cibo, casa, trasporti, svago, salute, shopping, altro]\"}. No markdown, no comments.";
 
             const response = await fetch(url, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
+                body: JSON.stringify({
+                    contents: [{ parts: [{ text: prompt }, { inlineData: { mimeType: "image/jpeg", data: base64 } }] }],
+                    generationConfig: { temperature: 0.1, responseMimeType: "application/json" }
+                })
             });
 
             if (!response.ok) {
-                const errData = await response.json().catch(() => ({}));
-                const msg = errData.error?.message || response.statusText;
-                throw new Error(`${response.status}: ${msg}`);
+                const err = await response.json().catch(() => ({}));
+                throw new Error(err.error?.message || `HTTP ${response.status}`);
             }
 
             const result = await response.json();
             const text = result.candidates?.[0]?.content?.parts?.[0]?.text;
-            
-            if (!text) throw new Error("L'IA non ha restituito testo.");
+            if (!text) throw new Error("Risposta vuota dall'IA");
 
-            try {
-                // Pulizia testo nel caso non sia JSON puro
-                const jsonStr = text.substring(text.indexOf('{'), text.lastIndexOf('}') + 1);
-                return JSON.parse(jsonStr);
-            } catch (e) {
-                console.error("JSON Parse Error:", text);
-                throw new Error("Errore lettura dati scontrino.");
-            }
+            // Pulizia estrema del JSON per evitare errori di parsing
+            const cleanJson = text.replace(/```json|```/g, "").trim();
+            const match = cleanJson.match(/\{[\s\S]*\}/);
+            if (!match) throw new Error("Formato dati non valido");
+            
+            return JSON.parse(match[0]);
         }
 
-        function resizeAndEnhanceImage(file, maxSide) {
+        function resizeImage(file, maxSide) {
             return new Promise((resolve) => {
                 const reader = new FileReader();
                 reader.onload = (e) => {
@@ -390,9 +343,6 @@
                         else if (h > maxSide) { w *= maxSide / h; h = maxSide; }
                         canvas.width = w; canvas.height = h;
                         const ctx = canvas.getContext('2d');
-                        // Leggera ottimizzazione immagine
-                        ctx.imageSmoothingEnabled = true;
-                        ctx.imageSmoothingQuality = 'high';
                         ctx.drawImage(img, 0, 0, w, h);
                         resolve(canvas.toDataURL('image/jpeg', 0.7).split(',')[1]);
                     };
@@ -408,18 +358,20 @@
             selectedCategory = tx ? tx.category : categories[mode][0].id;
             
             document.getElementById('modal').classList.remove('hidden');
-            document.getElementById('scan-section').style.display = (mode === 'expense' && !editingTxId) ? 'block' : 'none';
-            document.getElementById('modal-title').textContent = editingTxId ? 'Modifica' : (mode === 'income' ? 'Nuova Entrata' : 'Nuova Uscita');
+            document.getElementById('scan-section').classList.toggle('hidden', mode !== 'expense' || editingTxId);
+            document.getElementById('modal-title').textContent = editingTxId ? 'Modifica' : (mode === 'income' ? 'Entrata' : 'Uscita');
             
             const grid = document.getElementById('category-grid');
             grid.innerHTML = categories[mode].map(c => `
                 <button onclick="selectCategory('${c.id}')" id="cat-${c.id}" class="cat-btn p-2 rounded-xl border-2 flex flex-col items-center transition-all ${c.id === selectedCategory ? 'border-indigo-500 bg-indigo-50' : 'border-transparent bg-gray-50'}">
                     <span class="text-xl">${c.icon}</span>
-                    <span class="text-[9px] font-bold text-gray-500 mt-1">${c.label}</span>
+                    <span class="text-[8px] font-bold text-gray-500 mt-1 uppercase">${c.label}</span>
                 </button>`).join('');
 
             document.getElementById('amount-input').value = tx ? tx.amount : '';
             document.getElementById('desc-input').value = tx ? tx.description : '';
+            document.getElementById('save-btn').style.backgroundColor = (mode === 'income' ? '#10b981' : '#4f46e5');
+
             setTimeout(() => document.getElementById('modal-content').classList.remove('translate-y-full'), 10);
         }
 
@@ -435,12 +387,12 @@
 
         function saveTransaction() {
             const amt = parseFloat(document.getElementById('amount-input').value);
-            if (!amt || amt <= 0) return alert("Inserisci un importo valido");
+            if (!amt || amt <= 0) return alert("Inserisci un importo");
             const desc = document.getElementById('desc-input').value.trim();
 
             if (editingTxId) {
                 const idx = transactions.findIndex(t => t.id === editingTxId);
-                if (idx !== -1) Object.assign(transactions[idx], { amount: amt, description: desc, category: selectedCategory });
+                if (idx !== -1) transactions[idx] = { ...transactions[idx], amount: amt, description: desc, category: selectedCategory };
             } else {
                 transactions.push({ id: Date.now(), amount: amt, description: desc, category: selectedCategory, type: currentMode, date: new Date().toISOString() });
             }
@@ -450,15 +402,14 @@
         }
 
         function editTransaction(id) { const tx = transactions.find(t => t.id === id); if (tx) openModal(tx.type, tx); }
-        function deleteTx(id) { if(confirm("Vuoi eliminare?")) { transactions = transactions.filter(t => t.id !== id); localStorage.setItem(STORAGE_KEY, JSON.stringify(transactions)); updateUI(); } }
+        function deleteTx(id) { if(confirm("Eliminare movimento?")) { transactions = transactions.filter(t => t.id !== id); localStorage.setItem(STORAGE_KEY, JSON.stringify(transactions)); updateUI(); } }
         function changeMonth(d) { viewDate.setMonth(viewDate.getMonth() + d); updateUI(); }
         function closeModal() { document.getElementById('modal-content').classList.add('translate-y-full'); setTimeout(() => document.getElementById('modal').classList.add('hidden'), 300); }
-        
+        function clearHistory() { if(confirm("Cancellare tutto?")) { transactions = []; localStorage.setItem(STORAGE_KEY, JSON.stringify([])); updateUI(); toggleSettings(false); }}
+
         function exportJSON() {
-            const backup = { app: "Spese Pro", date: new Date(), transactions };
-            const blob = new Blob([JSON.stringify(backup)], { type: 'application/json' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a'); a.href = url; a.download = `backup_spese_${Date.now()}.json`; a.click();
+            const blob = new Blob([JSON.stringify({ transactions })], { type: 'application/json' });
+            const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `backup_spese.json`; a.click();
         }
 
         function importJSON(e) {
@@ -470,9 +421,8 @@
                         transactions = data.transactions;
                         localStorage.setItem(STORAGE_KEY, JSON.stringify(transactions));
                         updateUI(); toggleSettings(false);
-                        alert("Dati importati con successo!");
                     }
-                } catch(err) { alert("File non valido"); }
+                } catch(err) { alert("File corrotto"); }
             };
             reader.readAsText(e.target.files[0]);
         }
@@ -483,25 +433,15 @@
             if (exps.length === 0) { container.classList.add('hidden'); return; }
             container.classList.remove('hidden');
             const dataMap = {};
-            exps.forEach(e => { const l = categories.expense.find(c => c.id === e.category)?.label || 'Altro'; dataMap[l] = (dataMap[l] || 0) + e.amount; });
+            exps.forEach(e => { const cat = categories.expense.find(c => c.id === e.category); const label = cat ? cat.label : 'Altro'; dataMap[label] = (dataMap[label] || 0) + e.amount; });
             if (chartInstance) chartInstance.destroy();
             chartInstance = new Chart(ctx, {
                 type: 'doughnut',
                 data: {
                     labels: Object.keys(dataMap),
-                    datasets: [{
-                        data: Object.values(dataMap),
-                        backgroundColor: Object.keys(dataMap).map(l => categories.expense.find(c => c.label === l)?.color),
-                        borderWidth: 0
-                    }]
+                    datasets: [{ data: Object.values(dataMap), backgroundColor: Object.keys(dataMap).map(l => categories.expense.find(c => c.label === l)?.color || '#9ca3af'), borderWidth: 0 }]
                 },
-                options: { 
-                    plugins: { 
-                        legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 10 } } } 
-                    }, 
-                    cutout: '70%', 
-                    maintainAspectRatio: false 
-                }
+                options: { plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 10 } } } }, cutout: '75%', maintainAspectRatio: false }
             });
         }
 
