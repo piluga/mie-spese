@@ -37,6 +37,7 @@
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         .modal-transition { transition: transform 0.3s ease-out; }
         input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+        .transaction-card:active { transform: scale(0.98); background-color: #f9fafb; }
     </style>
 </head>
 <body class="antialiased text-gray-900">
@@ -84,7 +85,10 @@
             </div>
 
             <div class="flex justify-between items-center mb-4">
-                <h2 class="text-xl font-bold text-gray-800">Movimenti</h2>
+                <div class="flex flex-col">
+                    <h2 class="text-xl font-bold text-gray-800">Movimenti</h2>
+                    <span class="text-[10px] text-gray-400 font-bold uppercase">Tocca per modificare</span>
+                </div>
                 <div class="flex space-x-2">
                     <button onclick="exportCSV()" class="text-xs bg-gray-100 px-2 py-1 rounded text-gray-600 font-bold uppercase">CSV</button>
                     <button onclick="clearHistory()" class="text-xs text-red-400 font-bold uppercase">Svuota</button>
@@ -163,6 +167,7 @@
         let viewDate = new Date();
         let currentMode = 'expense';
         let selectedCategory = 'altro';
+        let editingTxId = null; // ID della transazione in fase di modifica
         let chartInstance = null;
 
         function promptApiKey() {
@@ -199,19 +204,21 @@
                 listEl.innerHTML = filtered.sort((a,b) => b.id - a.id).map(t => {
                     const cat = [...categories.expense, ...categories.income].find(c => c.id === t.category);
                     return `
-                    <div class="flex items-center justify-between p-4 bg-gray-50 rounded-2xl border-l-4" style="border-color: ${cat?.color}">
-                        <div class="flex items-center space-x-3">
-                            <span class="text-2xl">${cat?.icon}</span>
+                    <div onclick="editTransaction(${t.id})" class="transaction-card flex items-center justify-between p-4 bg-gray-50 rounded-2xl border-l-4 cursor-pointer transition-all active:scale-95" style="border-color: ${cat?.color}">
+                        <div class="flex items-center space-x-3 overflow-hidden">
+                            <span class="text-2xl shrink-0">${cat?.icon}</span>
                             <div class="overflow-hidden">
                                 <div class="font-bold text-gray-800 truncate">${t.description || cat?.label}</div>
                                 <div class="text-[10px] text-gray-400 font-bold uppercase">${new Date(t.date).toLocaleDateString()}</div>
                             </div>
                         </div>
-                        <div class="flex items-center space-x-3">
+                        <div class="flex items-center space-x-3 shrink-0">
                             <span class="font-bold whitespace-nowrap ${t.type === 'income' ? 'text-green-600' : 'text-red-600'}">
                                 ${t.type === 'income' ? '+' : '-'} €${t.amount.toFixed(2)}
                             </span>
-                            <button onclick="deleteTx(${t.id})" class="text-gray-300 p-1 active:text-red-500"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg></button>
+                            <button onclick="event.stopPropagation(); deleteTx(${t.id})" class="text-gray-300 p-1 active:text-red-500 transition-colors">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                            </button>
                         </div>
                     </div>`;
                 }).join('');
@@ -345,12 +352,18 @@
             });
         }
 
-        function openModal(mode) {
+        function openModal(mode, tx = null) {
             currentMode = mode;
-            selectedCategory = categories[mode][0].id;
+            editingTxId = tx ? tx.id : null;
+            selectedCategory = tx ? tx.category : categories[mode][0].id;
+            
             document.getElementById('modal').classList.remove('hidden');
-            document.getElementById('scan-section').style.display = mode === 'expense' ? 'block' : 'none';
-            document.getElementById('modal-title').textContent = mode === 'income' ? 'Nuova Entrata' : 'Nuova Uscita';
+            
+            // Nascondi scan se stiamo modificando o se è un'entrata
+            document.getElementById('scan-section').style.display = (mode === 'expense' && !editingTxId) ? 'block' : 'none';
+            
+            document.getElementById('modal-title').textContent = editingTxId ? 'Modifica Movimento' : (mode === 'income' ? 'Nuova Entrata' : 'Nuova Uscita');
+            document.getElementById('save-btn').textContent = editingTxId ? 'Aggiorna' : 'Salva';
             document.getElementById('save-btn').className = `w-full py-4 rounded-2xl text-white font-bold text-xl mt-4 ${mode === 'income' ? 'bg-green-500' : 'bg-red-500'}`;
             
             const grid = document.getElementById('category-grid');
@@ -360,9 +373,17 @@
                     <span class="text-[9px] font-bold text-gray-500 mt-1">${c.label}</span>
                 </button>`).join('');
 
+            document.getElementById('amount-input').value = tx ? tx.amount : '';
+            document.getElementById('desc-input').value = tx ? tx.description : '';
+
             setTimeout(() => document.getElementById('modal-content').classList.remove('translate-y-full'), 10);
-            document.getElementById('amount-input').value = '';
-            document.getElementById('desc-input').value = '';
+        }
+
+        function editTransaction(id) {
+            const tx = transactions.find(t => t.id === id);
+            if (tx) {
+                openModal(tx.type, tx);
+            }
         }
 
         function selectCategory(id) {
@@ -382,35 +403,70 @@
             const amt = parseFloat(document.getElementById('amount-input').value);
             if (!amt || amt <= 0) return alert("Inserisci importo");
             
-            transactions.push({ 
-                id: Date.now(), 
-                amount: amt, 
-                description: document.getElementById('desc-input').value.trim(), 
-                category: selectedCategory, 
-                type: currentMode, 
-                date: new Date().toISOString() 
-            });
+            const desc = document.getElementById('desc-input').value.trim();
+
+            if (editingTxId) {
+                // Modifica esistente
+                const idx = transactions.findIndex(t => t.id === editingTxId);
+                if (idx !== -1) {
+                    transactions[idx].amount = amt;
+                    transactions[idx].description = desc;
+                    transactions[idx].category = selectedCategory;
+                    // Mantengo la data originale o la aggiorno? Solitamente si mantiene
+                }
+            } else {
+                // Nuovo inserimento
+                transactions.push({ 
+                    id: Date.now(), 
+                    amount: amt, 
+                    description: desc, 
+                    category: selectedCategory, 
+                    type: currentMode, 
+                    date: new Date().toISOString() 
+                });
+            }
             
             localStorage.setItem('spese_v3_data', JSON.stringify(transactions));
             updateUI(); 
             closeModal();
         }
 
-        function deleteTx(id) { if(confirm("Eliminare?")) { transactions = transactions.filter(t => t.id !== id); localStorage.setItem('spese_v3_data', JSON.stringify(transactions)); updateUI(); } }
+        function deleteTx(id) { 
+            if(confirm("Eliminare definitivamente questo movimento?")) { 
+                transactions = transactions.filter(t => t.id !== id); 
+                localStorage.setItem('spese_v3_data', JSON.stringify(transactions)); 
+                updateUI(); 
+            } 
+        }
+
         function changeMonth(d) { viewDate.setMonth(viewDate.getMonth() + d); updateUI(); }
-        function closeModal() { document.getElementById('modal-content').classList.add('translate-y-full'); setTimeout(() => document.getElementById('modal').classList.add('hidden'), 300); }
-        function clearHistory() { if(confirm("Cancellare tutto?")) { transactions = []; localStorage.setItem('spese_v3_data', JSON.stringify(transactions)); updateUI(); } }
+        
+        function closeModal() { 
+            document.getElementById('modal-content').classList.add('translate-y-full'); 
+            setTimeout(() => {
+                document.getElementById('modal').classList.add('hidden');
+                editingTxId = null;
+            }, 300); 
+        }
+
+        function clearHistory() { 
+            if(confirm("Attenzione: vuoi davvero cancellare TUTTI i movimenti della cronologia?")) { 
+                transactions = []; 
+                localStorage.setItem('spese_v3_data', JSON.stringify(transactions)); 
+                updateUI(); 
+            } 
+        }
 
         function exportCSV() {
-            if (transactions.length === 0) return alert("Nessun dato");
+            if (transactions.length === 0) return alert("Nessun dato da esportare");
             let csv = "Data,Tipo,Descrizione,Categoria,Importo\n";
             transactions.forEach(t => {
                 const c = [...categories.expense, ...categories.income].find(x => x.id === t.category)?.label || 'Altro';
-                csv += `${new Date(t.date).toLocaleDateString()},${t.type === 'income' ? 'Entrata' : 'Uscita'},"${t.description.replace(/"/g, '""')}",${c},${t.amount.toFixed(2).replace('.', ',')}\n`;
+                csv += `${new Date(t.date).toLocaleDateString()},${t.type === 'income' ? 'Entrata' : 'Uscita'},"${(t.description || '').replace(/"/g, '""')}",${c},${t.amount.toFixed(2).replace('.', ',')}\n`;
             });
             const link = document.createElement('a');
             link.href = URL.createObjectURL(new Blob(["\ufeff" + csv], { type: 'text/csv;charset=utf-8;' }));
-            link.download = `report_${new Date().toLocaleDateString()}.csv`;
+            link.download = `report_spese_${new Date().toISOString().split('T')[0]}.csv`;
             link.click();
         }
 
