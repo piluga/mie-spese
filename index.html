@@ -283,7 +283,7 @@
 
             try {
                 const base64 = await resizeAndEnhanceImage(file, 1024);
-                const data = await callGemini(base64);
+                const data = await callGeminiWithRetry(base64);
                 
                 if (data && data.amount) {
                     document.getElementById('amount-input').value = data.amount;
@@ -293,7 +293,7 @@
                 }
             } catch (err) { 
                 console.error("Errore API:", err);
-                alert("Errore AI: " + err.message);
+                alert("Errore AI: " + err.message + "\nControlla che la chiave sia attiva per Gemini 1.5 Flash.");
                 status.textContent = "Errore scanner";
             } finally { 
                 loader.classList.add('hidden'); 
@@ -301,11 +301,23 @@
             }
         }
 
+        async function callGeminiWithRetry(base64, retries = 3) {
+            const delays = [1000, 2000, 4000];
+            for (let i = 0; i < retries; i++) {
+                try {
+                    return await callGemini(base64);
+                } catch (err) {
+                    if (i === retries - 1) throw err;
+                    await new Promise(res => setTimeout(res, delays[i]));
+                }
+            }
+        }
+
         async function callGemini(base64) {
-            // URL standardizzato v1beta/models/...
-            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+            // Utilizzo endpoint v1 che è spesso più stabile
+            const url = `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
             
-            const prompt = "Analizza l'immagine di questo scontrino. Estrai il totale (numero) e il nome del negozio. Rispondi ESCLUSIVAMENTE con un oggetto JSON valido, senza testo prima o dopo, seguendo questo schema: { \"amount\": 0.00, \"description\": \"nome negozio\", \"category\": \"cibo|casa|trasporti|svago|salute|shopping|altro\" }";
+            const prompt = "Analizza l'immagine dello scontrino. Restituisci SOLO un JSON con: amount (numero decimale), description (nome negozio), category (una tra: cibo, casa, trasporti, svago, salute, shopping, altro). Se non sei sicuro, usa 'altro'. JSON puro, niente commenti.";
 
             const payload = {
                 contents: [{
@@ -323,23 +335,24 @@
             });
 
             if (!response.ok) {
-                const errJson = await response.json().catch(() => ({}));
-                throw new Error(errJson.error?.message || "Errore di rete o API Key non valida.");
+                const errData = await response.json().catch(() => ({}));
+                const msg = errData.error?.message || "Errore sconosciuto";
+                throw new Error(msg);
             }
 
             const result = await response.json();
-            let textResponse = result.candidates?.[0]?.content?.parts?.[0]?.text;
+            let text = result.candidates?.[0]?.content?.parts?.[0]?.text;
             
-            if (!textResponse) throw new Error("L'IA non ha restituito dati.");
+            if (!text) throw new Error("Risposta vuota dall'IA.");
 
-            // Pulizia da eventuali blocchi di codice markdown
-            textResponse = textResponse.replace(/```json/g, "").replace(/```/g, "").trim();
+            // Estrazione JSON robusta (cerca tra le parentesi graffe)
+            const jsonMatch = text.match(/\{[\s\S]*\}/);
+            if (!jsonMatch) throw new Error("Formato dati non riconosciuto.");
             
             try {
-                return JSON.parse(textResponse);
+                return JSON.parse(jsonMatch[0]);
             } catch (e) {
-                console.error("JSON Error:", textResponse);
-                throw new Error("Errore nel formato dati ricevuto.");
+                throw new Error("Errore nel parsing dei dati.");
             }
         }
 
