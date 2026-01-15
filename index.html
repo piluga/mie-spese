@@ -1,319 +1,270 @@
-import React, { useState, useMemo } from 'react';
-import { 
-  PlusCircle, 
-  Wallet, 
-  ArrowUpCircle, 
-  ArrowDownCircle, 
-  Trash2, 
-  History,
-  CreditCard,
-  Banknote,
-  TrendingUp,
-  LayoutDashboard,
-  PieChart,
-  ArrowRightLeft,
-  X,
-  Menu
-} from 'lucide-react';
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Gestione Spese Pro</title>
 
-const App = () => {
-  // --- STATE MANAGEMENT ---
-  const [accounts, setAccounts] = useState([
-    {
-      id: 'acc_main_01',
-      name: 'Conto Corrente',
-      icon: 'card',
-      transactions: [
-        { id: 'tx_01', type: 'in', amount: 2500, description: 'Stipendio', date: '2024-05-01', category: 'Lavoro' },
-        { id: 'tx_02', type: 'out', amount: 850, description: 'Affitto', date: '2024-05-05', category: 'Casa' }
-      ]
-    },
-    {
-      id: 'acc_save_02',
-      name: 'Risparmi',
-      icon: 'savings',
-      transactions: [
-        { id: 'tx_04', type: 'in', amount: 5000, description: 'Fondo Emergenza', date: '2024-01-01', category: 'Risparmio' }
-      ]
-    }
-  ]);
+<link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/6039/6039232.png">
+<meta name="theme-color" content="#4f46e5">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 
-  const [activeAccountId, setActiveAccountId] = useState('acc_main_01');
-  const [isAccountModalOpen, setIsAccountModalOpen] = useState(false);
-  const [isTxModalOpen, setIsTxModalOpen] = useState(false);
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  
-  const [newAccountData, setNewAccountData] = useState({ name: '', type: 'card' });
-  const [newTxData, setNewTxData] = useState({ description: '', amount: '', type: 'out', category: 'Generale' });
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-  // --- LOGIC ---
-  const activeAccount = useMemo(() => 
-    accounts.find(a => a.id === activeAccountId) || accounts[0], 
-  [accounts, activeAccountId]);
+<style>
+body { background:#f3f4f6; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif }
+.loader{border:2px solid #f3f3f3;border-top:2px solid #4f46e5;border-radius:50%;width:16px;height:16px;animation:spin 1s linear infinite}
+@keyframes spin{100%{transform:rotate(360deg)}}
+.transaction-card:active{transform:scale(.98)}
+</style>
+</head>
 
-  const stats = useMemo(() => {
-    const txs = activeAccount.transactions;
-    const totalIn = txs.filter(t => t.type === 'in').reduce((sum, t) => sum + t.amount, 0);
-    const totalOut = txs.filter(t => t.type === 'out').reduce((sum, t) => sum + t.amount, 0);
-    return {
-      balance: totalIn - totalOut,
-      in: totalIn,
-      out: totalOut
-    };
-  }, [activeAccount]);
+<body class="antialiased text-gray-900">
 
-  const handleAddAccount = () => {
-    if (!newAccountData.name.trim()) return;
-    const newAcc = {
-      id: `acc_${Date.now()}`,
-      name: newAccountData.name,
-      icon: newAccountData.type,
-      transactions: []
-    };
-    setAccounts([...accounts, newAcc]);
-    setActiveAccountId(newAcc.id);
-    setIsAccountModalOpen(false);
-    setNewAccountData({ name: '', type: 'card' });
-  };
+<div id="app" class="max-w-md mx-auto min-h-screen bg-white shadow-lg">
 
-  const handleAddTransaction = () => {
-    if (!newTxData.description || !newTxData.amount) return;
-    const updated = accounts.map(acc => {
-      if (acc.id === activeAccountId) {
-        return {
-          ...acc,
-          transactions: [{
-            ...newTxData,
-            id: `tx_${Date.now()}`,
-            amount: parseFloat(newTxData.amount),
-            date: new Date().toISOString().split('T')[0]
-          }, ...acc.transactions]
-        };
-      }
-      return acc;
-    });
-    setAccounts(updated);
-    setIsTxModalOpen(false);
-    setNewTxData({ description: '', amount: '', type: 'out', category: 'Generale' });
-  };
+<header class="bg-indigo-600 text-white p-6 rounded-b-[2.5rem] shadow-xl pt-10">
+<div class="flex justify-between items-center mb-4">
+<button onclick="changeMonth(-1)">‹</button>
+<h2 id="current-month-display" class="text-lg font-semibold"></h2>
+<button onclick="changeMonth(1)">›</button>
+</div>
 
-  const deleteTx = (id) => {
-    setAccounts(accounts.map(acc => ({
-      ...acc,
-      transactions: acc.transactions.filter(t => t.id !== id)
-    })));
-  };
+<div class="text-center">
+<div class="text-xs uppercase opacity-80">Saldo conto</div>
+<div id="balance" class="text-4xl font-bold">€ 0.00</div>
 
-  const openTxModal = (type) => {
-    setNewTxData({ ...newTxData, type });
-    setIsTxModalOpen(true);
-  };
+<select id="account-selector"
+onchange="changeAccount(this.value)"
+class="mt-2 bg-indigo-500 text-white text-xs px-3 py-1 rounded-full">
+</select>
+</div>
+</header>
 
-  return (
-    <div className="min-h-screen bg-slate-50 flex flex-col md:flex-row font-sans text-slate-900">
-      
-      {/* MOBILE SIDEBAR OVERLAY */}
-      {isSidebarOpen && (
-        <div className="fixed inset-0 bg-slate-900/50 z-40 md:hidden" onClick={() => setIsSidebarOpen(false)} />
-      )}
+<main class="p-4">
 
-      {/* SIDEBAR */}
-      <aside className={`fixed md:relative w-72 h-full bg-white border-r border-slate-200 flex flex-col z-50 transition-transform duration-300 ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}`}>
-        <div className="p-6 flex items-center gap-3 border-b border-slate-50">
-          <TrendingUp className="text-indigo-600" size={28} />
-          <h1 className="text-xl font-bold tracking-tight">FinanzaPro <span className="text-[10px] text-indigo-500 font-black ml-1">v3.1.1</span></h1>
-        </div>
+<div class="grid grid-cols-2 gap-4 -mt-10 mb-6">
+<button onclick="openModal('income')" class="bg-green-500 text-white p-4 rounded-2xl font-bold">Entrata</button>
+<button onclick="openModal('expense')" class="bg-red-500 text-white p-4 rounded-2xl font-bold">Uscita</button>
+</div>
 
-        <div className="flex-1 overflow-y-auto p-4 space-y-6">
-          <nav className="space-y-1">
-            <button className="w-full flex items-center gap-3 p-3 rounded-xl bg-indigo-50 text-indigo-700 font-bold text-sm">
-              <LayoutDashboard size={18} /> Dashboard
-            </button>
-            <button className="w-full flex items-center gap-3 p-3 rounded-xl text-slate-500 font-bold text-sm hover:bg-slate-50">
-              <PieChart size={18} /> Statistiche
-            </button>
-          </nav>
+<div id="chart-container" class="hidden mb-6 bg-gray-50 p-4 rounded-2xl">
+<canvas id="expenseChart"></canvas>
+</div>
 
-          <section>
-            <div className="flex items-center justify-between px-2 mb-3">
-              <h2 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">I Tuoi Conti</h2>
-              <button onClick={() => setIsAccountModalOpen(true)} className="text-indigo-600 hover:rotate-90 transition-transform">
-                <PlusCircle size={18} />
-              </button>
-            </div>
-            <div className="space-y-1">
-              {accounts.map(acc => (
-                <button
-                  key={acc.id}
-                  onClick={() => { setActiveAccountId(acc.id); setIsSidebarOpen(false); }}
-                  className={`w-full flex items-center justify-between p-3 rounded-xl transition-all ${activeAccountId === acc.id ? 'bg-slate-900 text-white shadow-lg shadow-slate-200' : 'hover:bg-slate-50 text-slate-600'}`}
-                >
-                  <div className="flex items-center gap-3 truncate">
-                    {acc.icon === 'savings' ? <Banknote size={16}/> : <CreditCard size={16}/>}
-                    <span className="text-sm font-bold truncate">{acc.name}</span>
-                  </div>
-                  {activeAccountId === acc.id && <div className="w-1.5 h-1.5 bg-indigo-400 rounded-full" />}
-                </button>
-              ))}
-            </div>
-          </section>
-        </div>
-      </aside>
+<h2 class="text-xl font-bold mb-2">Movimenti</h2>
+<div id="transaction-list" class="space-y-3 pb-24"></div>
 
-      {/* MAIN CONTENT */}
-      <main className="flex-1 flex flex-col min-h-screen">
-        
-        {/* HEADER - STILE CLASSICO VESTE NUOVA */}
-        <header className="bg-indigo-600 text-white p-6 md:p-10 rounded-b-[2.5rem] shadow-xl relative overflow-hidden">
-          <div className="absolute top-0 right-0 p-10 opacity-10 rotate-12">
-            <Wallet size={120} />
-          </div>
+</main>
+</div>
 
-          <div className="flex justify-between items-center mb-6 relative z-10">
-            <button onClick={() => setIsSidebarOpen(true)} className="md:hidden p-2 hover:bg-white/10 rounded-full">
-              <Menu size={24} />
-            </button>
-            <div className="text-center flex-1">
-              <p className="text-[10px] uppercase font-black tracking-[0.2em] opacity-80 mb-1">Saldo {activeAccount.name}</p>
-              <h2 className="text-4xl md:text-5xl font-black tracking-tighter">
-                € {stats.balance.toLocaleString('it-IT', { minimumFractionDigits: 2 })}
-              </h2>
-            </div>
-            <div className="w-10 md:hidden"></div>
-          </div>
-        </header>
+<!-- MODAL -->
+<div id="modal" class="hidden fixed inset-0 bg-black/60 z-50 flex items-end">
+<div id="modal-content" class="bg-white w-full max-w-md p-6 rounded-t-3xl translate-y-full transition-transform">
 
-        <div className="px-6 -mt-10 mb-10 relative z-20">
-          <div className="max-w-4xl mx-auto grid grid-cols-2 gap-4">
-            <button 
-              onClick={() => openTxModal('in')}
-              className="bg-emerald-500 text-white p-5 rounded-3xl shadow-lg shadow-emerald-200 flex items-center justify-center gap-3 hover:scale-[1.02] active:scale-95 transition-all"
-            >
-              <ArrowUpCircle size={24} />
-              <span className="font-black text-sm uppercase tracking-wider">Entrata</span>
-            </button>
-            <button 
-              onClick={() => openTxModal('out')}
-              className="bg-rose-500 text-white p-5 rounded-3xl shadow-lg shadow-rose-200 flex items-center justify-center gap-3 hover:scale-[1.02] active:scale-95 transition-all"
-            >
-              <ArrowDownCircle size={24} />
-              <span className="font-black text-sm uppercase tracking-wider">Uscita</span>
-            </button>
-          </div>
-        </div>
+<h3 id="modal-title" class="text-2xl font-bold mb-4"></h3>
 
-        <div className="flex-1 px-6 max-w-4xl mx-auto w-full pb-10">
-          <div className="flex items-center justify-between mb-6">
-            <h3 className="text-lg font-black text-slate-800 flex items-center gap-2 italic">
-              <History size={20} className="text-indigo-600" /> Movimenti Recenti
-            </h3>
-          </div>
+<input id="amount-input" type="number" step="0.01"
+placeholder="0.00"
+class="w-full p-4 bg-gray-100 rounded-2xl text-3xl font-bold text-center mb-4">
 
-          <div className="bg-white rounded-[2rem] shadow-sm border border-slate-100 overflow-hidden">
-            {activeAccount.transactions.length === 0 ? (
-              <div className="p-20 text-center text-slate-300 italic font-bold">Nessun movimento registrato.</div>
-            ) : (
-              <div className="divide-y divide-slate-50">
-                {activeAccount.transactions.map(t => (
-                  <div key={t.id} className="group flex items-center justify-between p-5 hover:bg-slate-50 transition-colors">
-                    <div className="flex items-center gap-4">
-                      <div className={`w-10 h-10 rounded-full flex items-center justify-center ${t.type === 'in' ? 'bg-emerald-50 text-emerald-600' : 'bg-slate-50 text-slate-400'}`}>
-                        {t.type === 'in' ? <ArrowUpCircle size={20}/> : <ArrowDownCircle size={20}/>}
-                      </div>
-                      <div>
-                        <p className="font-bold text-slate-800 text-sm">{t.description}</p>
-                        <p className="text-[10px] font-bold text-slate-400 uppercase">{t.category} • {t.date}</p>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-4">
-                      <p className={`font-black ${t.type === 'in' ? 'text-emerald-600' : 'text-slate-900'}`}>
-                        {t.type === 'in' ? '+' : '-'} €{t.amount.toLocaleString('it-IT', { minimumFractionDigits: 2 })}
-                      </p>
-                      <button onClick={() => deleteTx(t.id)} className="p-2 text-slate-200 hover:text-rose-500 transition-colors opacity-0 group-hover:opacity-100">
-                        <Trash2 size={16} />
-                      </button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        </div>
-      </main>
+<input id="desc-input" type="text"
+placeholder="Descrizione"
+class="w-full p-4 bg-gray-100 rounded-2xl mb-4">
 
-      {/* MODAL TRANSAZIONE */}
-      {isTxModalOpen && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] flex items-end md:items-center justify-center p-0 md:p-4">
-          <div className="bg-white w-full max-w-md rounded-t-[2.5rem] md:rounded-[2.5rem] p-8 animate-in slide-in-from-bottom duration-300">
-            <div className="flex justify-between items-center mb-8">
-              <h3 className="text-xl font-black text-slate-800 italic">{newTxData.type === 'in' ? 'Nuova Entrata' : 'Nuova Uscita'}</h3>
-              <button onClick={() => setIsTxModalOpen(false)} className="p-2 text-slate-400 hover:bg-slate-50 rounded-full"><X size={20}/></button>
-            </div>
-            
-            <div className="space-y-5">
-              <div className="bg-slate-50 p-6 rounded-3xl text-center">
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-1">Importo (€)</label>
-                <input 
-                  type="number" 
-                  autoFocus
-                  className="bg-transparent text-4xl font-black text-center w-full outline-none"
-                  placeholder="0,00"
-                  value={newTxData.amount}
-                  onChange={(e) => setNewTxData({...newTxData, amount: e.target.value})}
-                />
-              </div>
+<div id="category-grid" class="grid grid-cols-4 gap-2 mb-4"></div>
 
-              <div>
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-2 ml-1">Descrizione</label>
-                <input 
-                  type="text" 
-                  className="w-full p-4 bg-slate-50 border border-slate-100 rounded-2xl font-bold outline-none"
-                  value={newTxData.description}
-                  onChange={(e) => setNewTxData({...newTxData, description: e.target.value})}
-                />
-              </div>
+<button onclick="saveTransaction()"
+id="save-btn"
+class="w-full py-4 rounded-2xl text-white font-bold text-xl">
+Salva
+</button>
 
-              <button 
-                onClick={handleAddTransaction}
-                className={`w-full py-5 rounded-2xl text-white font-black text-lg shadow-xl transition-all ${newTxData.type === 'in' ? 'bg-emerald-500 shadow-emerald-100 hover:bg-emerald-600' : 'bg-rose-500 shadow-rose-100 hover:bg-rose-600'}`}
-              >
-                Salva Movimento
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+<div class="h-6"></div>
+</div>
+</div>
 
-      {/* MODAL NUOVO CONTO */}
-      {isAccountModalOpen && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
-          <div className="bg-white w-full max-w-md rounded-[2.5rem] p-8 shadow-2xl">
-            <h3 className="text-xl font-black text-slate-800 mb-6 italic">Aggiungi Portafoglio</h3>
-            <div className="space-y-4">
-              <input 
-                type="text" 
-                placeholder="Nome Conto (es. Cash, Fineco...)"
-                className="w-full p-4 bg-slate-50 border border-slate-100 rounded-2xl font-bold outline-none"
-                value={newAccountData.name}
-                onChange={(e) => setNewAccountData({...newAccountData, name: e.target.value})}
-              />
-              <div className="grid grid-cols-2 gap-3">
-                <button onClick={() => setNewAccountData({...newAccountData, type: 'card'})} className={`p-4 rounded-2xl border-2 flex flex-col items-center gap-2 ${newAccountData.type === 'card' ? 'border-indigo-600 bg-indigo-50 text-indigo-600' : 'border-slate-100 text-slate-400'}`}>
-                  <CreditCard size={20} /> <span className="text-[10px] font-black uppercase">Carta</span>
-                </button>
-                <button onClick={() => setNewAccountData({...newAccountData, type: 'savings'})} className={`p-4 rounded-2xl border-2 flex flex-col items-center gap-2 ${newAccountData.type === 'savings' ? 'border-indigo-600 bg-indigo-50 text-indigo-600' : 'border-slate-100 text-slate-400'}`}>
-                  <Banknote size={20} /> <span className="text-[10px] font-black uppercase">Risparmi</span>
-                </button>
-              </div>
-              <button onClick={handleAddAccount} className="w-full py-5 bg-slate-900 text-white font-black rounded-2xl">Crea Conto</button>
-              <button onClick={() => setIsAccountModalOpen(false)} className="w-full py-2 text-slate-400 font-bold text-xs uppercase">Annulla</button>
-            </div>
-          </div>
-        </div>
-      )}
+<script>
+/* ===================== STORAGE ===================== */
+const STORAGE_KEY = 'spese_v3_data';
+const ACCOUNTS_KEY = 'spese_v3_accounts';
 
-    </div>
-  );
+/* ===================== CONTI ===================== */
+let accounts = JSON.parse(localStorage.getItem(ACCOUNTS_KEY)) || [
+{ id:'contanti', name:'Contanti', icon:'💶' },
+{ id:'banca', name:'Banca', icon:'🏦' }
+];
+
+let currentAccount = localStorage.getItem('current_account') || accounts[0].id;
+
+/* ===================== CATEGORIE ===================== */
+const categories = {
+expense:[
+{id:'cibo',label:'Cibo',icon:'🍎',color:'#f87171'},
+{id:'casa',label:'Casa',icon:'🏠',color:'#60a5fa'},
+{id:'auto',label:'Auto',icon:'🚗',color:'#fbbf24'},
+{id:'svago',label:'Svago',icon:'🎮',color:'#a78bfa'},
+{id:'altro',label:'Altro',icon:'📦',color:'#9ca3af'}
+],
+income:[
+{id:'stipendio',label:'Stipendio',icon:'💰',color:'#10b981'},
+{id:'altro_in',label:'Altro',icon:'📈',color:'#6b7280'}
+]
 };
 
-export default App;
+/* ===================== DATI ===================== */
+let transactions = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+transactions = transactions.map(t => ({
+...t,
+accountId: t.accountId || accounts[0].id
+}));
+
+let viewDate = new Date();
+let currentMode = 'expense';
+let selectedCategory = 'altro';
+let editingTxId = null;
+let chartInstance = null;
+
+/* ===================== UI ===================== */
+function renderAccountSelector(){
+const sel = document.getElementById('account-selector');
+sel.innerHTML = accounts.map(a =>
+`<option value="${a.id}" ${a.id===currentAccount?'selected':''}>
+${a.icon} ${a.name}
+</option>`).join('');
+}
+
+function changeAccount(id){
+currentAccount = id;
+localStorage.setItem('current_account', id);
+updateUI();
+}
+
+function updateUI(){
+renderAccountSelector();
+
+const m=viewDate.getMonth(), y=viewDate.getFullYear();
+document.getElementById('current-month-display').textContent =
+viewDate.toLocaleDateString('it-IT',{month:'long',year:'numeric'});
+
+const filtered = transactions.filter(t=>{
+const d=new Date(t.date);
+return d.getMonth()===m && d.getFullYear()===y && t.accountId===currentAccount;
+});
+
+const inc = filtered.filter(t=>t.type==='income').reduce((s,t)=>s+t.amount,0);
+const exp = filtered.filter(t=>t.type==='expense').reduce((s,t)=>s+t.amount,0);
+document.getElementById('balance').textContent =
+`€ ${(inc-exp).toFixed(2)}`;
+
+const list=document.getElementById('transaction-list');
+list.innerHTML = filtered.length ? filtered.sort((a,b)=>b.id-a.id).map(t=>{
+const c=[...categories.expense,...categories.income].find(x=>x.id===t.category);
+return `
+<div onclick="editTransaction(${t.id})"
+class="transaction-card flex justify-between p-4 bg-gray-50 rounded-2xl border-l-4"
+style="border-color:${c.color}">
+<div>${c.icon} ${t.description||c.label}</div>
+<div class="${t.type==='income'?'text-green-600':'text-red-600'}">
+${t.type==='income'?'+':'-'}€${t.amount.toFixed(2)}
+</div>
+</div>`;
+}).join('') : '<div class="text-center text-gray-400 py-10">Nessun movimento</div>';
+
+renderChart(filtered.filter(t=>t.type==='expense'));
+}
+
+/* ===================== MODAL ===================== */
+function openModal(mode,tx=null){
+currentMode=mode;
+editingTxId=tx?tx.id:null;
+selectedCategory=tx?tx.category:categories[mode][0].id;
+
+document.getElementById('modal').classList.remove('hidden');
+setTimeout(()=>document.getElementById('modal-content').classList.remove('translate-y-full'),10);
+
+document.getElementById('modal-title').textContent =
+editingTxId?'Modifica':'Nuovo';
+
+document.getElementById('save-btn').className =
+`w-full py-4 rounded-2xl text-white font-bold text-xl ${mode==='income'?'bg-green-500':'bg-red-500'}`;
+
+document.getElementById('amount-input').value = tx?tx.amount:'';
+document.getElementById('desc-input').value = tx?tx.description:'';
+
+document.getElementById('category-grid').innerHTML =
+categories[mode].map(c=>
+`<button onclick="selectCategory('${c.id}')"
+class="p-2 rounded-xl ${c.id===selectedCategory?'bg-indigo-100':''}">
+${c.icon}<div class="text-xs">${c.label}</div></button>`
+).join('');
+}
+
+function selectCategory(id){selectedCategory=id}
+
+function closeModal(){
+document.getElementById('modal-content').classList.add('translate-y-full');
+setTimeout(()=>document.getElementById('modal').classList.add('hidden'),300);
+editingTxId=null;
+}
+
+/* ===================== CRUD ===================== */
+function saveTransaction(){
+const amt=parseFloat(amount-input.value);
+if(!amt||amt<=0)return alert('Importo non valido');
+
+if(editingTxId){
+const t=transactions.find(x=>x.id===editingTxId);
+Object.assign(t,{amount:amt,description:desc-input.value,category:selectedCategory});
+}else{
+transactions.push({
+id:Date.now(),
+amount:amt,
+description:desc-input.value,
+category:selectedCategory,
+type:currentMode,
+date:new Date().toISOString(),
+accountId:currentAccount
+});
+}
+localStorage.setItem(STORAGE_KEY,JSON.stringify(transactions));
+updateUI(); closeModal();
+}
+
+function editTransaction(id){
+const t=transactions.find(x=>x.id===id);
+if(t)openModal(t.type,t);
+}
+
+function changeMonth(d){
+viewDate.setMonth(viewDate.getMonth()+d);
+updateUI();
+}
+
+/* ===================== CHART ===================== */
+function renderChart(exps){
+const c=document.getElementById('chart-container');
+if(!exps.length){c.classList.add('hidden');return;}
+c.classList.remove('hidden');
+
+const map={};
+exps.forEach(e=>{
+const cat=categories.expense.find(c=>c.id===e.category);
+map[cat.label]=(map[cat.label]||0)+e.amount;
+});
+
+if(chartInstance)chartInstance.destroy();
+chartInstance=new Chart(expenseChart,{
+type:'doughnut',
+data:{labels:Object.keys(map),datasets:[{data:Object.values(map)}]},
+options:{cutout:'70%'}
+});
+}
+
+window.onload=updateUI;
+</script>
+</body>
+</html>
