@@ -216,6 +216,15 @@
             }
         }
 
+        function clearHistory() {
+            if (confirm("Vuoi davvero cancellare TUTTI i movimenti? L'azione è irreversibile.")) {
+                transactions = [];
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(transactions));
+                updateUI();
+                toggleSettings(false);
+            }
+        }
+
         function updateUI() {
             const m = viewDate.getMonth();
             const y = viewDate.getFullYear();
@@ -286,7 +295,7 @@
                 }
             } catch (err) { 
                 console.error("Dettagli Errore Gemini:", err);
-                alert("Errore: " + (err.message || "Verifica la tua chiave API o la connessione."));
+                alert("Errore API: " + (err.message || "Verifica la tua chiave API o la connessione."));
                 status.textContent = "Errore lettura scontrino";
             } finally { 
                 loader.classList.add('hidden'); 
@@ -295,11 +304,11 @@
         }
 
         async function callGemini(base64) {
-            // Utilizzo del modello 1.5 Flash (più veloce e stabile per OCR)
+            // URL Corretto con v1beta
             const model = "gemini-1.5-flash";
             const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
             
-            const prompt = "Analizza questo scontrino. Estrai il totale e il nome del negozio. Rispondi solo con JSON: { 'amount': numero, 'description': 'stringa', 'category': 'cibo'|'casa'|'trasporti'|'svago'|'salute'|'shopping'|'altro' }";
+            const prompt = "Analizza questo scontrino. Estrai il totale e il nome del negozio. Rispondi solo con JSON: { \"amount\": numero, \"description\": \"stringa\", \"category\": \"cibo\"|\"casa\"|\"trasporti\"|\"svago\"|\"salute\"|\"shopping\"|\"altro\" }";
 
             const payload = {
                 contents: [{
