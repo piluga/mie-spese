@@ -322,13 +322,10 @@
             reader.onload = function(e) {
                 try {
                     const data = JSON.parse(e.target.result);
-                    
-                    // Validazione minima
                     if (!data.transactions || !Array.isArray(data.transactions)) {
                         throw new Error("Formato file non valido.");
                     }
-
-                    if (confirm(`Rilevato backup con ${data.transactions.length} transazioni. Vuoi sovrascrivere i dati attuali? (Questa azione non può essere annullata)`)) {
+                    if (confirm(`Rilevato backup con ${data.transactions.length} transazioni. Vuoi sovrascrivere i dati attuali?`)) {
                         transactions = data.transactions;
                         localStorage.setItem(STORAGE_KEY, JSON.stringify(transactions));
                         updateUI();
@@ -340,7 +337,7 @@
                 }
             };
             reader.readAsText(file);
-            event.target.value = ''; // Reset input
+            event.target.value = ''; 
         }
 
         function exportCSV() {
@@ -437,7 +434,7 @@
         }
 
         function clearHistory() { 
-            if(confirm("Attenzione: vuoi davvero cancellare TUTTI i movimenti della cronologia? Questa azione è irreversibile se non hai un backup.")) { 
+            if(confirm("Attenzione: vuoi davvero cancellare TUTTI i movimenti?")) { 
                 transactions = []; 
                 localStorage.setItem(STORAGE_KEY, JSON.stringify(transactions)); 
                 updateUI();
@@ -516,37 +513,40 @@
         }
 
         function renderChart(exps) {
-            const ctx = document.getElementById('expenseChart');
+            const canvas = document.getElementById('expenseChart');
             const container = document.getElementById('chart-container');
             if (exps.length === 0) { container.classList.add('hidden'); return; }
             container.classList.remove('hidden');
 
             const dataMap = {};
             exps.forEach(e => {
-                const label = categories.expense.find(c => c.id === e.category)?.label || 'Altro';
-                dataMap[label] = (dataMap[label] || 0) + e.amount;
+                const cat = categories.expense.find(c => c.id === e.category) || categories.expense[categories.expense.length-1];
+                dataMap[cat.label] = (dataMap[cat.label] || 0) + e.amount;
             });
 
+            const labels = Object.keys(dataMap);
+            const values = Object.values(dataMap);
+            const colors = labels.map(l => categories.expense.find(c => c.label === l)?.color || '#9ca3af');
+
             if (chartInstance) chartInstance.destroy();
-            chartInstance = new Chart(ctx, {
+            chartInstance = new Chart(canvas, {
                 type: 'doughnut',
                 data: {
-                    labels: Object.keys(dataMap),
+                    labels: labels,
                     datasets: [{
-                        data: Object.values(dataMap),
-                        backgroundColor: Object.keys(dataMap).map(l => categories.expense.find(c => c.label === l)?.color),
+                        data: values,
+                        backgroundColor: colors,
                         borderWidth: 0
                     }]
                 },
-                options: { 
-                    plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 10 }, padding: 15 } } }, 
-                    cutout: '75%', maintainAspectRatio: false
+                options: {
+                    plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 10 } } } },
+                    cutout: '70%'
                 }
             });
         }
 
         window.onload = updateUI;
-        document.getElementById('modal').onclick = (e) => { if(e.target === document.getElementById('modal')) closeModal(); };
     </script>
 </body>
 </html>
