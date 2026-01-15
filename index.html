@@ -105,9 +105,9 @@
             
             <div class="p-6 space-y-6">
                 <div class="settings-card">
-                    <h3 class="text-xs font-bold text-gray-400 uppercase mb-3">Intelligenza Artificiale</h3>
+                    <h3 class="text-xs font-bold text-gray-400 uppercase mb-3">Intelligenza Artificiale (Free Tier)</h3>
                     <div class="space-y-3">
-                        <p class="text-[11px] text-gray-500">Usa una chiave Gemini per lo scanner. Ottienila su aistudio.google.com</p>
+                        <p class="text-[11px] text-gray-500">Usa una chiave Gemini Gratuita. Se ricevi errori "429", attendi qualche secondo tra le scansioni.</p>
                         <button onclick="promptApiKey()" class="w-full py-2 bg-indigo-100 text-indigo-700 rounded-lg text-sm font-bold">Modifica API Key</button>
                     </div>
                 </div>
@@ -151,7 +151,7 @@
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812-1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" /><circle cx="12" cy="13" r="3" stroke-width="2"/></svg>
                             <span id="scan-text">Scannerizza Scontrino</span>
                         </div>
-                        <span id="scan-status" class="text-[10px] font-medium opacity-60">IA Scanner (Gemini 1.5 Flash)</span>
+                        <span id="scan-status" class="text-[10px] font-medium opacity-60">IA Scanner (Free Mode)</span>
                         <div id="scan-loader" class="loader hidden mt-2"></div>
                     </button>
                     <input type="file" id="file-input" accept="image/*" capture="environment" class="hidden" onchange="handleReceiptScan(event)">
@@ -212,6 +212,7 @@
             if (key !== null) {
                 apiKey = key.trim();
                 localStorage.setItem('gemini_api_key', apiKey);
+                alert("Chiave aggiornata!");
             }
         }
 
@@ -274,50 +275,65 @@
         async function handleReceiptScan(e) {
             const file = e.target.files[0];
             if (!file) return;
-            if (!apiKey) return alert("Inserisci l'API Key nelle impostazioni.");
+            if (!apiKey) {
+                alert("Devi prima inserire l'API Key nelle impostazioni!");
+                toggleSettings(true);
+                return;
+            }
             
             const status = document.getElementById('scan-status');
             const loader = document.getElementById('scan-loader');
-            status.textContent = "Analisi AI...";
+            status.textContent = "Analisi (Piano Gratuito)...";
             loader.classList.remove('hidden');
 
             try {
-                const base64 = await resizeAndEnhanceImage(file, 1024);
+                // Ridimensioniamo l'immagine per risparmiare token e tempo nel piano free
+                const base64 = await resizeAndEnhanceImage(file, 800);
                 const data = await callGeminiWithRetry(base64);
                 
                 if (data && data.amount) {
                     document.getElementById('amount-input').value = data.amount;
                     document.getElementById('desc-input').value = data.description || "";
                     if (data.category) selectCategory(data.category);
-                    status.textContent = "Completato!";
+                    status.textContent = "Scontrino letto!";
+                } else {
+                    throw new Error("Dati non trovati nello scontrino.");
                 }
             } catch (err) { 
                 console.error("Errore API:", err);
-                alert("Errore AI: " + err.message + "\nControlla che la chiave sia attiva per Gemini 1.5 Flash.");
-                status.textContent = "Errore scanner";
+                let errorMsg = "Errore scanner.";
+                if (err.message.includes("429")) errorMsg = "Limite raggiunto. Attendi 1 minuto.";
+                else if (err.message.includes("403")) errorMsg = "Chiave non valida o non abilitata.";
+                
+                alert("IA Error: " + err.message);
+                status.textContent = errorMsg;
             } finally { 
                 loader.classList.add('hidden'); 
-                setTimeout(() => status.textContent = "IA Scanner (Gemini 1.5 Flash)", 3000); 
+                setTimeout(() => status.textContent = "IA Scanner (Free Mode)", 4000); 
             }
         }
 
         async function callGeminiWithRetry(base64, retries = 3) {
-            const delays = [1000, 2000, 4000];
+            const delays = [2000, 4000, 8000]; // Delay più lunghi per il piano gratuito
             for (let i = 0; i < retries; i++) {
                 try {
                     return await callGemini(base64);
                 } catch (err) {
-                    if (i === retries - 1) throw err;
-                    await new Promise(res => setTimeout(res, delays[i]));
+                    // Se è un errore di quota (429), aspettiamo e riproviamo
+                    if (err.message.includes("429") && i < retries - 1) {
+                        await new Promise(res => setTimeout(res, delays[i]));
+                        continue;
+                    }
+                    throw err;
                 }
             }
         }
 
         async function callGemini(base64) {
-            // Utilizzo endpoint v1 che è spesso più stabile
-            const url = `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+            // Utilizzo del modello v1beta che spesso è più permissivo per le chiavi free appena create
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
             
-            const prompt = "Analizza l'immagine dello scontrino. Restituisci SOLO un JSON con: amount (numero decimale), description (nome negozio), category (una tra: cibo, casa, trasporti, svago, salute, shopping, altro). Se non sei sicuro, usa 'altro'. JSON puro, niente commenti.";
+            const prompt = "Extract from receipt: total amount (number), shop name (description), and one category from [cibo, casa, trasporti, svago, salute, shopping, altro]. Output ONLY JSON format: {\"amount\": 0.0, \"description\": \"\", \"category\": \"\"}";
 
             const payload = {
                 contents: [{
@@ -325,7 +341,14 @@
                         { text: prompt },
                         { inlineData: { mimeType: "image/jpeg", data: base64 } }
                     ]
-                }]
+                }],
+                generationConfig: {
+                    temperature: 0.1,
+                    topP: 1,
+                    topK: 1,
+                    maxOutputTokens: 100,
+                    responseMimeType: "application/json"
+                }
             };
 
             const response = await fetch(url, {
@@ -336,23 +359,22 @@
 
             if (!response.ok) {
                 const errData = await response.json().catch(() => ({}));
-                const msg = errData.error?.message || "Errore sconosciuto";
-                throw new Error(msg);
+                const msg = errData.error?.message || response.statusText;
+                throw new Error(`${response.status}: ${msg}`);
             }
 
             const result = await response.json();
-            let text = result.candidates?.[0]?.content?.parts?.[0]?.text;
+            const text = result.candidates?.[0]?.content?.parts?.[0]?.text;
             
-            if (!text) throw new Error("Risposta vuota dall'IA.");
+            if (!text) throw new Error("L'IA non ha restituito testo.");
 
-            // Estrazione JSON robusta (cerca tra le parentesi graffe)
-            const jsonMatch = text.match(/\{[\s\S]*\}/);
-            if (!jsonMatch) throw new Error("Formato dati non riconosciuto.");
-            
             try {
-                return JSON.parse(jsonMatch[0]);
+                // Pulizia testo nel caso non sia JSON puro
+                const jsonStr = text.substring(text.indexOf('{'), text.lastIndexOf('}') + 1);
+                return JSON.parse(jsonStr);
             } catch (e) {
-                throw new Error("Errore nel parsing dei dati.");
+                console.error("JSON Parse Error:", text);
+                throw new Error("Errore lettura dati scontrino.");
             }
         }
 
@@ -368,8 +390,11 @@
                         else if (h > maxSide) { w *= maxSide / h; h = maxSide; }
                         canvas.width = w; canvas.height = h;
                         const ctx = canvas.getContext('2d');
+                        // Leggera ottimizzazione immagine
+                        ctx.imageSmoothingEnabled = true;
+                        ctx.imageSmoothingQuality = 'high';
                         ctx.drawImage(img, 0, 0, w, h);
-                        resolve(canvas.toDataURL('image/jpeg', 0.8).split(',')[1]);
+                        resolve(canvas.toDataURL('image/jpeg', 0.7).split(',')[1]);
                     };
                     img.src = e.target.result;
                 };
@@ -410,7 +435,7 @@
 
         function saveTransaction() {
             const amt = parseFloat(document.getElementById('amount-input').value);
-            if (!amt || amt <= 0) return alert("Inserisci un importo");
+            if (!amt || amt <= 0) return alert("Inserisci un importo valido");
             const desc = document.getElementById('desc-input').value.trim();
 
             if (editingTxId) {
@@ -445,6 +470,7 @@
                         transactions = data.transactions;
                         localStorage.setItem(STORAGE_KEY, JSON.stringify(transactions));
                         updateUI(); toggleSettings(false);
+                        alert("Dati importati con successo!");
                     }
                 } catch(err) { alert("File non valido"); }
             };
@@ -469,7 +495,13 @@
                         borderWidth: 0
                     }]
                 },
-                options: { plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 10 } } } }, cutout: '75%', maintainAspectRatio: false }
+                options: { 
+                    plugins: { 
+                        legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 10 } } } 
+                    }, 
+                    cutout: '70%', 
+                    maintainAspectRatio: false 
+                }
             });
         }
 
