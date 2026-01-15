@@ -205,19 +205,18 @@
         let editingTxId = null;
         let chartInstance = null;
 
-        // UI MANAGEMENT
         function toggleSettings(show) { document.getElementById('settings-view').classList.toggle('hidden', !show); }
 
         function promptApiKey() {
             const key = prompt("Inserisci la tua API Key Gemini:", apiKey);
             if (key !== null) {
-                apiKey = key;
-                localStorage.setItem('gemini_api_key', key);
+                apiKey = key.trim();
+                localStorage.setItem('gemini_api_key', apiKey);
             }
         }
 
         function clearHistory() {
-            if (confirm("Vuoi davvero cancellare TUTTI i movimenti? L'azione è irreversibile.")) {
+            if (confirm("Vuoi davvero cancellare TUTTI i movimenti?")) {
                 transactions = [];
                 localStorage.setItem(STORAGE_KEY, JSON.stringify(transactions));
                 updateUI();
@@ -245,7 +244,7 @@
 
             const listEl = document.getElementById('transaction-list');
             if (filtered.length === 0) {
-                listEl.innerHTML = `<div class="text-center py-10 text-gray-400">Nessun movimento registrato</div>`;
+                listEl.innerHTML = `<div class="text-center py-10 text-gray-400">Nessun movimento</div>`;
             } else {
                 listEl.innerHTML = filtered.sort((a,b) => b.id - a.id).map(t => {
                     const cat = [...categories.expense, ...categories.income].find(c => c.id === t.category);
@@ -253,16 +252,16 @@
                     <div onclick="editTransaction(${t.id})" class="transaction-card flex items-center justify-between p-4 bg-gray-50 rounded-2xl border-l-4 cursor-pointer transition-all active:scale-95" style="border-color: ${cat?.color}">
                         <div class="flex items-center space-x-3">
                             <span class="text-2xl shrink-0">${cat?.icon}</span>
-                            <div>
-                                <div class="font-bold text-gray-800 truncate max-w-[150px]">${t.description || cat?.label}</div>
+                            <div class="overflow-hidden">
+                                <div class="font-bold text-gray-800 truncate">${t.description || cat?.label}</div>
                                 <div class="text-[10px] text-gray-400 font-bold uppercase">${new Date(t.date).toLocaleDateString()}</div>
                             </div>
                         </div>
-                        <div class="flex items-center space-x-3">
+                        <div class="flex items-center space-x-3 shrink-0">
                             <span class="font-bold ${t.type === 'income' ? 'text-green-600' : 'text-red-600'}">
                                 ${t.type === 'income' ? '+' : '-'} €${t.amount.toFixed(2)}
                             </span>
-                            <button onclick="event.stopPropagation(); deleteTx(${t.id})" class="text-gray-300 p-1 active:text-red-500">
+                            <button onclick="event.stopPropagation(); deleteTx(${t.id})" class="text-gray-300 p-1">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
                             </button>
                         </div>
@@ -272,15 +271,14 @@
             renderChart(filtered.filter(t => t.type === 'expense'));
         }
 
-        // SCANNER AI LOGIC
         async function handleReceiptScan(e) {
             const file = e.target.files[0];
             if (!file) return;
-            if (!apiKey) return alert("Inserisci l'API Key nelle impostazioni prima di scannerizzare.");
+            if (!apiKey) return alert("Inserisci l'API Key nelle impostazioni.");
             
             const status = document.getElementById('scan-status');
             const loader = document.getElementById('scan-loader');
-            status.textContent = "Analisi in corso...";
+            status.textContent = "Analisi AI...";
             loader.classList.remove('hidden');
 
             try {
@@ -291,24 +289,23 @@
                     document.getElementById('amount-input').value = data.amount;
                     document.getElementById('desc-input').value = data.description || "";
                     if (data.category) selectCategory(data.category);
-                    status.textContent = "Scansione riuscita!";
+                    status.textContent = "Completato!";
                 }
             } catch (err) { 
-                console.error("Dettagli Errore Gemini:", err);
-                alert("Errore API: " + (err.message || "Verifica la tua chiave API o la connessione."));
-                status.textContent = "Errore lettura scontrino";
+                console.error("Errore API:", err);
+                alert("Errore AI: " + err.message);
+                status.textContent = "Errore scanner";
             } finally { 
                 loader.classList.add('hidden'); 
-                setTimeout(() => status.textContent = "IA Scanner (Gemini 1.5 Flash)", 4000); 
+                setTimeout(() => status.textContent = "IA Scanner (Gemini 1.5 Flash)", 3000); 
             }
         }
 
         async function callGemini(base64) {
-            // URL Corretto con v1beta
-            const model = "gemini-1.5-flash";
-            const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+            // URL standardizzato v1beta/models/...
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
             
-            const prompt = "Analizza questo scontrino. Estrai il totale e il nome del negozio. Rispondi solo con JSON: { \"amount\": numero, \"description\": \"stringa\", \"category\": \"cibo\"|\"casa\"|\"trasporti\"|\"svago\"|\"salute\"|\"shopping\"|\"altro\" }";
+            const prompt = "Analizza l'immagine di questo scontrino. Estrai il totale (numero) e il nome del negozio. Rispondi ESCLUSIVAMENTE con un oggetto JSON valido, senza testo prima o dopo, seguendo questo schema: { \"amount\": 0.00, \"description\": \"nome negozio\", \"category\": \"cibo|casa|trasporti|svago|salute|shopping|altro\" }";
 
             const payload = {
                 contents: [{
@@ -316,11 +313,7 @@
                         { text: prompt },
                         { inlineData: { mimeType: "image/jpeg", data: base64 } }
                     ]
-                }],
-                generationConfig: {
-                    responseMimeType: "application/json",
-                    temperature: 0.1
-                }
+                }]
             };
 
             const response = await fetch(url, {
@@ -330,15 +323,24 @@
             });
 
             if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.error?.message || "Errore API");
+                const errJson = await response.json().catch(() => ({}));
+                throw new Error(errJson.error?.message || "Errore di rete o API Key non valida.");
             }
 
             const result = await response.json();
-            const content = result.candidates?.[0]?.content?.parts?.[0]?.text;
-            if (!content) throw new Error("Risposta vuota dall'IA");
+            let textResponse = result.candidates?.[0]?.content?.parts?.[0]?.text;
             
-            return JSON.parse(content);
+            if (!textResponse) throw new Error("L'IA non ha restituito dati.");
+
+            // Pulizia da eventuali blocchi di codice markdown
+            textResponse = textResponse.replace(/```json/g, "").replace(/```/g, "").trim();
+            
+            try {
+                return JSON.parse(textResponse);
+            } catch (e) {
+                console.error("JSON Error:", textResponse);
+                throw new Error("Errore nel formato dati ricevuto.");
+            }
         }
 
         function resizeAndEnhanceImage(file, maxSide) {
@@ -362,7 +364,6 @@
             });
         }
 
-        // CORE APP FUNCTIONS
         function openModal(mode, tx = null) {
             currentMode = mode;
             editingTxId = tx ? tx.id : null;
@@ -411,7 +412,7 @@
         }
 
         function editTransaction(id) { const tx = transactions.find(t => t.id === id); if (tx) openModal(tx.type, tx); }
-        function deleteTx(id) { if(confirm("Eliminare?")) { transactions = transactions.filter(t => t.id !== id); localStorage.setItem(STORAGE_KEY, JSON.stringify(transactions)); updateUI(); } }
+        function deleteTx(id) { if(confirm("Vuoi eliminare?")) { transactions = transactions.filter(t => t.id !== id); localStorage.setItem(STORAGE_KEY, JSON.stringify(transactions)); updateUI(); } }
         function changeMonth(d) { viewDate.setMonth(viewDate.getMonth() + d); updateUI(); }
         function closeModal() { document.getElementById('modal-content').classList.add('translate-y-full'); setTimeout(() => document.getElementById('modal').classList.add('hidden'), 300); }
         
@@ -427,7 +428,7 @@
             reader.onload = (event) => {
                 try {
                     const data = JSON.parse(event.target.result);
-                    if (data.transactions && confirm("Sovrascrivere i dati attuali?")) {
+                    if (data.transactions) {
                         transactions = data.transactions;
                         localStorage.setItem(STORAGE_KEY, JSON.stringify(transactions));
                         updateUI(); toggleSettings(false);
