@@ -12,7 +12,8 @@
     <meta name="apple-mobile-web-app-title" content="SpesePro">
     <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/6039/6039232.png">
     
-    <link rel="manifest" href="data:application/json;base64,ewogICJkZWZhdWx0X2xvY2FsZSI6ICJpdCIsCiAgIm5hbWUiOiAiR2VzdGlvbmUgU3Blc2UgUHJvIiwKICAic2hvcnRfbmFtZSI6ICJTcGVzZVBybyIsCiAgInN0YXJ0X3VybCI6ICIuIiwKICAiaWNvbnMiOiBbCiAgICB7CiAgICAgICJzcmMiOiAiaHR0cHM6Ly9jZG4taWNvbnMtcG5nLmZsYXRpY29uLmNvbS81MTIvNjAzOS82MDM5MjMyLnBuZyIsCiAgICAgICJ0eXBlIjogImltYWdlL3BuZyIsCiAgICAgICJzaXplcyI6ICI1MTJ4NTEyIiwKICAgICAgInB1cnBvc2UiOiAiYW55IG1hc2thYmxlIgogICB9CiAgXSwKICAic2NvcGUiOiAiLyIsCiAgImRpc3BsYXkiOiAic3RhbmRhbG9uZSIsCiAgImJhY2tncm91bmRfY29sb3IiOiAiIzRmNDZlNSIsCiAgInRoZW1lX2NvbG9yIjogIiM0ZjQ2ZTUiCn0=">
+    <!-- Manifest Base64 -->
+    <link rel="manifest" href="data:application/json;base64,ewogICJkZWZhdWx0X2xvY2FsZSI6ICJpdCIsCiAgIm5hbWUiOiAiR2VzdGlvbmUgU3Blc2UgUHJvIiwKICAic2hvcnRfbmFtZSI6ICJTcGVzZVBybyIsCiAgInN0YXJ0X3VybCI6ICIuIiwKICAiaWNvbnMiOiBbCiAgICB7CiAgICAgICJzcmMiOiAiaHR0cHM6Ly9jZG4taWNvbnMtcG5nLmZsYXRpY29uLmNvbS81MTIvNjAzOS82MDM5MjMyLnBuZyIsCiAgICAgICJ0eXBlIjogImltYWdlL3BuZyIsCiAgICAgICJzaXplcyI6ICI1MTJ4NTEyIiwKICAgICAgInB1cnBvc2UiOiAiYW55IG1hc2thYmxlIgogICAgfQogIF0sCiAgImRpc3BsYXkiOiAic3RhbmRhbG9uZSIsCiAgImJhY2tncm91bmRfY29sb3IiOiAiIzRmNDZlNSIsCiAgInRoZW1lX2NvbG9yIjogIiM0ZjQ2ZTUiCn0=">
 
     <meta name="theme-color" content="#4f46e5">
     
@@ -81,7 +82,7 @@
                 <div class="text-center">
                     <div class="flex items-center justify-center space-x-4 mb-1">
                         <button onclick="navigateAccount(-1)" class="p-1 opacity-50 hover:opacity-100"><svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd" /></svg></button>
-                        <h1 id="account-name-display" class="text-xs uppercase font-medium tracking-widest text-indigo-100">Caricamento...</h1>
+                        <h1 id="account-name-display" class="text-xs uppercase font-medium tracking-widest text-indigo-100">Conto Corrente</h1>
                         <button onclick="navigateAccount(1)" class="p-1 opacity-50 hover:opacity-100"><svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" /></svg></button>
                     </div>
                     <div id="balance" class="text-4xl font-bold">€ 0.00</div>
@@ -132,7 +133,7 @@
             <div class="p-6 space-y-6">
                 <!-- Sezione Conti -->
                 <div class="settings-card">
-                    <h3 class="text-xs font-bold text-gray-400 uppercase mb-3 text-indigo-600">I Tuoi Conti</h3>
+                    <h3 class="text-xs font-bold text-gray-400 uppercase mb-3">I Tuoi Conti</h3>
                     <div id="account-list-settings" class="space-y-2 mb-4"></div>
                     <div class="flex gap-2">
                         <input type="text" id="new-account-name" placeholder="Nuovo conto..." class="flex-1 p-2 bg-gray-50 rounded-lg text-sm border outline-none">
@@ -140,35 +141,31 @@
                     </div>
                 </div>
 
-                <!-- NUOVA Sezione API Gemini -->
+                <!-- Sezione Backup Avanzato -->
                 <div class="settings-card">
-                    <h3 class="text-xs font-bold text-gray-400 uppercase mb-3 text-indigo-600 italic">Intelligenza Artificiale</h3>
-                    <p class="text-[11px] text-gray-500 mb-3 leading-tight">Inserisci la tua Chiave API Gemini per abilitare la scansione intelligente degli scontrini.</p>
-                    <div class="flex flex-col space-y-2">
-                        <div class="relative">
-                            <input type="password" id="api-key-input" placeholder="AI_Key_..." class="w-full p-3 bg-gray-50 rounded-xl text-xs border border-gray-200 outline-none pr-10">
-                            <button onclick="toggleApiKeyVisibility()" class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400">
-                                <svg id="eye-icon" xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
-                            </button>
-                        </div>
-                        <button onclick="saveApiKey()" class="w-full py-2 bg-indigo-600 text-white rounded-xl text-xs font-bold shadow-sm">
-                            Salva Chiave API
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Sezione Backup -->
-                <div class="settings-card">
-                    <h3 class="text-xs font-bold text-gray-400 uppercase mb-3 text-indigo-600">Salvataggio & Cloud</h3>
-                    <p class="text-[11px] text-gray-500 mb-4 leading-tight">Esporta i tuoi dati per salvarli su iCloud, Google Drive o inviarli via email.</p>
+                    <h3 class="text-xs font-bold text-gray-400 uppercase mb-3">Salvataggio & Cloud</h3>
+                    <p class="text-[11px] text-gray-500 mb-4 leading-tight">Puoi salvare il backup su Google Drive, iCloud o nel tuo File System per non perdere mai i dati.</p>
                     
                     <div class="space-y-3">
-                        <button onclick="shareBackup()" class="w-full flex items-center justify-between p-4 bg-indigo-100 text-indigo-700 rounded-xl shadow-sm active:bg-indigo-200 transition-colors">
+                        <!-- Opzione 1: Condivisione -->
+                        <button onclick="shareBackup()" class="w-full flex items-center justify-between p-4 bg-indigo-600 text-white rounded-xl shadow-sm active:bg-indigo-700 transition-colors">
                             <div class="flex items-center space-x-3 text-left">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 100-3.316 3 3 0 000 3.316m0 0a3 3 0 100 3.316 3 3 0 000-3.316" /></svg>
                                 <div>
-                                    <div class="font-bold text-sm">Crea Backup JSON</div>
-                                    <div class="text-[10px] opacity-80 uppercase font-medium">Condividi o Salva file</div>
+                                    <div class="font-bold text-sm">Invia a Cloud / Drive</div>
+                                    <div class="text-[10px] opacity-80 uppercase font-medium">Usa menu di sistema</div>
+                                </div>
+                            </div>
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>
+                        </button>
+
+                        <!-- Opzione 2: File System Access -->
+                        <button onclick="saveToFileSystem()" class="w-full flex items-center justify-between p-4 bg-white border border-gray-200 text-gray-700 rounded-xl shadow-sm active:bg-gray-50 transition-colors">
+                            <div class="flex items-center space-x-3 text-left">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 19a2 2 0 01-2-2V7a2 2 0 012-2h4l2 2h4a2 2 0 012 2v1m-6 9l3-3m0 0l3 3m-3-3V10" /></svg>
+                                <div>
+                                    <div class="font-bold text-sm text-gray-800">Salva in locale</div>
+                                    <div class="text-[10px] text-gray-400 uppercase font-medium">Scegli cartella o Drive</div>
                                 </div>
                             </div>
                         </button>
@@ -176,7 +173,7 @@
                         <div class="grid grid-cols-2 gap-3">
                             <label class="flex flex-col items-center justify-center p-3 bg-gray-50 border-2 border-dashed border-gray-300 rounded-xl cursor-pointer hover:border-indigo-400 transition-colors">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" /></svg>
-                                <span class="text-[10px] font-bold text-gray-500 mt-1 uppercase">Importa JSON</span>
+                                <span class="text-[10px] font-bold text-gray-500 mt-1 uppercase">Importa</span>
                                 <input type="file" id="import-json" class="hidden" accept=".json" onchange="importJSON(event)">
                             </label>
                             
@@ -186,6 +183,11 @@
                             </button>
                         </div>
                     </div>
+                </div>
+
+                <div class="settings-card">
+                    <h3 class="text-xs font-bold text-gray-400 uppercase mb-3">AI Engine</h3>
+                    <button onclick="promptApiKey()" class="w-full py-2 bg-indigo-50 text-indigo-700 rounded-lg text-xs font-bold">Aggiorna API Key Gemini</button>
                 </div>
 
                 <div class="settings-card border-red-100 bg-red-50">
@@ -213,6 +215,16 @@
                     <div class="relative">
                         <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1 ml-1">Importo (€)</label>
                         <input type="number" id="amount-input" step="0.01" inputmode="decimal" placeholder="0.00" class="w-full p-4 bg-gray-100 rounded-2xl text-3xl font-bold text-center focus:ring-2 focus:ring-indigo-500 outline-none">
+                        
+                        <button id="camera-btn" onclick="triggerCamera()" class="absolute right-3 bottom-3 p-3 bg-white shadow-md rounded-full text-indigo-600 active:scale-90 transition-transform">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+                        </button>
+                        <input type="file" id="camera-input" accept="image/*" capture="environment" class="hidden" onchange="handleImage(event)">
+                        
+                        <div id="camera-loader" class="absolute inset-0 bg-white/80 rounded-2xl flex items-center justify-center hidden">
+                            <div class="loader mr-2"></div>
+                            <span class="text-xs font-bold text-indigo-600 uppercase tracking-tighter">Analisi Scontrino...</span>
+                        </div>
                     </div>
 
                     <div>
@@ -238,8 +250,8 @@
     <script>
         const STORAGE_TX = 'spese_v3_data';
         const STORAGE_ACC = 'spese_v3_accounts';
-        const STORAGE_API_KEY = 'spese_v3_api_key';
-        
+        let apiKey = localStorage.getItem('gemini_api_key') || ""; 
+
         const categories = {
             expense: [
                 { id: 'cibo', label: 'Cibo', icon: '🍎', color: '#f87171' },
@@ -259,13 +271,14 @@
 
         let transactions = JSON.parse(localStorage.getItem(STORAGE_TX)) || [];
         let accounts = JSON.parse(localStorage.getItem(STORAGE_ACC)) || [{ id: 'acc_01', name: 'Conto Corrente' }];
-        let activeAccountId = accounts[0]?.id || 'acc_01';
+        let activeAccountId = accounts[0].id;
         let viewDate = new Date();
         let currentMode = 'expense';
         let selectedCategory = 'altro';
         let editingTxId = null;
         let chartInstance = null;
 
+        // UI TOAST
         function showToast(msg) {
             const t = document.getElementById('toast');
             t.textContent = msg;
@@ -273,62 +286,52 @@
             setTimeout(() => t.style.opacity = '0', 2500);
         }
 
-        // GESTIONE API KEY
-        function saveApiKey() {
-            const key = document.getElementById('api-key-input').value.trim();
-            if (key) {
-                localStorage.setItem(STORAGE_API_KEY, key);
-                showToast("Chiave API salvata!");
-            } else {
-                localStorage.removeItem(STORAGE_API_KEY);
-                showToast("Chiave API rimossa.");
-            }
-        }
-
-        function toggleApiKeyVisibility() {
-            const input = document.getElementById('api-key-input');
-            const icon = document.getElementById('eye-icon');
-            if (input.type === 'password') {
-                input.type = 'text';
-                icon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l18 18" />';
-            } else {
-                input.type = 'password';
-                icon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />';
-            }
-        }
-
-        // GESTIONE BACKUP JSON
+        // BACKUP AVANZATO
         async function shareBackup() {
-            const dataToSave = {
-                app: "SpesePro",
-                version: "3.2",
-                timestamp: Date.now(),
-                transactions: transactions,
-                accounts: accounts,
-                settings: {
-                    hasApiKey: !!localStorage.getItem(STORAGE_API_KEY)
-                }
-            };
-            const jsonString = JSON.stringify(dataToSave, null, 2);
-            const fileName = `backup_spese_${new Date().toISOString().split('T')[0]}.json`;
-
+            const data = { app: "SpesePro", version: "3.0", transactions, accounts };
+            const json = JSON.stringify(data, null, 2);
+            const filename = `backup_spesepro_${new Date().toISOString().split('T')[0]}.json`;
+            
             if (navigator.share) {
+                const file = new File([json], filename, { type: 'application/json' });
                 try {
-                    const file = new File([jsonString], fileName, { type: 'application/json' });
                     await navigator.share({
                         title: 'Backup SpesePro',
+                        text: 'File di backup della mia app di gestione spese.',
                         files: [file]
                     });
-                    showToast("Backup condiviso!");
+                    showToast("Menu condivisione aperto!");
                 } catch (err) {
-                    if(err.name !== 'AbortError') downloadBackup(jsonString, fileName);
+                    if(err.name !== 'AbortError') showToast("Errore condivisione");
+                    downloadBackupManual(json, filename);
                 }
             } else {
-                downloadBackup(jsonString, fileName);
+                downloadBackupManual(json, filename);
             }
         }
 
-        function downloadBackup(json, filename) {
+        async function saveToFileSystem() {
+            const data = { app: "SpesePro", transactions, accounts };
+            const json = JSON.stringify(data, null, 2);
+            if ('showSaveFilePicker' in window) {
+                try {
+                    const handle = await window.showSaveFilePicker({
+                        suggestedName: `backup_spese_${new Date().toISOString().split('T')[0]}.json`,
+                        types: [{ description: 'JSON File', accept: { 'application/json': ['.json'] } }],
+                    });
+                    const writable = await handle.createWritable();
+                    await writable.write(json);
+                    await writable.close();
+                    showToast("Salvato con successo!");
+                } catch (err) {
+                    if(err.name !== 'AbortError') showToast("Impossibile salvare");
+                }
+            } else {
+                downloadBackupManual(json, `backup_spese_${new Date().toISOString().split('T')[0]}.json`);
+            }
+        }
+
+        function downloadBackupManual(json, filename) {
             const blob = new Blob([json], { type: 'application/json' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
@@ -336,42 +339,7 @@
             a.download = filename;
             a.click();
             URL.revokeObjectURL(url);
-            showToast("Backup scaricato locale.");
-        }
-
-        function importJSON(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                try {
-                    const importedData = JSON.parse(e.target.result);
-                    
-                    if (!importedData.transactions || !Array.isArray(importedData.transactions)) {
-                        throw new Error("Formato transazioni non valido");
-                    }
-                    if (!importedData.accounts || !Array.isArray(importedData.accounts)) {
-                        throw new Error("Formato conti non valido");
-                    }
-
-                    if (confirm(`Ripristinare backup del ${new Date(importedData.timestamp || Date.now()).toLocaleDateString()}? I dati attuali verranno sovrascritti.`)) {
-                        transactions = importedData.transactions;
-                        accounts = importedData.accounts;
-                        
-                        localStorage.setItem(STORAGE_TX, JSON.stringify(transactions));
-                        localStorage.setItem(STORAGE_ACC, JSON.stringify(accounts));
-                        
-                        showToast("Dati ripristinati con successo!");
-                        setTimeout(() => location.reload(), 1000);
-                    }
-                } catch (err) {
-                    console.error(err);
-                    alert("Errore: Il file selezionato non è un backup valido di SpesePro.");
-                }
-            };
-            reader.readAsText(file);
-            event.target.value = '';
+            showToast("Backup scaricato!");
         }
 
         // LOGICA CONTI
@@ -430,11 +398,7 @@
         
         function toggleSettings(show) {
             const view = document.getElementById('settings-view');
-            if(show) { 
-                renderSettingsAccounts(); 
-                document.getElementById('api-key-input').value = localStorage.getItem(STORAGE_API_KEY) || '';
-                view.classList.remove('hidden'); 
-            }
+            if(show) { renderSettingsAccounts(); view.classList.remove('hidden'); }
             else { view.classList.add('hidden'); }
         }
 
@@ -444,7 +408,7 @@
             const currentAcc = accounts.find(a => a.id === activeAccountId) || accounts[0];
             
             document.getElementById('current-month-display').textContent = viewDate.toLocaleDateString('it-IT', { month: 'long', year: 'numeric' });
-            document.getElementById('account-name-display').textContent = currentAcc?.name || "Nessun Conto";
+            document.getElementById('account-name-display').textContent = currentAcc.name;
 
             const filtered = transactions.filter(t => {
                 const d = new Date(t.date);
@@ -483,6 +447,45 @@
             renderChart(filtered.filter(t => t.type === 'expense'));
         }
 
+        // AI CAMERA LOGIC
+        async function handleImage(event) {
+            const file = event.target.files[0];
+            if (!file || !apiKey) return;
+            const loader = document.getElementById('camera-loader');
+            loader.classList.remove('hidden');
+            try {
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = async () => {
+                    const b64 = reader.result.split(',')[1];
+                    const result = await analyzeReceipt(b64);
+                    if (result.amount) document.getElementById('amount-input').value = result.amount;
+                    if (result.description) document.getElementById('desc-input').value = result.description;
+                    loader.classList.add('hidden');
+                };
+            } catch (err) { alert(err.message); loader.classList.add('hidden'); }
+        }
+
+        async function analyzeReceipt(base64) {
+            const prompt = "JSON: { 'amount': float, 'description': 'store_name' }. Only JSON.";
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    contents: [{ parts: [{ text: prompt }, { inlineData: { mimeType: "image/jpeg", data: base64 } }] }],
+                    generationConfig: { responseMimeType: "application/json" }
+                })
+            });
+            const data = await response.json();
+            return JSON.parse(data.candidates[0].content.parts[0].text);
+        }
+
+        function triggerCamera() {
+            if(!apiKey) { promptApiKey(); return; }
+            document.getElementById('camera-input').click();
+        }
+
         // GESTIONE MODAL
         function openModal(mode, tx = null) {
             currentMode = mode;
@@ -493,6 +496,7 @@
             document.getElementById('modal-title').textContent = editingTxId ? 'Modifica' : (mode === 'income' ? 'Entrata' : 'Uscita');
             document.getElementById('delete-btn').classList.toggle('hidden', !editingTxId);
 
+            // Dinamicamente aggiorna il colore del tasto Salva
             const saveBtn = document.getElementById('save-btn');
             if(mode === 'income') {
                 saveBtn.classList.remove('bg-red-500');
@@ -547,6 +551,11 @@
         function changeMonth(d) { viewDate.setMonth(viewDate.getMonth() + d); updateUI(); }
         function closeModal() { document.getElementById('modal-content').classList.add('translate-y-full'); setTimeout(() => document.getElementById('modal').classList.add('hidden'), 300); }
 
+        function promptApiKey() {
+            const key = prompt("Inserisci API Key Gemini:", apiKey);
+            if (key !== null) { apiKey = key; localStorage.setItem('gemini_api_key', key); }
+        }
+
         function renderChart(exps) {
             const ctx = document.getElementById('expenseChart');
             const container = document.getElementById('chart-container');
@@ -586,7 +595,26 @@
                 accounts.find(a => a.id === t.accountId)?.name || "N/A"
             ].join(';'));
             const blob = new Blob(["\ufeff" + [headers.join(';'), ...rows].join('\n')], { type: 'text/csv' });
-            downloadBackup(blob, `spese_export.csv`);
+            downloadBackupManual(blob, `spese_export.csv`);
+        }
+
+        function importJSON(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const r = new FileReader();
+            r.onload = (e) => {
+                try {
+                    const d = JSON.parse(e.target.result);
+                    if (confirm("Ripristinare backup?")) {
+                        transactions = d.transactions || [];
+                        accounts = d.accounts || accounts;
+                        localStorage.setItem(STORAGE_TX, JSON.stringify(transactions));
+                        localStorage.setItem(STORAGE_ACC, JSON.stringify(accounts));
+                        location.reload();
+                    }
+                } catch { showToast("File non valido"); }
+            };
+            r.readAsText(file);
         }
 
         function clearHistory() { if(confirm("Cancellare TUTTO?")) { localStorage.clear(); location.reload(); } }
