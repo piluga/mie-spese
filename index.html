@@ -130,10 +130,15 @@
 
                 <!-- Sezione Backup -->
                 <div class="settings-card">
-                    <h3 class="text-xs font-bold text-gray-400 uppercase mb-3">Dati</h3>
+                    <h3 class="text-xs font-bold text-gray-400 uppercase mb-3">Dati & Export</h3>
                     <div class="grid grid-cols-1 gap-3">
+                        <button onclick="exportCSV()" class="w-full flex items-center justify-between p-3 bg-green-600 text-white rounded-xl text-sm font-bold">
+                            <span>Esporta in Excel (CSV)</span>
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+                        </button>
                         <button onclick="exportJSON()" class="w-full flex items-center justify-between p-3 bg-indigo-600 text-white rounded-xl text-sm font-bold">
                             <span>Esporta Backup (JSON)</span>
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" /></svg>
                         </button>
                         <label class="w-full flex items-center justify-between p-3 bg-white border-2 border-indigo-600 text-indigo-600 rounded-xl text-sm font-bold cursor-pointer">
                             <span>Importa Backup (JSON)</span>
@@ -579,6 +584,34 @@
         }
 
         // --- IMPORT / EXPORT ---
+
+        function exportCSV() {
+            if (transactions.length === 0) return alert("Nessun dato da esportare.");
+
+            // Intestazioni CSV
+            const headers = ["Data", "Descrizione", "Importo", "Categoria", "Tipo", "Conto"];
+            const rows = transactions.map(t => {
+                const acc = accounts.find(a => a.id === t.accountId)?.name || "N/A";
+                const cat = [...categories.expense, ...categories.income].find(c => c.id === t.category)?.label || t.category;
+                const d = new Date(t.date).toLocaleDateString('it-IT');
+                return [
+                    d,
+                    `"${(t.description || "").replace(/"/g, '""')}"`, // Gestione virgolette
+                    t.amount.toFixed(2).replace('.', ','), // Virgola per Excel IT
+                    cat,
+                    t.type === 'income' ? 'Entrata' : 'Uscita',
+                    acc
+                ].join(';'); // Punto e virgola per CSV compatibile Excel IT
+            });
+
+            const csvContent = [headers.join(';'), ...rows].join('\n');
+            const blob = new Blob(["\ufeff" + csvContent], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement("a");
+            link.setAttribute("href", url);
+            link.setAttribute("download", `movimenti_finanzapro_${new Date().toISOString().split('T')[0]}.csv`);
+            link.click();
+        }
 
         function exportJSON() {
             const backup = { app: "FinanzaPro Multi-Conto", date: new Date().toISOString(), transactions, accounts };
