@@ -6,15 +6,16 @@
     
     <title>FinanzaPro Multi-Conto</title>
     
-    <!-- Meta tag per il comportamento da App -->
-    <meta name="mobile-web-app-capable" content="yes">
+    <!-- Meta tag per il comportamento da App su iOS -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="FinanzaPro">
+    <meta name="apple-mobile-web-app-title" content="SpesePro">
+    <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/6039/6039232.png">
     
-    <!-- Il Manifest definisce l'icona per Android e l'installazione PWA -->
+    <!-- Il Manifest aggiornato che abilita il tasto "Installa" su Android/Chrome -->
     <link rel="manifest" href="data:application/json;base64,ewogICJkZWZhdWx0X2xvY2FsZSI6ICJpdCIsCiAgIm5hbWUiOiAiR2VzdGlvbmUgU3Blc2UgUHJvIiwKICAic2hvcnRfbmFtZSI6ICJTcGVzZVBybyIsCiAgInN0YXJ0X3VybCI6ICIuIiwKICAiaWNvbnMiOiBbCiAgICB7CiAgICAgICJzcmMiOiAiaHR0cHM6Ly9jZG4taWNvbnMtcG5nLmZsYXRpY29uLmNvbS81MTIvNjAzOS82MDM5MjMyLnBuZyIsCiAgICAgICJ0eXBlIjogImltYWdlL3BuZyIsCiAgICAgICJzaXplcyI6ICI1MTJ4NTEyIiwKICAgICAgInB1cnBvc2UiOiAiYW55IG1hc2thYmxlIgogICAgfQogIF0sCiAgImRpc3BsYXkiOiAic3RhbmRhbG9uZSIsCiAgImJhY2tncm91bmRfY29sb3IiOiAiIzRmNDZlNSIsCiAgInRoZW1lX2NvbG9yIjogIiM0ZjQ2ZTUiCn0=">
 
+    <meta name="theme-color" content="#4f46e5">
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -121,7 +122,6 @@
             </header>
             
             <div class="p-6 space-y-6">
-                <!-- Sezione Gestione Conti -->
                 <div class="settings-card">
                     <h3 class="text-xs font-bold text-gray-400 uppercase mb-3">I Tuoi Conti</h3>
                     <div id="account-list-settings" class="space-y-2 mb-4"></div>
@@ -131,7 +131,6 @@
                     </div>
                 </div>
 
-                <!-- Sezione AI -->
                 <div class="settings-card">
                     <h3 class="text-xs font-bold text-gray-400 uppercase mb-3">Intelligenza Artificiale</h3>
                     <div class="space-y-3">
@@ -139,7 +138,6 @@
                     </div>
                 </div>
 
-                <!-- Sezione Dati & Export -->
                 <div class="settings-card">
                     <h3 class="text-xs font-bold text-gray-400 uppercase mb-3">Dati & Export</h3>
                     <div class="grid grid-cols-1 gap-3">
@@ -176,15 +174,12 @@
                 </div>
 
                 <div class="space-y-4">
-                    <!-- Selettore Conto -->
                     <div>
                         <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1 ml-1">Conto</label>
                         <select id="modal-account-select" class="w-full p-3 bg-gray-100 rounded-xl font-bold outline-none border-none">
-                            <!-- Popolato via JS -->
                         </select>
                     </div>
 
-                    <!-- Input Importo con Camera -->
                     <div class="relative">
                         <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1 ml-1">Importo (€)</label>
                         <input type="number" id="amount-input" step="0.01" inputmode="decimal" placeholder="0.00" class="w-full p-4 bg-gray-100 rounded-2xl text-3xl font-bold text-center focus:ring-2 focus:ring-indigo-500 outline-none">
@@ -255,8 +250,6 @@
         let editingTxId = null;
         let chartInstance = null;
 
-        // --- GESTIONE CONTI ---
-
         function addAccount() {
             const input = document.getElementById('new-account-name');
             const name = input.value.trim();
@@ -317,8 +310,6 @@
                 </div>
             `).join('');
         }
-
-        // --- GESTIONE INTERFACCIA ---
         
         function toggleSettings(show) {
             const view = document.getElementById('settings-view');
@@ -380,8 +371,6 @@
             renderChart(filtered.filter(t => t.type === 'expense'));
         }
 
-        // --- FOTOCAMERA E AI ---
-
         function triggerCamera() {
             if (!apiKey) {
                 const key = prompt("Inserisci la tua API Key Gemini per usare la fotocamera:");
@@ -396,14 +385,11 @@
         async function handleImage(event) {
             const file = event.target.files[0];
             if (!file) return;
-
             const loader = document.getElementById('camera-loader');
             loader.classList.remove('hidden');
-
             try {
                 const base64 = await fileToBase64(file);
                 const result = await analyzeReceipt(base64);
-                
                 if (result.amount) document.getElementById('amount-input').value = result.amount;
                 if (result.description) document.getElementById('desc-input').value = result.description;
             } catch (err) {
@@ -426,7 +412,6 @@
         async function analyzeReceipt(base64) {
             const prompt = "Analizza questo scontrino e restituisci SOLO un JSON con: { 'amount': numero_totale, 'description': 'nome_negozio' }. Se non trovi i dati, lascia vuoto.";
             const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
-            
             const response = await fetch(url, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -440,14 +425,11 @@
                     generationConfig: { responseMimeType: "application/json" }
                 })
             });
-
             if (!response.ok) throw new Error("API fallita");
             const data = await response.json();
             const text = data.candidates[0].content.parts[0].text;
             return JSON.parse(text);
         }
-
-        // --- CORE APP LOGIC ---
 
         function openModal(mode, tx = null) {
             currentMode = mode;
@@ -501,10 +483,8 @@
             const amtStr = document.getElementById('amount-input').value;
             const amt = parseFloat(amtStr);
             if (isNaN(amt) || amt <= 0) return;
-            
             const desc = document.getElementById('desc-input').value.trim();
             const targetAccId = document.getElementById('modal-account-select').value;
-
             if (editingTxId) {
                 const idx = transactions.findIndex(t => t.id === editingTxId);
                 if (idx !== -1) {
@@ -524,7 +504,6 @@
                     date: new Date().toISOString() 
                 });
             }
-            
             localStorage.setItem(STORAGE_TX, JSON.stringify(transactions));
             activeAccountId = targetAccId;
             updateUI(); 
@@ -559,20 +538,16 @@
             }
         }
 
-        // --- GRAFICI ---
-
         function renderChart(exps) {
             const ctx = document.getElementById('expenseChart');
             const container = document.getElementById('chart-container');
             if (exps.length === 0) { container.classList.add('hidden'); return; }
             container.classList.remove('hidden');
-
             const dataMap = {};
             exps.forEach(e => {
                 const label = categories.expense.find(c => c.id === e.category)?.label || 'Altro';
                 dataMap[label] = (dataMap[label] || 0) + e.amount;
             });
-
             if (chartInstance) chartInstance.destroy();
             chartInstance = new Chart(ctx, {
                 type: 'doughnut',
@@ -590,8 +565,6 @@
                 }
             });
         }
-
-        // --- IMPORT / EXPORT ---
 
         function exportCSV() {
             if (transactions.length === 0) return alert("Nessun dato da esportare.");
