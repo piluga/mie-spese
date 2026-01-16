@@ -147,24 +147,24 @@
                     <p class="text-[11px] text-gray-500 mb-4 leading-tight">Puoi salvare il backup su Google Drive, iCloud o nel tuo File System per non perdere mai i dati.</p>
                     
                     <div class="space-y-3">
-                        <!-- Opzione 1: Condivisione (Ideale per Mobile Drive/Cloud) -->
+                        <!-- Opzione 1: Condivisione -->
                         <button onclick="shareBackup()" class="w-full flex items-center justify-between p-4 bg-indigo-600 text-white rounded-xl shadow-sm active:bg-indigo-700 transition-colors">
                             <div class="flex items-center space-x-3 text-left">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 100-3.316 3 3 0 000 3.316m0 0a3 3 0 100 3.316 3 3 0 000-3.316" /></svg>
                                 <div>
-                                    <div class="font-bold text-sm">Salva in locale</div>
+                                    <div class="font-bold text-sm">Invia a Cloud / Drive</div>
                                     <div class="text-[10px] opacity-80 uppercase font-medium">Usa menu di sistema</div>
                                 </div>
                             </div>
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>
                         </button>
 
-                        <!-- Opzione 2: File System Access (Ideale per Desktop) -->
+                        <!-- Opzione 2: File System Access -->
                         <button onclick="saveToFileSystem()" class="w-full flex items-center justify-between p-4 bg-white border border-gray-200 text-gray-700 rounded-xl shadow-sm active:bg-gray-50 transition-colors">
                             <div class="flex items-center space-x-3 text-left">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 19a2 2 0 01-2-2V7a2 2 0 012-2h4l2 2h4a2 2 0 012 2v1m-6 9l3-3m0 0l3 3m-3-3V10" /></svg>
                                 <div>
-                                    <div class="font-bold text-sm text-gray-800">Invia a Cloud / Drive</div>
+                                    <div class="font-bold text-sm text-gray-800">Salva in locale</div>
                                     <div class="text-[10px] text-gray-400 uppercase font-medium">Scegli cartella o Drive</div>
                                 </div>
                             </div>
@@ -286,7 +286,7 @@
             setTimeout(() => t.style.opacity = '0', 2500);
         }
 
-        // BACKUP AVANZATO: CONDIVISIONE (Google Drive, WhatsApp, etc)
+        // BACKUP AVANZATO
         async function shareBackup() {
             const data = { app: "SpesePro", version: "3.0", transactions, accounts };
             const json = JSON.stringify(data, null, 2);
@@ -303,7 +303,6 @@
                     showToast("Menu condivisione aperto!");
                 } catch (err) {
                     if(err.name !== 'AbortError') showToast("Errore condivisione");
-                    // Fallback se fallisce la condivisione file
                     downloadBackupManual(json, filename);
                 }
             } else {
@@ -311,12 +310,9 @@
             }
         }
 
-        // BACKUP AVANZATO: FILE SYSTEM ACCESS (Salvataggio diretto su cartella PC/Mac o Drive sincronizzato)
         async function saveToFileSystem() {
             const data = { app: "SpesePro", transactions, accounts };
             const json = JSON.stringify(data, null, 2);
-            
-            // Verifica supporto API moderna (Desktop Chrome/Edge/Safari)
             if ('showSaveFilePicker' in window) {
                 try {
                     const handle = await window.showSaveFilePicker({
@@ -331,7 +327,6 @@
                     if(err.name !== 'AbortError') showToast("Impossibile salvare");
                 }
             } else {
-                // Fallback classico se browser non supporta salvataggio diretto
                 downloadBackupManual(json, `backup_spese_${new Date().toISOString().split('T')[0]}.json`);
             }
         }
@@ -501,6 +496,16 @@
             document.getElementById('modal-title').textContent = editingTxId ? 'Modifica' : (mode === 'income' ? 'Entrata' : 'Uscita');
             document.getElementById('delete-btn').classList.toggle('hidden', !editingTxId);
 
+            // Dinamicamente aggiorna il colore del tasto Salva
+            const saveBtn = document.getElementById('save-btn');
+            if(mode === 'income') {
+                saveBtn.classList.remove('bg-red-500');
+                saveBtn.classList.add('bg-green-500');
+            } else {
+                saveBtn.classList.remove('bg-green-500');
+                saveBtn.classList.add('bg-red-500');
+            }
+
             const accSelect = document.getElementById('modal-account-select');
             accSelect.innerHTML = accounts.map(a => `<option value="${a.id}" ${a.id === (tx ? tx.accountId : activeAccountId) ? 'selected' : ''}>${a.name}</option>`).join('');
 
@@ -619,4 +624,3 @@
     </script>
 </body>
 </html>
-
