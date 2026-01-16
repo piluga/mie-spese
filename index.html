@@ -6,12 +6,20 @@
     
     <title>FinanzaPro Multi-Conto</title>
     
-    <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/6039/6039232.png">
-    
-    <meta name="theme-color" content="#4f46e5">
+    <!-- Meta tag per il comportamento da App -->
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="FinanzaPro">
+    
+    <!-- Icone -->
+    <link rel="icon" type="image/png" href="https://cdn-icons-png.flaticon.com/512/6039/6039232.png">
+    <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/6039/6039232.png">
+    
+    <!-- In-line Web App Manifest (Base64) per stimolare l'installazione su Chrome -->
+    <link rel="manifest" href="data:application/manifest+json;base64,ewogICJnameiOiAiRmluYW56YVBybyBNdWx0aS1Db250byIsCiAgInNob3J0X25hbWUiOiAiRmluYW56YVBybyIsCiAgInN0YXJ0X3VybCI6ICIuIiwKICAiZGlzcGxheSI6ICJzdGFuZGFsb25lIiwKICAiYmFja2dyb3VuZF9jb2xvciI6ICIjZjNmNGY2IiwKICAidGhlbWVfY29sb3IiOiAiIzRmNDZlNSIKICB9">
+
+    <meta name="theme-color" content="#4f46e5">
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -20,6 +28,7 @@
             background-color: #f3f4f6;
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
         }
         .loader {
             border: 2px solid #f3f3f3;
@@ -35,6 +44,10 @@
         input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
         .transaction-card:active { transform: scale(0.98); background-color: #f9fafb; }
         .settings-card { background: white; border-radius: 1rem; padding: 1rem; margin-bottom: 1rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        
+        /* Ottimizzazione per notch/safe areas */
+        header { padding-top: env(safe-area-inset-top, 2.5rem); }
+        .pb-safe { padding-bottom: env(safe-area-inset-bottom, 1rem); }
     </style>
 </head>
 <body class="antialiased text-gray-900">
@@ -44,7 +57,7 @@
         <!-- View Principale -->
         <div id="main-view">
             <!-- Header -->
-            <header class="bg-indigo-600 text-white p-6 rounded-b-[2.5rem] shadow-xl pt-10">
+            <header class="bg-indigo-600 text-white p-6 rounded-b-[2.5rem] shadow-xl">
                 <div class="flex justify-between items-center mb-4">
                     <button onclick="changeMonth(-1)" class="p-2 hover:bg-indigo-500 rounded-full transition-colors active:bg-indigo-400">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" /></svg>
@@ -73,6 +86,7 @@
             </header>
 
             <main class="flex-grow p-4">
+                <!-- Bottoni Azione Rapida -->
                 <div class="grid grid-cols-2 gap-4 -mt-10 mb-8">
                     <button onclick="openModal('income')" class="bg-green-500 text-white p-4 rounded-2xl shadow-lg flex items-center justify-center space-x-2 active:scale-95 transition-transform">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" /></svg>
@@ -84,10 +98,12 @@
                     </button>
                 </div>
 
+                <!-- Grafico -->
                 <div id="chart-container" class="mb-8 bg-gray-50 p-4 rounded-2xl hidden">
                     <canvas id="expenseChart" width="200" height="200"></canvas>
                 </div>
 
+                <!-- Lista Movimenti -->
                 <div class="flex justify-between items-center mb-4">
                     <div class="flex flex-col">
                         <h2 class="text-xl font-bold text-gray-800 italic">Movimenti</h2>
@@ -100,7 +116,7 @@
         </div>
 
         <!-- View Impostazioni -->
-        <div id="settings-view" class="hidden absolute inset-0 bg-gray-50 z-40 overflow-y-auto">
+        <div id="settings-view" class="hidden absolute inset-0 bg-gray-50 z-40 overflow-y-auto pb-10">
             <header class="bg-white p-6 border-b sticky top-0 flex items-center justify-between">
                 <button onclick="toggleSettings(false)" class="p-2 text-indigo-600">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7 7-7" /></svg>
@@ -128,7 +144,7 @@
                     </div>
                 </div>
 
-                <!-- Sezione Backup -->
+                <!-- Sezione Dati & Export -->
                 <div class="settings-card">
                     <h3 class="text-xs font-bold text-gray-400 uppercase mb-3">Dati & Export</h3>
                     <div class="grid grid-cols-1 gap-3">
@@ -158,7 +174,7 @@
 
         <!-- Modal Inserimento -->
         <div id="modal" class="hidden fixed inset-0 bg-black/60 z-50 flex items-end justify-center backdrop-blur-sm">
-            <div id="modal-content" class="bg-white w-full max-w-md p-6 rounded-t-3xl modal-transition transform translate-y-full">
+            <div id="modal-content" class="bg-white w-full max-w-md p-6 rounded-t-3xl modal-transition transform translate-y-full pb-safe">
                 <div class="flex justify-between items-center mb-4">
                     <h3 id="modal-title" class="text-2xl font-bold text-gray-800 italic">Nuovo Movimento</h3>
                     <button onclick="closeModal()" class="text-gray-400 p-2"><svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg></button>
@@ -324,7 +340,6 @@
             const y = viewDate.getFullYear();
             const currentAcc = accounts.find(a => a.id === activeAccountId) || accounts[0];
             
-            // Aggiorna nome conto attivo se orfano o rinominato
             if (!accounts.find(a => a.id === activeAccountId)) activeAccountId = accounts[0].id;
             
             document.getElementById('current-month-display').textContent = viewDate.toLocaleDateString('it-IT', { month: 'long', year: 'numeric' });
@@ -449,10 +464,8 @@
             document.getElementById('save-btn').textContent = editingTxId ? 'Aggiorna' : 'Salva';
             document.getElementById('save-btn').className = `flex-[2] py-4 rounded-2xl text-white font-bold text-xl shadow-lg ${mode === 'income' ? 'bg-green-500' : 'bg-red-500'}`;
             
-            // Pulsante Elimina visibile solo in modifica
             document.getElementById('delete-btn').classList.toggle('hidden', !editingTxId);
 
-            // Popolamento selettore conti
             const accSelect = document.getElementById('modal-account-select');
             accSelect.innerHTML = accounts.map(a => `
                 <option value="${a.id}" ${a.id === (tx ? tx.accountId : activeAccountId) ? 'selected' : ''}>${a.name}</option>
@@ -492,7 +505,7 @@
         function saveTransaction() {
             const amtStr = document.getElementById('amount-input').value;
             const amt = parseFloat(amtStr);
-            if (isNaN(amt) || amt <= 0) return alert("Inserisci un importo valido");
+            if (isNaN(amt) || amt <= 0) return;
             
             const desc = document.getElementById('desc-input').value.trim();
             const targetAccId = document.getElementById('modal-account-select').value;
@@ -587,29 +600,25 @@
 
         function exportCSV() {
             if (transactions.length === 0) return alert("Nessun dato da esportare.");
-
-            // Intestazioni CSV
             const headers = ["Data", "Descrizione", "Importo", "Categoria", "Tipo", "Conto"];
             const rows = transactions.map(t => {
                 const acc = accounts.find(a => a.id === t.accountId)?.name || "N/A";
                 const cat = [...categories.expense, ...categories.income].find(c => c.id === t.category)?.label || t.category;
-                const d = new Date(t.date).toLocaleDateString('it-IT');
                 return [
-                    d,
-                    `"${(t.description || "").replace(/"/g, '""')}"`, // Gestione virgolette
-                    t.amount.toFixed(2).replace('.', ','), // Virgola per Excel IT
+                    new Date(t.date).toLocaleDateString('it-IT'),
+                    `"${(t.description || "").replace(/"/g, '""')}"`,
+                    t.amount.toFixed(2).replace('.', ','),
                     cat,
                     t.type === 'income' ? 'Entrata' : 'Uscita',
                     acc
-                ].join(';'); // Punto e virgola per CSV compatibile Excel IT
+                ].join(';');
             });
-
             const csvContent = [headers.join(';'), ...rows].join('\n');
             const blob = new Blob(["\ufeff" + csvContent], { type: 'text/csv;charset=utf-8;' });
             const url = URL.createObjectURL(blob);
             const link = document.createElement("a");
             link.setAttribute("href", url);
-            link.setAttribute("download", `movimenti_finanzapro_${new Date().toISOString().split('T')[0]}.csv`);
+            link.setAttribute("download", `export_finanza_${new Date().toISOString().split('T')[0]}.csv`);
             link.click();
         }
 
