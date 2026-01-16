@@ -2,36 +2,29 @@
 <html lang="it">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     
     <title>FinanzaPro Multi-Conto</title>
     
-    <!-- PWA & Mobile Meta -->
+    <!-- PWA Meta -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="SpesePro">
     <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/6039/6039232.png">
+    
+    <link rel="manifest" href="data:application/json;base64,ewogICJkZWZhdWx0X2xvY2FsZSI6ICJpdCIsCiAgIm5hbWUiOiAiR2VzdGlvbmUgU3Blc2UgUHJvIiwKICAic2hvcnRfbmFtZSI6ICJTcGVzZVBybyIsCiAgInN0YXJ0X3VybCI6ICIuIiwKICAiaWNvbnMiOiBbCiAgICB7CiAgICAgICJzcmMiOiAiaHR0cHM6Ly9jZG4taWNvbnMtcG5nLmZsYXRpY29uLmNvbS81MTIvNjAzOS82MDM5MjMyLnBuZyIsCiAgICAgICJ0eXBlIjogImltYWdlL3BuZyIsCiAgICAgICJzaXplcyI6ICI1MTJ4NTEyIiwKICAgICAgInB1cnBvc2UiOiAiYW55IG1hc2thYmxlIgogICB9CiAgXSwKICAic2NvcGUiOiAiLyIsCiAgImRpc3BsYXkiOiAic3RhbmRhbG9uZSIsCiAgImJhY2tncm91bmRfY29sb3IiOiAiIzRmNDZlNSIsCiAgInRoZW1lX2NvbG9yIjogIiM0ZjQ2ZTUiCn0=">
+
     <meta name="theme-color" content="#4f46e5">
     
-    <!-- Tailwind CSS & Chart.js -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
     <style>
-        :root {
-            --safe-top: env(safe-area-inset-top, 0px);
-            --safe-bottom: env(safe-area-inset-bottom, 0px);
-        }
         body {
             background-color: #f3f4f6;
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             touch-action: manipulation;
             -webkit-tap-highlight-color: transparent;
-            overflow-x: hidden;
         }
-        .pb-safe { padding-bottom: calc(1rem + var(--safe-bottom)); }
-        .pt-safe { padding-top: calc(1rem + var(--safe-top)); }
-        
         .loader {
             border: 2px solid #f3f3f3;
             border-top: 2px solid #4f46e5;
@@ -39,225 +32,213 @@
             width: 16px;
             height: 16px;
             animation: spin 1s linear infinite;
+            display: inline-block;
         }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        
-        .modal-transition { transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+        .modal-transition { transition: transform 0.3s ease-out; }
         input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+        .transaction-card:active { transform: scale(0.98); background-color: #f9fafb; }
+        .settings-card { background: white; border-radius: 1rem; padding: 1rem; margin-bottom: 1rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        header { padding-top: env(safe-area-inset-top, 2.5rem); }
+        .pb-safe { padding-bottom: env(safe-area-inset-bottom, 1rem); }
         
         .toast {
             position: fixed;
             bottom: 2rem;
             left: 50%;
-            transform: translateX(-50%) translateY(100px);
-            background: rgba(0,0,0,0.8);
+            transform: translateX(-50%);
+            background: #333;
             color: white;
             padding: 0.75rem 1.5rem;
             border-radius: 99px;
             font-size: 0.875rem;
-            z-index: 1000;
-            transition: transform 0.3s ease-out;
+            z-index: 100;
+            opacity: 0;
+            transition: opacity 0.3s;
+            pointer-events: none;
         }
-        .toast.show { transform: translateX(-50%) translateY(0); }
-
-        /* Custom scrollbar for desktop */
-        ::-webkit-scrollbar { width: 4px; }
-        ::-webkit-scrollbar-track { background: #f1f1f1; }
-        ::-webkit-scrollbar-thumb { background: #4f46e5; border-radius: 10px; }
     </style>
 </head>
 <body class="antialiased text-gray-900">
 
     <div id="toast" class="toast">Messaggio</div>
 
-    <div id="app" class="max-w-md mx-auto min-h-screen flex flex-col bg-white shadow-2xl relative">
+    <div id="app" class="max-w-md mx-auto min-h-screen flex flex-col bg-white shadow-lg relative">
         
         <!-- View Principale -->
-        <div id="main-view" class="flex-grow flex flex-col">
-            <header class="bg-indigo-600 text-white p-6 rounded-b-[2.5rem] shadow-xl pt-safe">
-                <div class="flex justify-between items-center mb-6">
-                    <button onclick="changeMonth(-1)" class="p-2 hover:bg-indigo-500 rounded-full transition-all">
+        <div id="main-view">
+            <header class="bg-indigo-600 text-white p-6 rounded-b-[2.5rem] shadow-xl">
+                <div class="flex justify-between items-center mb-4">
+                    <button onclick="changeMonth(-1)" class="p-2 hover:bg-indigo-500 rounded-full transition-colors active:bg-indigo-400">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" /></svg>
                     </button>
-                    <h2 id="current-month-display" class="text-sm font-bold uppercase tracking-widest opacity-90">Mese</h2>
-                    <button onclick="changeMonth(1)" class="p-2 hover:bg-indigo-500 rounded-full transition-all">
+                    <h2 id="current-month-display" class="text-lg font-semibold uppercase tracking-wider">Mese</h2>
+                    <button onclick="changeMonth(1)" class="p-2 hover:bg-indigo-500 rounded-full transition-colors active:bg-indigo-400">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>
                     </button>
                 </div>
                 
                 <div class="text-center">
-                    <div class="flex items-center justify-center space-x-4 mb-2">
-                        <button onclick="navigateAccount(-1)" class="p-1 opacity-60 hover:opacity-100 transition-opacity"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd" /></svg></button>
-                        <h1 id="account-name-display" class="text-xs uppercase font-bold tracking-[0.2em] text-indigo-100 truncate max-w-[150px]">Conto</h1>
-                        <button onclick="navigateAccount(1)" class="p-1 opacity-60 hover:opacity-100 transition-opacity"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" /></svg></button>
+                    <div class="flex items-center justify-center space-x-4 mb-1">
+                        <button onclick="navigateAccount(-1)" class="p-1 opacity-50 hover:opacity-100"><svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd" /></svg></button>
+                        <h1 id="account-name-display" class="text-xs uppercase font-medium tracking-widest text-indigo-100">Caricamento...</h1>
+                        <button onclick="navigateAccount(1)" class="p-1 opacity-50 hover:opacity-100"><svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" /></svg></button>
                     </div>
-                    <div id="balance" class="text-5xl font-black tracking-tight mb-6">€ 0.00</div>
+                    <div id="balance" class="text-4xl font-bold">€ 0.00</div>
                 </div>
 
-                <div class="flex justify-center">
-                    <button onclick="toggleSettings(true)" class="text-[10px] font-bold uppercase tracking-widest bg-white/10 px-4 py-2 rounded-full hover:bg-white/20 transition-all flex items-center space-x-2">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /></svg>
+                <div class="text-center mt-4">
+                    <button onclick="toggleSettings(true)" class="text-[10px] bg-indigo-500/50 px-3 py-1 rounded-full hover:bg-indigo-400 transition-colors inline-flex items-center space-x-1">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
                         <span>Impostazioni & Cloud</span>
                     </button>
                 </div>
             </header>
 
-            <main class="p-6">
-                <!-- Bottoni Azione -->
-                <div class="grid grid-cols-2 gap-4 -mt-12 mb-8">
-                    <button onclick="openModal('income')" class="bg-emerald-500 text-white p-5 rounded-2xl shadow-xl flex flex-col items-center justify-center space-y-1 active:scale-95 transition-transform">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 4v16m8-8H4" /></svg>
-                        <span class="font-bold text-xs uppercase tracking-widest">Entrata</span>
+            <main class="flex-grow p-4">
+                <div class="grid grid-cols-2 gap-4 -mt-10 mb-8">
+                    <button onclick="openModal('income')" class="bg-green-500 text-white p-4 rounded-2xl shadow-lg flex items-center justify-center space-x-2 active:scale-95 transition-transform">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" /></svg>
+                        <span class="font-bold">Entrata</span>
                     </button>
-                    <button onclick="openModal('expense')" class="bg-rose-500 text-white p-5 rounded-2xl shadow-xl flex flex-col items-center justify-center space-y-1 active:scale-95 transition-transform">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M20 12H4" /></svg>
-                        <span class="font-bold text-xs uppercase tracking-widest">Uscita</span>
+                    <button onclick="openModal('expense')" class="bg-red-500 text-white p-4 rounded-2xl shadow-lg flex items-center justify-center space-x-2 active:scale-95 transition-transform">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4" /></svg>
+                        <span class="font-bold">Uscita</span>
                     </button>
                 </div>
 
-                <!-- Grafico Spese -->
-                <div id="chart-container" class="mb-8 bg-gray-50 p-6 rounded-[2rem] border border-gray-100 hidden">
-                    <div class="h-48 relative">
-                        <canvas id="expenseChart"></canvas>
-                    </div>
+                <div id="chart-container" class="mb-8 bg-gray-50 p-4 rounded-2xl hidden">
+                    <canvas id="expenseChart" width="200" height="200"></canvas>
                 </div>
 
-                <!-- Lista Transazioni -->
-                <div class="flex justify-between items-center mb-6">
-                    <h2 class="text-xl font-black text-gray-800 italic uppercase tracking-tight">Cronologia</h2>
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-xl font-bold text-gray-800 italic">Movimenti</h2>
                 </div>
                 
-                <div id="transaction-list" class="space-y-4 pb-24"></div>
+                <div id="transaction-list" class="space-y-3 pb-24"></div>
             </main>
         </div>
 
-        <!-- View Impostazioni (Modale a schermo intero) -->
-        <div id="settings-view" class="hidden fixed inset-0 bg-white z-[60] overflow-y-auto pt-safe">
-            <header class="p-6 flex items-center justify-between border-b sticky top-0 bg-white/80 backdrop-blur-md">
+        <!-- View Impostazioni -->
+        <div id="settings-view" class="hidden absolute inset-0 bg-gray-50 z-40 overflow-y-auto pb-10">
+            <header class="bg-white p-6 border-b sticky top-0 flex items-center justify-between">
                 <button onclick="toggleSettings(false)" class="p-2 text-indigo-600">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7 7-7" /></svg>
                 </button>
-                <h2 class="text-lg font-black uppercase tracking-tighter italic">Impostazioni</h2>
+                <h2 class="text-lg font-bold">Impostazioni & Backup</h2>
                 <div class="w-10"></div>
             </header>
             
-            <div class="p-6 space-y-8">
-                <!-- Conti -->
-                <section>
-                    <h3 class="text-[10px] font-black text-indigo-500 uppercase tracking-[0.2em] mb-4">I Tuoi Conti</h3>
-                    <div id="account-list-settings" class="space-y-3 mb-4"></div>
+            <div class="p-6 space-y-6">
+                <!-- Sezione Conti -->
+                <div class="settings-card">
+                    <h3 class="text-xs font-bold text-gray-400 uppercase mb-3 text-indigo-600">I Tuoi Conti</h3>
+                    <div id="account-list-settings" class="space-y-2 mb-4"></div>
                     <div class="flex gap-2">
-                        <input type="text" id="new-account-name" placeholder="Nome nuovo conto..." class="flex-1 p-3 bg-gray-100 rounded-xl text-sm border-none focus:ring-2 focus:ring-indigo-500 outline-none">
-                        <button onclick="addAccount()" class="px-5 py-3 bg-indigo-600 text-white rounded-xl text-sm font-bold shadow-md active:scale-95 transition-transform">Aggiungi</button>
+                        <input type="text" id="new-account-name" placeholder="Nuovo conto..." class="flex-1 p-2 bg-gray-50 rounded-lg text-sm border outline-none">
+                        <button onclick="addAccount()" class="px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-bold">Aggiungi</button>
                     </div>
-                </section>
+                </div>
 
-                <!-- API Key -->
-                <section class="bg-indigo-50 p-6 rounded-3xl border border-indigo-100">
-                    <h3 class="text-[10px] font-black text-indigo-600 uppercase tracking-[0.2em] mb-2 italic">Gemini AI Intelligence</h3>
-                    <p class="text-[11px] text-indigo-900/60 mb-4 leading-relaxed">Inserisci la tua Chiave API Gemini per sbloccare la scansione automatica degli scontrini tramite AI.</p>
-                    <div class="space-y-3">
+                <!-- NUOVA Sezione API Gemini -->
+                <div class="settings-card">
+                    <h3 class="text-xs font-bold text-gray-400 uppercase mb-3 text-indigo-600 italic">Intelligenza Artificiale</h3>
+                    <p class="text-[11px] text-gray-500 mb-3 leading-tight">Inserisci la tua Chiave API Gemini per abilitare la scansione intelligente degli scontrini.</p>
+                    <div class="flex flex-col space-y-2">
                         <div class="relative">
-                            <input type="password" id="api-key-input" placeholder="AI_Key_..." class="w-full p-4 bg-white rounded-2xl text-xs border-none shadow-sm outline-none pr-12 focus:ring-2 focus:ring-indigo-500">
-                            <button onclick="toggleApiKeyVisibility()" class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400">
-                                <svg id="eye-icon" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
+                            <input type="password" id="api-key-input" placeholder="AI_Key_..." class="w-full p-3 bg-gray-50 rounded-xl text-xs border border-gray-200 outline-none pr-10">
+                            <button onclick="toggleApiKeyVisibility()" class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400">
+                                <svg id="eye-icon" xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
                             </button>
                         </div>
-                        <button onclick="saveApiKey()" class="w-full py-3 bg-indigo-600 text-white rounded-2xl text-xs font-black uppercase tracking-widest shadow-lg shadow-indigo-200 active:scale-95 transition-transform">
+                        <button onclick="saveApiKey()" class="w-full py-2 bg-indigo-600 text-white rounded-xl text-xs font-bold shadow-sm">
                             Salva Chiave API
                         </button>
                     </div>
-                </section>
+                </div>
 
-                <!-- Backup -->
-                <section>
-                    <h3 class="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-4">Sicurezza & Backup</h3>
-                    <div class="grid grid-cols-1 gap-4">
-                        <button onclick="shareBackup()" class="flex items-center space-x-4 p-5 bg-white border border-gray-100 rounded-3xl shadow-sm hover:shadow-md transition-shadow">
-                            <div class="bg-indigo-100 p-3 rounded-2xl text-indigo-600">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" /></svg>
-                            </div>
-                            <div class="text-left">
-                                <div class="font-black text-sm uppercase tracking-tight">Esporta Backup</div>
-                                <div class="text-[10px] text-gray-400 font-bold uppercase">Formato JSON di sicurezza</div>
+                <!-- Sezione Backup -->
+                <div class="settings-card">
+                    <h3 class="text-xs font-bold text-gray-400 uppercase mb-3 text-indigo-600">Salvataggio & Cloud</h3>
+                    <p class="text-[11px] text-gray-500 mb-4 leading-tight">Esporta i tuoi dati per salvarli su iCloud, Google Drive o inviarli via email.</p>
+                    
+                    <div class="space-y-3">
+                        <button onclick="shareBackup()" class="w-full flex items-center justify-between p-4 bg-indigo-100 text-indigo-700 rounded-xl shadow-sm active:bg-indigo-200 transition-colors">
+                            <div class="flex items-center space-x-3 text-left">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 100-3.316 3 3 0 000 3.316m0 0a3 3 0 100 3.316 3 3 0 000-3.316" /></svg>
+                                <div>
+                                    <div class="font-bold text-sm">Crea Backup JSON</div>
+                                    <div class="text-[10px] opacity-80 uppercase font-medium">Condividi o Salva file</div>
+                                </div>
                             </div>
                         </button>
-                        
-                        <label class="flex items-center space-x-4 p-5 bg-white border border-gray-100 rounded-3xl shadow-sm cursor-pointer hover:shadow-md transition-shadow">
-                            <div class="bg-emerald-100 p-3 rounded-2xl text-emerald-600">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" /></svg>
-                            </div>
-                            <div class="text-left">
-                                <div class="font-black text-sm uppercase tracking-tight">Importa Backup</div>
-                                <div class="text-[10px] text-gray-400 font-bold uppercase">Carica file JSON</div>
-                                <input type="file" id="import-json" class="hidden" accept=".json" onchange="importJSON(event)">
-                            </div>
-                        </label>
-                    </div>
-                </section>
 
-                <div class="pt-8 border-t border-red-100">
-                    <button onclick="clearHistory()" class="w-full p-4 text-red-500 text-[10px] font-black uppercase tracking-[0.3em] hover:bg-red-50 rounded-2xl transition-colors">
-                        Resetta tutti i dati locali
+                        <div class="grid grid-cols-2 gap-3">
+                            <label class="flex flex-col items-center justify-center p-3 bg-gray-50 border-2 border-dashed border-gray-300 rounded-xl cursor-pointer hover:border-indigo-400 transition-colors">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" /></svg>
+                                <span class="text-[10px] font-bold text-gray-500 mt-1 uppercase">Importa JSON</span>
+                                <input type="file" id="import-json" class="hidden" accept=".json" onchange="importJSON(event)">
+                            </label>
+                            
+                            <button onclick="exportCSV()" class="flex flex-col items-center justify-center p-3 bg-green-50 border border-green-200 rounded-xl">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+                                <span class="text-[10px] font-bold text-green-700 mt-1 uppercase">Export CSV</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="settings-card border-red-100 bg-red-50">
+                    <button onclick="clearHistory()" class="w-full p-2 text-red-600 text-[10px] font-bold uppercase tracking-widest">
+                        Resetta tutti i dati
                     </button>
                 </div>
             </div>
         </div>
 
-        <!-- Modal Transazione -->
-        <div id="modal" class="hidden fixed inset-0 bg-black/70 z-[100] flex items-end justify-center backdrop-blur-md">
-            <div id="modal-content" class="bg-white w-full max-w-md p-8 rounded-t-[3rem] modal-transition transform translate-y-full pb-safe shadow-2xl">
-                <div class="flex justify-between items-center mb-8">
-                    <h3 id="modal-title" class="text-3xl font-black text-gray-900 italic tracking-tighter">Movimento</h3>
-                    <button onclick="closeModal()" class="bg-gray-100 p-2 rounded-full text-gray-400"><svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg></button>
+        <!-- Modal Inserimento -->
+        <div id="modal" class="hidden fixed inset-0 bg-black/60 z-50 flex items-end justify-center backdrop-blur-sm">
+            <div id="modal-content" class="bg-white w-full max-w-md p-6 rounded-t-3xl modal-transition transform translate-y-full pb-safe">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 id="modal-title" class="text-2xl font-bold text-gray-800 italic">Movimento</h3>
+                    <button onclick="closeModal()" class="text-gray-400 p-2"><svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg></button>
                 </div>
 
-                <div class="space-y-6">
+                <div class="space-y-4">
                     <div>
-                        <label class="block text-[9px] font-black text-gray-400 uppercase tracking-widest mb-2 ml-1">Importo</label>
-                        <div class="relative">
-                            <span class="absolute left-6 top-1/2 -translate-y-1/2 text-2xl font-black text-gray-300">€</span>
-                            <input type="number" id="amount-input" step="0.01" inputmode="decimal" placeholder="0.00" class="w-full p-6 bg-gray-50 rounded-3xl text-4xl font-black text-center focus:ring-4 focus:ring-indigo-100 outline-none transition-all border-none">
-                        </div>
+                        <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1 ml-1">Conto</label>
+                        <select id="modal-account-select" class="w-full p-3 bg-gray-100 rounded-xl font-bold outline-none"></select>
                     </div>
 
-                    <div class="grid grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-[9px] font-black text-gray-400 uppercase tracking-widest mb-2 ml-1">Conto</label>
-                            <select id="modal-account-select" class="w-full p-4 bg-gray-50 rounded-2xl font-bold text-sm outline-none border-none focus:ring-2 focus:ring-indigo-500"></select>
-                        </div>
-                        <div>
-                            <label class="block text-[9px] font-black text-gray-400 uppercase tracking-widest mb-2 ml-1">Data</label>
-                            <input type="date" id="date-input" class="w-full p-4 bg-gray-50 rounded-2xl font-bold text-sm outline-none border-none focus:ring-2 focus:ring-indigo-500">
-                        </div>
+                    <div class="relative">
+                        <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1 ml-1">Importo (€)</label>
+                        <input type="number" id="amount-input" step="0.01" inputmode="decimal" placeholder="0.00" class="w-full p-4 bg-gray-100 rounded-2xl text-3xl font-bold text-center focus:ring-2 focus:ring-indigo-500 outline-none">
                     </div>
 
                     <div>
-                        <label class="block text-[9px] font-black text-gray-400 uppercase tracking-widest mb-2 ml-1">Descrizione</label>
-                        <input type="text" id="desc-input" placeholder="Cosa hai comprato?" class="w-full p-4 bg-gray-50 rounded-2xl font-bold text-sm outline-none border-none focus:ring-2 focus:ring-indigo-500">
+                        <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1 ml-1">Descrizione</label>
+                        <input type="text" id="desc-input" placeholder="Esempio: Spesa" class="w-full p-4 bg-gray-100 rounded-2xl outline-none">
                     </div>
 
                     <div>
-                        <label class="block text-[9px] font-black text-gray-400 uppercase tracking-widest mb-3 ml-1">Categoria</label>
-                        <div id="category-grid" class="grid grid-cols-4 gap-3"></div>
+                        <label class="block text-[10px] font-bold text-gray-400 uppercase mb-2 ml-1">Categoria</label>
+                        <div id="category-grid" class="grid grid-cols-4 gap-2"></div>
                     </div>
 
-                    <div class="flex gap-4 pt-4">
-                        <button id="delete-btn" onclick="deleteTx(editingTxId)" class="hidden flex-1 py-5 bg-red-100 text-red-600 rounded-3xl font-black uppercase text-xs tracking-widest active:scale-95 transition-transform">Elimina</button>
-                        <button onclick="saveTransaction()" id="save-btn" class="flex-[3] py-5 rounded-3xl text-white font-black uppercase text-sm tracking-[0.2em] shadow-xl active:scale-95 transition-transform">Conferma</button>
+                    <div class="flex gap-3">
+                        <button id="delete-btn" onclick="deleteTx(editingTxId)" class="hidden flex-1 py-4 bg-red-100 text-red-600 rounded-2xl font-bold text-xl active:scale-95 transition-transform">Elimina</button>
+                        <button onclick="saveTransaction()" id="save-btn" class="flex-[2] py-4 rounded-2xl text-white font-bold text-xl shadow-lg active:scale-95 transition-transform">Salva</button>
                     </div>
                 </div>
+                <div class="h-6"></div>
             </div>
         </div>
     </div>
 
     <script>
-        // CONFIGURAZIONE & COSTANTI
-        const KEYS = {
-            TX: 'spesepro_transactions_v4',
-            ACC: 'spesepro_accounts_v4',
-            API: 'spesepro_gemini_key_v4'
-        };
+        const STORAGE_TX = 'spese_v3_data';
+        const STORAGE_ACC = 'spese_v3_accounts';
+        const STORAGE_API_KEY = 'spese_v3_api_key';
         
         const categories = {
             expense: [
@@ -272,256 +253,160 @@
             income: [
                 { id: 'stipendio', label: 'Stipendio', icon: '💰', color: '#10b981' },
                 { id: 'regalo', label: 'Regalo', icon: '🎁', color: '#f59e0b' },
-                { id: 'altro_in', label: 'Rendite', icon: '📈', color: '#6b7280' }
+                { id: 'altro_in', label: 'Altro', icon: '📈', color: '#6b7280' }
             ]
         };
 
-        // STATO GLOBALE
-        let transactions = JSON.parse(localStorage.getItem(KEYS.TX)) || [];
-        let accounts = JSON.parse(localStorage.getItem(KEYS.ACC)) || [{ id: 'main', name: 'Conto Principale' }];
-        let activeAccountId = accounts[0].id;
+        let transactions = JSON.parse(localStorage.getItem(STORAGE_TX)) || [];
+        let accounts = JSON.parse(localStorage.getItem(STORAGE_ACC)) || [{ id: 'acc_01', name: 'Conto Corrente' }];
+        let activeAccountId = accounts[0]?.id || 'acc_01';
         let viewDate = new Date();
         let currentMode = 'expense';
         let selectedCategory = 'altro';
         let editingTxId = null;
         let chartInstance = null;
 
-        // UTILS
         function showToast(msg) {
             const t = document.getElementById('toast');
             t.textContent = msg;
-            t.classList.add('show');
-            setTimeout(() => t.classList.remove('show'), 3000);
+            t.style.opacity = '1';
+            setTimeout(() => t.style.opacity = '0', 2500);
         }
 
         // GESTIONE API KEY
         function saveApiKey() {
             const key = document.getElementById('api-key-input').value.trim();
             if (key) {
-                localStorage.setItem(KEYS.API, key);
-                showToast("Chiave API aggiornata correttamente");
+                localStorage.setItem(STORAGE_API_KEY, key);
+                showToast("Chiave API salvata!");
             } else {
-                localStorage.removeItem(KEYS.API);
-                showToast("Chiave API rimossa");
+                localStorage.removeItem(STORAGE_API_KEY);
+                showToast("Chiave API rimossa.");
             }
         }
 
         function toggleApiKeyVisibility() {
             const input = document.getElementById('api-key-input');
             const icon = document.getElementById('eye-icon');
-            input.type = input.type === 'password' ? 'text' : 'password';
-            showToast(input.type === 'text' ? "Visibile" : "Nascosta");
-        }
-
-        // CORE LOGIC
-        function updateUI() {
-            const month = viewDate.getMonth();
-            const year = viewDate.getFullYear();
-            const currentAcc = accounts.find(a => a.id === activeAccountId) || accounts[0];
-            
-            document.getElementById('current-month-display').textContent = viewDate.toLocaleDateString('it-IT', { month: 'long', year: 'numeric' });
-            document.getElementById('account-name-display').textContent = currentAcc.name;
-
-            const filtered = transactions.filter(t => {
-                const d = new Date(t.date);
-                return d.getMonth() === month && d.getFullYear() === year && t.accountId === activeAccountId;
-            });
-
-            const income = filtered.filter(t => t.type === 'income').reduce((s, t) => s + t.amount, 0);
-            const expense = filtered.filter(t => t.type === 'expense').reduce((s, t) => s + t.amount, 0);
-            const bal = income - expense;
-
-            const balEl = document.getElementById('balance');
-            balEl.textContent = `€ ${bal.toLocaleString('it-IT', { minimumFractionDigits: 2 })}`;
-            balEl.className = bal >= 0 ? 'text-5xl font-black text-white' : 'text-5xl font-black text-rose-300';
-
-            const listEl = document.getElementById('transaction-list');
-            if (filtered.length === 0) {
-                listEl.innerHTML = `
-                    <div class="flex flex-col items-center justify-center py-20 opacity-20">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" /></svg>
-                        <p class="font-black uppercase tracking-[0.2em] text-xs">Nessuna operazione</p>
-                    </div>`;
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l18 18" />';
             } else {
-                listEl.innerHTML = filtered.sort((a,b) => new Date(b.date) - new Date(a.date) || b.id - a.id).map(t => {
-                    const cat = [...categories.expense, ...categories.income].find(c => c.id === t.category);
-                    return `
-                    <div onclick="editTransaction(${t.id})" class="flex items-center justify-between p-5 bg-white rounded-3xl border border-gray-100 shadow-sm active:scale-[0.98] transition-all cursor-pointer">
-                        <div class="flex items-center space-x-4">
-                            <div class="text-2xl bg-gray-50 w-12 h-12 flex items-center justify-center rounded-2xl" style="color: ${cat?.color}">${cat?.icon}</div>
-                            <div>
-                                <div class="font-black text-gray-800 text-sm tracking-tight">${t.description || cat?.label}</div>
-                                <div class="text-[9px] text-gray-400 font-bold uppercase tracking-wider">${new Date(t.date).toLocaleDateString()}</div>
-                            </div>
-                        </div>
-                        <span class="font-black text-sm tracking-tight ${t.type === 'income' ? 'text-emerald-500' : 'text-rose-500'}">
-                            ${t.type === 'income' ? '+' : '-'} €${t.amount.toFixed(2)}
-                        </span>
-                    </div>`;
-                }).join('');
+                input.type = 'password';
+                icon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />';
             }
-            renderChart(filtered.filter(t => t.type === 'expense'));
         }
 
-        function renderChart(expenses) {
-            const ctx = document.getElementById('expenseChart');
-            const container = document.getElementById('chart-container');
-            if (expenses.length === 0) { container.classList.add('hidden'); return; }
-            container.classList.remove('hidden');
-
-            const dataMap = {};
-            expenses.forEach(e => {
-                const label = categories.expense.find(c => c.id === e.category)?.label || 'Altro';
-                dataMap[label] = (dataMap[label] || 0) + e.amount;
-            });
-
-            if (chartInstance) chartInstance.destroy();
-            chartInstance = new Chart(ctx, {
-                type: 'doughnut',
-                data: {
-                    labels: Object.keys(dataMap),
-                    datasets: [{
-                        data: Object.values(dataMap),
-                        backgroundColor: Object.keys(dataMap).map(l => categories.expense.find(c => c.label === l)?.color),
-                        borderWidth: 0,
-                        hoverOffset: 10
-                    }]
-                },
-                options: { 
-                    plugins: { 
-                        legend: { position: 'right', labels: { boxWidth: 8, font: { size: 9, weight: 'bold' }, padding: 15, usePointStyle: true } } 
-                    }, 
-                    cutout: '75%', 
-                    maintainAspectRatio: false,
-                    responsive: true
+        // GESTIONE BACKUP JSON
+        async function shareBackup() {
+            const dataToSave = {
+                app: "SpesePro",
+                version: "3.2",
+                timestamp: Date.now(),
+                transactions: transactions,
+                accounts: accounts,
+                settings: {
+                    hasApiKey: !!localStorage.getItem(STORAGE_API_KEY)
                 }
-            });
-        }
-
-        // MODAL MANAGEMENT
-        function openModal(mode, tx = null) {
-            currentMode = mode;
-            editingTxId = tx ? tx.id : null;
-            selectedCategory = tx ? tx.category : categories[mode][0].id;
-            
-            document.getElementById('modal').classList.remove('hidden');
-            document.getElementById('modal-title').textContent = editingTxId ? 'Modifica' : (mode === 'income' ? 'Nuova Entrata' : 'Nuova Uscita');
-            document.getElementById('delete-btn').classList.toggle('hidden', !editingTxId);
-
-            const saveBtn = document.getElementById('save-btn');
-            saveBtn.className = `flex-[3] py-5 rounded-3xl text-white font-black uppercase text-sm tracking-[0.2em] shadow-xl active:scale-95 transition-transform ${mode === 'income' ? 'bg-emerald-500 shadow-emerald-200' : 'bg-rose-500 shadow-rose-200'}`;
-
-            const accSelect = document.getElementById('modal-account-select');
-            accSelect.innerHTML = accounts.map(a => `<option value="${a.id}" ${a.id === (tx ? tx.accountId : activeAccountId) ? 'selected' : ''}>${a.name}</option>`).join('');
-
-            document.getElementById('date-input').value = tx ? tx.date.split('T')[0] : new Date().toISOString().split('T')[0];
-            document.getElementById('amount-input').value = tx ? tx.amount : '';
-            document.getElementById('desc-input').value = tx ? tx.description : '';
-
-            renderCategoryGrid();
-            setTimeout(() => document.getElementById('modal-content').classList.remove('translate-y-full'), 10);
-        }
-
-        function renderCategoryGrid() {
-            const grid = document.getElementById('category-grid');
-            grid.innerHTML = categories[currentMode].map(c => `
-                <button onclick="selectCategory('${c.id}')" id="cat-${c.id}" class="p-3 rounded-2xl flex flex-col items-center transition-all ${c.id === selectedCategory ? 'bg-indigo-600 text-white shadow-lg' : 'bg-gray-100 text-gray-400'}">
-                    <span class="text-xl">${c.icon}</span>
-                    <span class="text-[8px] font-black uppercase mt-1 truncate w-full text-center">${c.label}</span>
-                </button>`).join('');
-        }
-
-        function selectCategory(id) {
-            selectedCategory = id;
-            renderCategoryGrid();
-        }
-
-        function saveTransaction() {
-            const amountInput = document.getElementById('amount-input');
-            const amt = parseFloat(amountInput.value);
-            if (isNaN(amt) || amt <= 0) return showToast("Inserisci un importo valido");
-
-            const desc = document.getElementById('desc-input').value.trim();
-            const date = document.getElementById('date-input').value;
-            const targetAccId = document.getElementById('modal-account-select').value;
-            
-            const newTx = {
-                id: editingTxId || Date.now(),
-                amount: amt,
-                description: desc,
-                category: selectedCategory,
-                type: currentMode,
-                accountId: targetAccId,
-                date: new Date(date).toISOString()
             };
+            const jsonString = JSON.stringify(dataToSave, null, 2);
+            const fileName = `backup_spese_${new Date().toISOString().split('T')[0]}.json`;
 
-            if (editingTxId) {
-                const idx = transactions.findIndex(t => t.id === editingTxId);
-                transactions[idx] = newTx;
+            if (navigator.share) {
+                try {
+                    const file = new File([jsonString], fileName, { type: 'application/json' });
+                    await navigator.share({
+                        title: 'Backup SpesePro',
+                        files: [file]
+                    });
+                    showToast("Backup condiviso!");
+                } catch (err) {
+                    if(err.name !== 'AbortError') downloadBackup(jsonString, fileName);
+                }
             } else {
-                transactions.push(newTx);
-            }
-
-            try {
-                localStorage.setItem(KEYS.TX, JSON.stringify(transactions));
-                activeAccountId = targetAccId;
-                updateUI(); 
-                closeModal();
-                showToast(editingTxId ? "Aggiornato" : "Salvato");
-            } catch (e) {
-                showToast("Errore salvataggio: memoria piena");
+                downloadBackup(jsonString, fileName);
             }
         }
 
-        function deleteTx(id) {
-            if(confirm("Vuoi eliminare definitivamente questa operazione?")) {
-                transactions = transactions.filter(t => t.id !== id);
-                localStorage.setItem(KEYS.TX, JSON.stringify(transactions));
-                updateUI();
-                closeModal();
-            }
+        function downloadBackup(json, filename) {
+            const blob = new Blob([json], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            a.click();
+            URL.revokeObjectURL(url);
+            showToast("Backup scaricato locale.");
         }
 
-        function editTransaction(id) { 
-            const tx = transactions.find(t => t.id === id); 
-            if (tx) openModal(tx.type, tx); 
+        function importJSON(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    const importedData = JSON.parse(e.target.result);
+                    
+                    if (!importedData.transactions || !Array.isArray(importedData.transactions)) {
+                        throw new Error("Formato transazioni non valido");
+                    }
+                    if (!importedData.accounts || !Array.isArray(importedData.accounts)) {
+                        throw new Error("Formato conti non valido");
+                    }
+
+                    if (confirm(`Ripristinare backup del ${new Date(importedData.timestamp || Date.now()).toLocaleDateString()}? I dati attuali verranno sovrascritti.`)) {
+                        transactions = importedData.transactions;
+                        accounts = importedData.accounts;
+                        
+                        localStorage.setItem(STORAGE_TX, JSON.stringify(transactions));
+                        localStorage.setItem(STORAGE_ACC, JSON.stringify(accounts));
+                        
+                        showToast("Dati ripristinati con successo!");
+                        setTimeout(() => location.reload(), 1000);
+                    }
+                } catch (err) {
+                    console.error(err);
+                    alert("Errore: Il file selezionato non è un backup valido di SpesePro.");
+                }
+            };
+            reader.readAsText(file);
+            event.target.value = '';
         }
 
-        function closeModal() {
-            document.getElementById('modal-content').classList.add('translate-y-full');
-            setTimeout(() => document.getElementById('modal').classList.add('hidden'), 300);
-        }
-
-        // ACCOUNT MANAGEMENT
+        // LOGICA CONTI
         function addAccount() {
             const input = document.getElementById('new-account-name');
             const name = input.value.trim();
             if(!name) return;
-            const newAcc = { id: 'acc_' + Date.now(), name };
-            accounts.push(newAcc);
-            localStorage.setItem(KEYS.ACC, JSON.stringify(accounts));
+            accounts.push({ id: 'acc_' + Date.now(), name });
+            localStorage.setItem(STORAGE_ACC, JSON.stringify(accounts));
             input.value = '';
             renderSettingsAccounts();
-            showToast("Conto creato");
+            updateUI();
+        }
+
+        function renameAccount(id) {
+            const acc = accounts.find(a => a.id === id);
+            if (!acc) return;
+            const newName = prompt("Rinomina conto:", acc.name);
+            if (newName) {
+                acc.name = newName;
+                localStorage.setItem(STORAGE_ACC, JSON.stringify(accounts));
+                renderSettingsAccounts();
+                updateUI();
+            }
         }
 
         function deleteAccount(id) {
-            if(accounts.length <= 1) return alert("Devi avere almeno un conto.");
-            const hasTx = transactions.some(t => t.accountId === id);
-            if(hasTx) {
-                if(!confirm("Questo conto contiene transazioni. Vuoi davvero eliminarlo e perdere i dati relativi?")) return;
-            } else {
-                if(!confirm("Eliminare il conto?")) return;
+            if(accounts.length <= 1) return alert("Minimo 1 conto.");
+            if(confirm("Eliminare conto?")) {
+                accounts = accounts.filter(a => a.id !== id);
+                if(activeAccountId === id) activeAccountId = accounts[0].id;
+                localStorage.setItem(STORAGE_ACC, JSON.stringify(accounts));
+                renderSettingsAccounts();
+                updateUI();
             }
-            
-            accounts = accounts.filter(a => a.id !== id);
-            transactions = transactions.filter(t => t.accountId !== id);
-            if(activeAccountId === id) activeAccountId = accounts[0].id;
-            
-            localStorage.setItem(KEYS.ACC, JSON.stringify(accounts));
-            localStorage.setItem(KEYS.TX, JSON.stringify(transactions));
-            renderSettingsAccounts();
-            updateUI();
         }
 
         function navigateAccount(dir) {
@@ -534,100 +419,180 @@
         function renderSettingsAccounts() {
             const list = document.getElementById('account-list-settings');
             list.innerHTML = accounts.map(a => `
-                <div class="flex items-center justify-between p-4 bg-gray-50 rounded-2xl border border-gray-100">
-                    <span class="font-black text-sm ${a.id === activeAccountId ? 'text-indigo-600' : 'text-gray-700'}">${a.name}</span>
+                <div class="flex items-center justify-between p-3 bg-gray-50 rounded-xl">
+                    <span class="font-bold text-sm truncate ${a.id === activeAccountId ? 'text-indigo-600' : ''}">${a.name}</span>
                     <div class="flex space-x-2">
-                        <button onclick="deleteAccount('${a.id}')" class="p-2 text-rose-300 hover:text-rose-500 transition-colors"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg></button>
+                        <button onclick="renameAccount('${a.id}')" class="p-1 text-gray-400"><svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg></button>
+                        <button onclick="deleteAccount('${a.id}')" class="p-1 text-red-300"><svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg></button>
                     </div>
                 </div>`).join('');
         }
-
+        
         function toggleSettings(show) {
             const view = document.getElementById('settings-view');
-            if(show) {
-                renderSettingsAccounts();
-                document.getElementById('api-key-input').value = localStorage.getItem(KEYS.API) || '';
-                view.classList.remove('hidden');
-            } else {
-                view.classList.add('hidden');
-                updateUI();
+            if(show) { 
+                renderSettingsAccounts(); 
+                document.getElementById('api-key-input').value = localStorage.getItem(STORAGE_API_KEY) || '';
+                view.classList.remove('hidden'); 
             }
+            else { view.classList.add('hidden'); }
         }
 
-        // BACKUP & EXPORT
-        async function shareBackup() {
-            const data = {
-                app: "FinanzaPro",
-                timestamp: new Date().toISOString(),
-                transactions,
-                accounts
-            };
-            const json = JSON.stringify(data, null, 2);
-            const fileName = `backup_finanzapro_${new Date().toISOString().split('T')[0]}.json`;
+        function updateUI() {
+            const m = viewDate.getMonth();
+            const y = viewDate.getFullYear();
+            const currentAcc = accounts.find(a => a.id === activeAccountId) || accounts[0];
+            
+            document.getElementById('current-month-display').textContent = viewDate.toLocaleDateString('it-IT', { month: 'long', year: 'numeric' });
+            document.getElementById('account-name-display').textContent = currentAcc?.name || "Nessun Conto";
 
-            if (navigator.share && navigator.canShare) {
-                const file = new File([json], fileName, { type: 'application/json' });
-                try {
-                    await navigator.share({ files: [file], title: 'Backup FinanzaPro' });
-                } catch (e) { downloadFallback(json, fileName); }
+            const filtered = transactions.filter(t => {
+                const d = new Date(t.date);
+                return d.getMonth() === m && d.getFullYear() === y && t.accountId === activeAccountId;
+            });
+
+            const inc = filtered.filter(t => t.type === 'income').reduce((s, t) => s + t.amount, 0);
+            const exp = filtered.filter(t => t.type === 'expense').reduce((s, t) => s + t.amount, 0);
+            const bal = inc - exp;
+
+            const balEl = document.getElementById('balance');
+            balEl.textContent = `€ ${bal.toLocaleString('it-IT', { minimumFractionDigits: 2 })}`;
+            balEl.className = bal >= 0 ? 'text-4xl font-bold text-white' : 'text-4xl font-bold text-red-300';
+
+            const listEl = document.getElementById('transaction-list');
+            if (filtered.length === 0) {
+                listEl.innerHTML = `<div class="text-center py-10 text-gray-300 italic font-bold">Nessun movimento</div>`;
             } else {
-                downloadFallback(json, fileName);
+                listEl.innerHTML = filtered.sort((a,b) => b.id - a.id).map(t => {
+                    const cat = [...categories.expense, ...categories.income].find(c => c.id === t.category);
+                    return `
+                    <div onclick="editTransaction(${t.id})" class="transaction-card flex items-center justify-between p-4 bg-gray-50 rounded-2xl border-l-4 cursor-pointer transition-all" style="border-color: ${cat?.color}">
+                        <div class="flex items-center space-x-3 truncate mr-2">
+                            <span class="text-2xl">${cat?.icon}</span>
+                            <div class="truncate">
+                                <div class="font-bold text-gray-800 truncate text-sm">${t.description || cat?.label}</div>
+                                <div class="text-[9px] text-gray-400 font-bold">${new Date(t.date).toLocaleDateString()}</div>
+                            </div>
+                        </div>
+                        <span class="font-black whitespace-nowrap text-sm ${t.type === 'income' ? 'text-green-600' : 'text-red-600'}">
+                            ${t.type === 'income' ? '+' : '-'} €${t.amount.toFixed(2)}
+                        </span>
+                    </div>`;
+                }).join('');
             }
+            renderChart(filtered.filter(t => t.type === 'expense'));
         }
 
-        function downloadFallback(content, name) {
-            const blob = new Blob([content], { type: 'application/json' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = name;
-            a.click();
-            URL.revokeObjectURL(url);
-            showToast("Download avviato");
+        // GESTIONE MODAL
+        function openModal(mode, tx = null) {
+            currentMode = mode;
+            editingTxId = tx ? tx.id : null;
+            selectedCategory = tx ? tx.category : categories[mode][0].id;
+            
+            document.getElementById('modal').classList.remove('hidden');
+            document.getElementById('modal-title').textContent = editingTxId ? 'Modifica' : (mode === 'income' ? 'Entrata' : 'Uscita');
+            document.getElementById('delete-btn').classList.toggle('hidden', !editingTxId);
+
+            const saveBtn = document.getElementById('save-btn');
+            if(mode === 'income') {
+                saveBtn.classList.remove('bg-red-500');
+                saveBtn.classList.add('bg-green-500');
+            } else {
+                saveBtn.classList.remove('bg-green-500');
+                saveBtn.classList.add('bg-red-500');
+            }
+
+            const accSelect = document.getElementById('modal-account-select');
+            accSelect.innerHTML = accounts.map(a => `<option value="${a.id}" ${a.id === (tx ? tx.accountId : activeAccountId) ? 'selected' : ''}>${a.name}</option>`).join('');
+
+            const grid = document.getElementById('category-grid');
+            grid.innerHTML = categories[mode].map(c => `
+                <button onclick="selectCategory('${c.id}')" id="cat-${c.id}" class="cat-btn p-2 rounded-xl border-2 flex flex-col items-center transition-all ${c.id === selectedCategory ? 'border-indigo-500 bg-indigo-50' : 'border-transparent bg-gray-50'}">
+                    <span class="text-xl">${c.icon}</span>
+                    <span class="text-[9px] font-bold text-gray-500 mt-1 uppercase">${c.label}</span>
+                </button>`).join('');
+
+            document.getElementById('amount-input').value = tx ? tx.amount : '';
+            document.getElementById('desc-input').value = tx ? tx.description : '';
+            setTimeout(() => document.getElementById('modal-content').classList.remove('translate-y-full'), 10);
         }
 
-        function importJSON(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                try {
-                    const data = JSON.parse(e.target.result);
-                    if (!data.transactions || !data.accounts) throw new Error();
-                    if (confirm("Importare i dati? Quelli attuali verranno sostituiti.")) {
-                        transactions = data.transactions;
-                        accounts = data.accounts;
-                        localStorage.setItem(KEYS.TX, JSON.stringify(transactions));
-                        localStorage.setItem(KEYS.ACC, JSON.stringify(accounts));
-                        location.reload();
-                    }
-                } catch (err) {
-                    alert("File di backup non valido.");
+        function editTransaction(id) { const tx = transactions.find(t => t.id === id); if (tx) openModal(tx.type, tx); }
+
+        function selectCategory(id) {
+            selectedCategory = id;
+            document.querySelectorAll('.cat-btn').forEach(b => { b.classList.remove('border-indigo-500', 'bg-indigo-50'); b.classList.add('border-transparent', 'bg-gray-50'); });
+            document.getElementById('cat-' + id).classList.add('border-indigo-500', 'bg-indigo-50');
+        }
+
+        function saveTransaction() {
+            const amt = parseFloat(document.getElementById('amount-input').value);
+            if (isNaN(amt) || amt <= 0) return;
+            const desc = document.getElementById('desc-input').value.trim();
+            const targetAccId = document.getElementById('modal-account-select').value;
+            
+            if (editingTxId) {
+                const idx = transactions.findIndex(t => t.id === editingTxId);
+                transactions[idx] = { ...transactions[idx], amount: amt, description: desc, category: selectedCategory, accountId: targetAccId };
+            } else {
+                transactions.push({ id: Date.now(), amount: amt, description: desc, category: selectedCategory, type: currentMode, accountId: targetAccId, date: new Date().toISOString() });
+            }
+            localStorage.setItem(STORAGE_TX, JSON.stringify(transactions));
+            activeAccountId = targetAccId;
+            updateUI(); 
+            closeModal();
+        }
+
+        function deleteTx(id) { if(confirm("Eliminare?")) { transactions = transactions.filter(t => t.id !== id); localStorage.setItem(STORAGE_TX, JSON.stringify(transactions)); updateUI(); closeModal(); } }
+        function changeMonth(d) { viewDate.setMonth(viewDate.getMonth() + d); updateUI(); }
+        function closeModal() { document.getElementById('modal-content').classList.add('translate-y-full'); setTimeout(() => document.getElementById('modal').classList.add('hidden'), 300); }
+
+        function renderChart(exps) {
+            const ctx = document.getElementById('expenseChart');
+            const container = document.getElementById('chart-container');
+            if (exps.length === 0) { container.classList.add('hidden'); return; }
+            container.classList.remove('hidden');
+            const dataMap = {};
+            exps.forEach(e => {
+                const label = categories.expense.find(c => c.id === e.category)?.label || 'Altro';
+                dataMap[label] = (dataMap[label] || 0) + e.amount;
+            });
+            if (chartInstance) chartInstance.destroy();
+            chartInstance = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: Object.keys(dataMap),
+                    datasets: [{
+                        data: Object.values(dataMap),
+                        backgroundColor: Object.keys(dataMap).map(l => categories.expense.find(c => c.label === l)?.color),
+                        borderWidth: 0
+                    }]
+                },
+                options: { 
+                    plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 10 }, padding: 10 } } }, 
+                    cutout: '70%', maintainAspectRatio: false
                 }
-            };
-            reader.readAsText(file);
+            });
         }
 
-        function clearHistory() {
-            if(confirm("ATTENZIONE: Questa azione cancellerà ogni dato presente nell'app. Continuare?")) {
-                localStorage.clear();
-                location.reload();
-            }
+        function exportCSV() {
+            const headers = ["Data", "Descrizione", "Importo", "Categoria", "Tipo", "Conto"];
+            const rows = transactions.map(t => [
+                new Date(t.date).toLocaleDateString(),
+                t.description,
+                t.amount.toFixed(2),
+                t.category,
+                t.type,
+                accounts.find(a => a.id === t.accountId)?.name || "N/A"
+            ].join(';'));
+            const blob = new Blob(["\ufeff" + [headers.join(';'), ...rows].join('\n')], { type: 'text/csv' });
+            downloadBackup(blob, `spese_export.csv`);
         }
 
-        function changeMonth(d) {
-            viewDate.setMonth(viewDate.getMonth() + d);
-            updateUI();
-        }
+        function clearHistory() { if(confirm("Cancellare TUTTO?")) { localStorage.clear(); location.reload(); } }
 
-        // INIT
-        window.onload = () => {
-            updateUI();
-            // Handle closing modal on background click
-            document.getElementById('modal').onclick = (e) => {
-                if(e.target === document.getElementById('modal')) closeModal();
-            };
-        };
+        window.onload = updateUI;
+        document.getElementById('modal').onclick = (e) => { if(e.target === document.getElementById('modal')) closeModal(); };
     </script>
 </body>
 </html>
