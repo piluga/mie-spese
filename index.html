@@ -155,27 +155,38 @@
         <div id="modal" class="hidden fixed inset-0 bg-black/60 z-50 flex items-end justify-center backdrop-blur-sm">
             <div id="modal-content" class="bg-white w-full max-w-md p-6 rounded-t-3xl modal-transition transform translate-y-full">
                 <div class="flex justify-between items-center mb-4">
-                    <h3 id="modal-title" class="text-2xl font-bold text-gray-800">Nuovo Movimento</h3>
+                    <h3 id="modal-title" class="text-2xl font-bold text-gray-800 italic">Nuovo Movimento</h3>
                     <button onclick="closeModal()" class="text-gray-400 p-2"><svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg></button>
                 </div>
 
                 <div class="space-y-4">
-                    <!-- Selezione Conto in fase di inserimento -->
+                    <!-- Selettore Conto -->
                     <div>
-                        <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1 ml-1">Conto di Addebito/Accredito</label>
+                        <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1 ml-1">Conto</label>
                         <select id="modal-account-select" class="w-full p-3 bg-gray-100 rounded-xl font-bold outline-none border-none">
                             <!-- Popolato via JS -->
                         </select>
                     </div>
 
-                    <div>
+                    <!-- Input Importo con Camera -->
+                    <div class="relative">
                         <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1 ml-1">Importo (€)</label>
                         <input type="number" id="amount-input" step="0.01" inputmode="decimal" placeholder="0.00" class="w-full p-4 bg-gray-100 rounded-2xl text-3xl font-bold text-center focus:ring-2 focus:ring-indigo-500 outline-none">
+                        
+                        <button id="camera-btn" onclick="triggerCamera()" class="absolute right-3 bottom-3 p-3 bg-white shadow-md rounded-full text-indigo-600 active:scale-90 transition-transform">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+                        </button>
+                        <input type="file" id="camera-input" accept="image/*" capture="environment" class="hidden" onchange="handleImage(event)">
+                        
+                        <div id="camera-loader" class="absolute inset-0 bg-white/80 rounded-2xl flex items-center justify-center hidden">
+                            <div class="loader mr-2"></div>
+                            <span class="text-xs font-bold text-indigo-600 uppercase tracking-tighter">Analisi Scontrino...</span>
+                        </div>
                     </div>
 
                     <div>
                         <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1 ml-1">Descrizione</label>
-                        <input type="text" id="desc-input" placeholder="Esempio: Spesa Conad" class="w-full p-4 bg-gray-100 rounded-2xl outline-none">
+                        <input type="text" id="desc-input" placeholder="Esempio: Spesa settimanale" class="w-full p-4 bg-gray-100 rounded-2xl outline-none">
                     </div>
 
                     <div>
@@ -183,7 +194,10 @@
                         <div id="category-grid" class="grid grid-cols-4 gap-2"></div>
                     </div>
 
-                    <button onclick="saveTransaction()" id="save-btn" class="w-full py-4 rounded-2xl text-white font-bold text-xl shadow-lg mt-4">Salva</button>
+                    <div class="flex gap-3">
+                        <button id="delete-btn" onclick="deleteTx(editingTxId)" class="hidden flex-1 py-4 bg-red-100 text-red-600 rounded-2xl font-bold text-xl active:scale-95 transition-transform">Elimina</button>
+                        <button onclick="saveTransaction()" id="save-btn" class="flex-[2] py-4 rounded-2xl text-white font-bold text-xl shadow-lg active:scale-95 transition-transform">Salva</button>
+                    </div>
                 </div>
                 <div class="h-6"></div>
             </div>
@@ -231,7 +245,6 @@
             const input = document.getElementById('new-account-name');
             const name = input.value.trim();
             if(!name) return;
-            
             const newAcc = { id: 'acc_' + Date.now(), name: name };
             accounts.push(newAcc);
             localStorage.setItem(STORAGE_ACC, JSON.stringify(accounts));
@@ -289,9 +302,8 @@
             
             document.getElementById('current-month-display').textContent = viewDate.toLocaleDateString('it-IT', { month: 'long', year: 'numeric' });
             document.getElementById('account-name-display').textContent = currentAcc.name;
-            document.getElementById('movimenti-subtitle').textContent = `Filtro: ${currentAcc.name}`;
+            document.getElementById('movimenti-subtitle').textContent = `Conto: ${currentAcc.name}`;
 
-            // Filtro transazioni per mese E per conto selezionato
             const filtered = transactions.filter(t => {
                 const d = new Date(t.date);
                 return d.getMonth() === m && d.getFullYear() === y && t.accountId === activeAccountId;
@@ -307,7 +319,7 @@
 
             const listEl = document.getElementById('transaction-list');
             if (filtered.length === 0) {
-                listEl.innerHTML = `<div class="text-center py-10 text-gray-300 italic font-bold">Nessun movimento per questo mese</div>`;
+                listEl.innerHTML = `<div class="text-center py-10 text-gray-300 italic font-bold">Nessun movimento registrato</div>`;
             } else {
                 listEl.innerHTML = filtered.sort((a,b) => b.id - a.id).map(t => {
                     const cat = [...categories.expense, ...categories.income].find(c => c.id === t.category);
@@ -331,6 +343,73 @@
             renderChart(filtered.filter(t => t.type === 'expense'));
         }
 
+        // --- FOTOCAMERA E AI ---
+
+        function triggerCamera() {
+            if (!apiKey) {
+                const key = prompt("Inserisci la tua API Key Gemini per usare la fotocamera:");
+                if (key) {
+                    apiKey = key;
+                    localStorage.setItem('gemini_api_key', key);
+                } else return;
+            }
+            document.getElementById('camera-input').click();
+        }
+
+        async function handleImage(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const loader = document.getElementById('camera-loader');
+            loader.classList.remove('hidden');
+
+            try {
+                const base64 = await fileToBase64(file);
+                const result = await analyzeReceipt(base64);
+                
+                if (result.amount) document.getElementById('amount-input').value = result.amount;
+                if (result.description) document.getElementById('desc-input').value = result.description;
+            } catch (err) {
+                alert("Errore durante l'analisi: " + err.message);
+            } finally {
+                loader.classList.add('hidden');
+                event.target.value = '';
+            }
+        }
+
+        function fileToBase64(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = () => resolve(reader.result.split(',')[1]);
+                reader.onerror = error => reject(error);
+            });
+        }
+
+        async function analyzeReceipt(base64) {
+            const prompt = "Analizza questo scontrino e restituisci SOLO un JSON con: { 'amount': numero_totale, 'description': 'nome_negozio' }. Se non trovi i dati, lascia vuoto.";
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
+            
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    contents: [{
+                        parts: [
+                            { text: prompt },
+                            { inlineData: { mimeType: "image/jpeg", data: base64 } }
+                        ]
+                    }],
+                    generationConfig: { responseMimeType: "application/json" }
+                })
+            });
+
+            if (!response.ok) throw new Error("API fallita");
+            const data = await response.json();
+            const text = data.candidates[0].content.parts[0].text;
+            return JSON.parse(text);
+        }
+
         // --- CORE APP LOGIC ---
 
         function openModal(mode, tx = null) {
@@ -341,12 +420,15 @@
             document.getElementById('modal').classList.remove('hidden');
             document.getElementById('modal-title').textContent = editingTxId ? 'Modifica Movimento' : (mode === 'income' ? 'Nuova Entrata' : 'Nuova Uscita');
             document.getElementById('save-btn').textContent = editingTxId ? 'Aggiorna' : 'Salva';
-            document.getElementById('save-btn').className = `w-full py-4 rounded-2xl text-white font-bold text-xl mt-4 ${mode === 'income' ? 'bg-green-500' : 'bg-red-500'}`;
+            document.getElementById('save-btn').className = `flex-[2] py-4 rounded-2xl text-white font-bold text-xl shadow-lg ${mode === 'income' ? 'bg-green-500' : 'bg-red-500'}`;
             
+            // Pulsante Elimina visibile solo in modifica
+            document.getElementById('delete-btn').classList.toggle('hidden', !editingTxId);
+
             // Popolamento selettore conti
             const accSelect = document.getElementById('modal-account-select');
             accSelect.innerHTML = accounts.map(a => `
-                <option value="${a.id}" ${a.id === activeAccountId ? 'selected' : ''}>${a.name}</option>
+                <option value="${a.id}" ${a.id === (tx ? tx.accountId : activeAccountId) ? 'selected' : ''}>${a.name}</option>
             `).join('');
 
             const grid = document.getElementById('category-grid');
@@ -408,16 +490,18 @@
             }
             
             localStorage.setItem(STORAGE_TX, JSON.stringify(transactions));
-            activeAccountId = targetAccId; // Ci spostiamo sul conto dove abbiamo inserito il movimento
+            activeAccountId = targetAccId;
             updateUI(); 
             closeModal();
         }
 
         function deleteTx(id) { 
+            if(!id) return;
             if(confirm("Eliminare definitivamente questo movimento?")) { 
                 transactions = transactions.filter(t => t.id !== id); 
                 localStorage.setItem(STORAGE_TX, JSON.stringify(transactions)); 
                 updateUI(); 
+                closeModal();
             } 
         }
 
@@ -429,6 +513,14 @@
                 document.getElementById('modal').classList.add('hidden');
                 editingTxId = null;
             }, 300); 
+        }
+
+        function promptApiKey() {
+            const key = prompt("Inserisci la API Key Gemini:", apiKey);
+            if (key !== null) {
+                apiKey = key;
+                localStorage.setItem('gemini_api_key', key);
+            }
         }
 
         // --- GRAFICI ---
@@ -463,7 +555,7 @@
             });
         }
 
-        // --- IMPORT / EXPORT (Base 3.1.0) ---
+        // --- IMPORT / EXPORT ---
 
         function exportJSON() {
             const backup = { app: "FinanzaPro Multi-Conto", date: new Date().toISOString(), transactions, accounts };
