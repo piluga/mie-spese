@@ -6,11 +6,15 @@
     
     <title>FinanzaPro Multi-Conto v3.1</title>
     
+    <!-- PWA Meta per iOS -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="SpesePro">
     <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/6039/6039232.png">
     
+    <!-- Manifest PWA (Android/Chrome) -->
+    <link rel="manifest" href="data:application/json;base64,ewogICJkZWZhdWx0X2xvY2FsZSI6ICJpdCIsCiAgIm5hbWUiOiAiR2VzdGlvbmUgU3Blc2UgUHJvIiwKICAic2hvcnRfbmFtZSI6ICJTcGVzZVBybyIsCiAgInN0YXJ0X3VybCI6ICIuIiwKICAiaWNvbnMiOiBbCiAgICB7CiAgICAgICJzcmMiOiAiaHR0cHM6Ly9jZG4taWNvbnMtcG5nLmZsYXRpY29uLmNvbS81MTIvNjAzOS82MDM5MjMyLnBuZyIsCiAgICAgICJ0eXBlIjogImltYWdlL3BuZyIsCiAgICAgICJzaXplcyI6ICI1MTJ4NTEyIiwKICAgICAgInB1cnBvc2UiOiAiYW55IG1hc2thYmxlIgogICAgfQogIF0sCiAgImRpc3BsYXkiOiAic3RhbmRhbG9uZSIsCiAgImJhY2tncm91bmRfY29sb3IiOiAiIzRmNDZlNSIsCiAgInRoZW1lX2NvbG9yIjogIiM0ZjQ2ZTUiCn0=">
+
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
@@ -60,6 +64,7 @@
 
     <div id="app" class="max-w-md mx-auto min-h-screen flex flex-col bg-white shadow-lg relative">
         
+        <!-- View Principale -->
         <div id="main-view">
             <header class="bg-indigo-600 text-white p-6 rounded-b-[2.5rem] shadow-xl">
                 <div class="flex justify-between items-center mb-4">
@@ -113,6 +118,7 @@
             </main>
         </div>
 
+        <!-- View Impostazioni -->
         <div id="settings-view" class="hidden absolute inset-0 bg-gray-50 z-40 overflow-y-auto pb-10">
             <header class="bg-white p-6 border-b sticky top-0 flex items-center justify-between">
                 <button onclick="toggleSettings(false)" class="p-2 text-indigo-600">
@@ -123,6 +129,7 @@
             </header>
             
             <div class="p-6 space-y-6">
+                <!-- Sezione Conti -->
                 <div class="settings-card">
                     <h3 class="text-xs font-bold text-gray-400 uppercase mb-3">I Tuoi Conti</h3>
                     <div id="account-list-settings" class="space-y-2 mb-4"></div>
@@ -132,17 +139,19 @@
                     </div>
                 </div>
 
+                <!-- Sezione Backup Avanzato -->
                 <div class="settings-card">
                     <h3 class="text-xs font-bold text-gray-400 uppercase mb-3">Salvataggio & Cloud</h3>
-                    <p class="text-[11px] text-gray-500 mb-4 leading-tight">Scegli il percorso esatto dove salvare il tuo file di backup JSON.</p>
+                    <p class="text-[11px] text-gray-500 mb-4 leading-tight">Esporta i tuoi dati e scegli dove salvarli sul tuo dispositivo.</p>
                     
                     <div class="space-y-3">
+                        <!-- Pulsante Salvataggio con scelta percorso -->
                         <button onclick="saveToFileSystem()" class="w-full flex items-center justify-between p-4 bg-indigo-600 text-white rounded-xl shadow-sm active:bg-indigo-700 transition-colors">
                             <div class="flex items-center space-x-3 text-left">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" /></svg>
                                 <div>
-                                    <div class="font-bold text-sm">Scegli Percorso Salvataggio</div>
-                                    <div class="text-[10px] opacity-80 uppercase font-medium">Salva JSON dove vuoi</div>
+                                    <div class="font-bold text-sm">Salva Backup JSON</div>
+                                    <div class="text-[10px] opacity-80 uppercase font-medium">Scegli percorso salvataggio</div>
                                 </div>
                             </div>
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>
@@ -176,6 +185,7 @@
             </div>
         </div>
 
+        <!-- Modal Inserimento -->
         <div id="modal" class="hidden fixed inset-0 bg-black/60 z-50 flex items-end justify-center backdrop-blur-sm">
             <div id="modal-content" class="bg-white w-full max-w-md p-6 rounded-t-3xl modal-transition transform translate-y-full pb-safe">
                 <div class="flex justify-between items-center mb-4">
@@ -255,7 +265,6 @@
         let editingTxId = null;
         let chartInstance = null;
 
-        // UI TOAST
         function showToast(msg) {
             const t = document.getElementById('toast');
             t.textContent = msg;
@@ -263,7 +272,7 @@
             setTimeout(() => t.style.opacity = '0', 2500);
         }
 
-        // BACKUP CON SCELTA PERCORSO (File System Access API)
+        // Funzione Salvataggio con scelta percorso (File System Access API)
         async function saveToFileSystem() {
             const data = { 
                 app: "SpesePro", 
@@ -294,14 +303,13 @@
                     }
                 }
             } else {
-                // Fallback per browser non compatibili (Safari, Firefox, Mobile)
                 showToast("Scegli percorso non supportato. Download...");
                 downloadBackupManual(json, `FinanzaPro_Backup_${new Date().toISOString().split('T')[0]}.json`);
             }
         }
 
-        function downloadBackupManual(json, filename) {
-            const blob = new Blob([json], { type: 'application/json' });
+        function downloadBackupManual(content, filename, isBlob = false) {
+            const blob = isBlob ? content : new Blob([content], { type: 'application/json' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
@@ -310,7 +318,7 @@
             URL.revokeObjectURL(url);
         }
 
-        // LOGICA CONTI
+        // Logica Conti
         function addAccount() {
             const input = document.getElementById('new-account-name');
             const name = input.value.trim();
@@ -320,29 +328,6 @@
             input.value = '';
             renderSettingsAccounts();
             updateUI();
-        }
-
-        function renameAccount(id) {
-            const acc = accounts.find(a => a.id === id);
-            if (!acc) return;
-            const newName = prompt("Rinomina conto:", acc.name);
-            if (newName) {
-                acc.name = newName;
-                localStorage.setItem(STORAGE_ACC, JSON.stringify(accounts));
-                renderSettingsAccounts();
-                updateUI();
-            }
-        }
-
-        function deleteAccount(id) {
-            if(accounts.length <= 1) return alert("Minimo 1 conto.");
-            if(confirm("Eliminare conto?")) {
-                accounts = accounts.filter(a => a.id !== id);
-                if(activeAccountId === id) activeAccountId = accounts[0].id;
-                localStorage.setItem(STORAGE_ACC, JSON.stringify(accounts));
-                renderSettingsAccounts();
-                updateUI();
-            }
         }
 
         function navigateAccount(dir) {
@@ -358,12 +343,22 @@
                 <div class="flex items-center justify-between p-3 bg-gray-50 rounded-xl">
                     <span class="font-bold text-sm truncate ${a.id === activeAccountId ? 'text-indigo-600' : ''}">${a.name}</span>
                     <div class="flex space-x-2">
-                        <button onclick="renameAccount('${a.id}')" class="p-1 text-gray-400"><svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg></button>
                         <button onclick="deleteAccount('${a.id}')" class="p-1 text-red-300"><svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg></button>
                     </div>
                 </div>`).join('');
         }
         
+        function deleteAccount(id) {
+            if(accounts.length <= 1) return alert("Minimo 1 conto.");
+            if(confirm("Eliminare conto?")) {
+                accounts = accounts.filter(a => a.id !== id);
+                if(activeAccountId === id) activeAccountId = accounts[0].id;
+                localStorage.setItem(STORAGE_ACC, JSON.stringify(accounts));
+                renderSettingsAccounts();
+                updateUI();
+            }
+        }
+
         function toggleSettings(show) {
             const view = document.getElementById('settings-view');
             if(show) { renderSettingsAccounts(); view.classList.remove('hidden'); }
@@ -415,7 +410,7 @@
             renderChart(filtered.filter(t => t.type === 'expense'));
         }
 
-        // AI CAMERA LOGIC
+        // AI Analisi Scontrino
         async function handleImage(event) {
             const file = event.target.files[0];
             if (!file || !apiKey) return;
@@ -454,7 +449,7 @@
             document.getElementById('camera-input').click();
         }
 
-        // GESTIONE MODAL
+        // Modale Inserimento
         function openModal(mode, tx = null) {
             currentMode = mode;
             editingTxId = tx ? tx.id : null;
@@ -562,11 +557,7 @@
                 accounts.find(a => a.id === t.accountId)?.name || "N/A"
             ].join(';'));
             const blob = new Blob(["\ufeff" + [headers.join(';'), ...rows].join('\n')], { type: 'text/csv' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `spese_export.csv`;
-            a.click();
+            downloadBackupManual(blob, `spese_export_${new Date().toISOString().split('T')[0]}.csv`, true);
         }
 
         function importJSON(event) {
