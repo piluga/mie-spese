@@ -1,230 +1,600 @@
 <!DOCTYPE html>
 <html lang="it">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SpesePro</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    
+    <title>FinanzaPro Multi-Conto v3.1</title>
+    
+    <!-- PWA Meta -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="SpesePro">
+    <link rel="apple-touch-icon" href="https://i.ibb.co/vx96Xb8Q/budget.png">
+    
+    <!-- Manifest Base64 -->
+    <link rel="manifest" href="data:application/json;base64,ewogICJkZWZhdWx0X2xvY2FsZSI6ICJpdCIsCiAgIm5hbWUiOiAiR2VzdGlvbmUgU3Blc2UgUHJvIiwKICAic2hvcnRfbmFtZSI6ICJTcGVzZVBybyIsCiAgInN0YXJ0X3VybCI6ICIuIiwKICAiaWNvbnMiOiBbCiAgICB7CiAgICAgICJzcmMiOiAiaHR0cHM6Ly9pLmliYi5jby92eDk2WGI4US9idWRnZXQucG5nIiwKICAgICAgInNpemVzIjogIjUxMng1MTIiLAogICAgICAidHlwZSI6ICJpbWFnZS9wbmciCiAgICB9CiAgXSwKICAiZGlzcGxheSI6ICJzdGFuZGFsb25lIiwKICAiYmFja2dyb3VuZF9jb2xvciI6ICIjZjNmNGY2IiwKICAidGhlbWVfY29sb3IiOiAiIzI1NjNmMSIKfQ==">
 
-<script src="https://cdn.tailwindcss.com"></script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-<style>
-body { background:#f3f4f6; }
-.progress { height:8px;border-radius:999px;overflow:hidden;background:#e5e7eb }
-.progress div { height:100%;transition:.3s }
-.toast {
- position:fixed;bottom:2rem;left:50%;transform:translateX(-50%);
- background:#111;color:#fff;padding:10px 20px;border-radius:999px;
- opacity:0;transition:.3s;z-index:999
-}
-</style>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            background-color: #f3f4f6;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .loader {
+            border: 2px solid #f3f3f3;
+            border-top: 2px solid #4f46e5;
+            border-radius: 50%;
+            width: 16px;
+            height: 16px;
+            animation: spin 1s linear infinite;
+            display: inline-block;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .modal-transition { transition: transform 0.3s ease-out; }
+        input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+        .transaction-card:active { transform: scale(0.98); background-color: #f9fafb; }
+        .settings-card { background: white; border-radius: 1rem; padding: 1rem; margin-bottom: 1rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        header { padding-top: env(safe-area-inset-top, 2.5rem); }
+        .pb-safe { padding-bottom: env(safe-area-inset-bottom, 1rem); }
+        
+        .toast {
+            position: fixed;
+            bottom: 2rem;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #333;
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 99px;
+            font-size: 0.875rem;
+            z-index: 100;
+            opacity: 0;
+            transition: opacity 0.3s;
+            pointer-events: none;
+        }
+    </style>
 </head>
+<body class="antialiased text-gray-900">
 
-<body>
+    <div id="toast" class="toast">Messaggio</div>
 
-<div id="toast" class="toast"></div>
+    <div id="app" class="max-w-md mx-auto min-h-screen flex flex-col bg-white shadow-lg relative">
+        
+        <!-- View Principale -->
+        <div id="main-view">
+            <header class="bg-indigo-600 text-white p-6 rounded-b-[2.5rem] shadow-xl">
+                <div class="flex justify-between items-center mb-4">
+                    <button onclick="changeMonth(-1)" class="p-2 hover:bg-indigo-500 rounded-full transition-colors active:bg-indigo-400">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" /></svg>
+                    </button>
+                    <h2 id="current-month-display" class="text-lg font-semibold uppercase tracking-wider">Mese</h2>
+                    <button onclick="changeMonth(1)" class="p-2 hover:bg-indigo-500 rounded-full transition-colors active:bg-indigo-400">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>
+                    </button>
+                </div>
+                
+                <div class="text-center">
+                    <div class="flex items-center justify-center space-x-4 mb-1">
+                        <button onclick="navigateAccount(-1)" class="p-1 opacity-50 hover:opacity-100"><svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd" /></svg></button>
+                        <h1 id="account-name-display" class="text-xs uppercase font-medium tracking-widest text-indigo-100">Conto</h1>
+                        <button onclick="navigateAccount(1)" class="p-1 opacity-50 hover:opacity-100"><svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" /></svg></button>
+                    </div>
+                    <div id="balance" class="text-4xl font-bold">€ 0.00</div>
+                </div>
 
-<div class="max-w-md mx-auto min-h-screen bg-white shadow">
+                <div class="text-center mt-4">
+                    <button onclick="toggleSettings(true)" class="text-[10px] bg-indigo-500/50 px-3 py-1 rounded-full hover:bg-indigo-400 transition-colors inline-flex items-center space-x-1">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+                        <span>Impostazioni & Cloud</span>
+                    </button>
+                </div>
+            </header>
 
-<header class="p-6 bg-indigo-600 text-white">
-  <div id="account-name" class="text-xs uppercase"></div>
-  <div id="balance" class="text-4xl font-bold">€ 0.00</div>
+            <main class="flex-grow p-4">
+                <div class="grid grid-cols-2 gap-4 -mt-10 mb-8">
+                    <button onclick="openModal('income')" class="bg-green-500 text-white p-4 rounded-2xl shadow-lg flex items-center justify-center space-x-2 active:scale-95 transition-transform">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" /></svg>
+                        <span class="font-bold">Entrata</span>
+                    </button>
+                    <button onclick="openModal('expense')" class="bg-red-500 text-white p-4 rounded-2xl shadow-lg flex items-center justify-center space-x-2 active:scale-95 transition-transform">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4" /></svg>
+                        <span class="font-bold">Uscita</span>
+                    </button>
+                </div>
 
-  <div class="mt-2">
-    <div class="progress">
-      <div id="budget-bar"></div>
+                <div id="chart-container" class="mb-8 bg-gray-50 p-4 rounded-2xl hidden">
+                    <canvas id="expenseChart" width="200" height="200"></canvas>
+                </div>
+
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-xl font-bold text-gray-800 italic">Movimenti</h2>
+                </div>
+                
+                <div id="transaction-list" class="space-y-3 pb-24"></div>
+            </main>
+        </div>
+
+        <!-- View Impostazioni -->
+        <div id="settings-view" class="hidden absolute inset-0 bg-gray-50 z-40 overflow-y-auto pb-10">
+            <header class="bg-white p-6 border-b sticky top-0 flex items-center justify-between">
+                <button onclick="toggleSettings(false)" class="p-2 text-indigo-600">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7 7-7" /></svg>
+                </button>
+                <h2 class="text-lg font-bold">Impostazioni & Backup</h2>
+                <div class="w-10"></div>
+            </header>
+            
+            <div class="p-6 space-y-6">
+                <!-- Sezione Conti con funzione di Rinomina -->
+                <div class="settings-card">
+                    <h3 class="text-xs font-bold text-gray-400 uppercase mb-3">I Tuoi Conti</h3>
+                    <div id="account-list-settings" class="space-y-2 mb-4"></div>
+                    <div class="flex gap-2">
+                        <input type="text" id="new-account-name" placeholder="Nuovo conto..." class="flex-1 p-2 bg-gray-50 rounded-lg text-sm border outline-none">
+                        <button onclick="addAccount()" class="px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-bold">Aggiungi</button>
+                    </div>
+                </div>
+
+                <!-- Sezione Backup Avanzato -->
+                <div class="settings-card">
+                    <h3 class="text-xs font-bold text-gray-400 uppercase mb-3">Salvataggio & Cloud</h3>
+                    <p class="text-[11px] text-gray-500 mb-4 leading-tight">Esporta i tuoi dati e scegli dove salvarli sul tuo dispositivo.</p>
+                    
+                    <div class="space-y-3">
+                        <button onclick="saveToFileSystem()" class="w-full flex items-center justify-between p-4 bg-indigo-600 text-white rounded-xl shadow-sm active:bg-indigo-700 transition-colors">
+                            <div class="flex items-center space-x-3 text-left">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" /></svg>
+                                <div>
+                                    <div class="font-bold text-sm">Salva Backup JSON</div>
+                                    <div class="text-[10px] opacity-80 uppercase font-medium">Scegli percorso salvataggio</div>
+                                </div>
+                            </div>
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>
+                        </button>
+
+                        <div class="grid grid-cols-2 gap-3">
+                            <label class="flex flex-col items-center justify-center p-3 bg-gray-50 border-2 border-dashed border-gray-300 rounded-xl cursor-pointer hover:border-indigo-400 transition-colors">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" /></svg>
+                                <span class="text-[10px] font-bold text-gray-500 mt-1 uppercase">Importa JSON</span>
+                                <input type="file" id="import-json" class="hidden" accept=".json" onchange="importJSON(event)">
+                            </label>
+                            
+                            <button onclick="exportCSV()" class="flex flex-col items-center justify-center p-3 bg-green-50 border border-green-200 rounded-xl">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+                                <span class="text-[10px] font-bold text-green-700 mt-1 uppercase">Export CSV</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="settings-card">
+                    <h3 class="text-xs font-bold text-gray-400 uppercase mb-3">AI Engine</h3>
+                    <button onclick="promptApiKey()" class="w-full py-2 bg-indigo-50 text-indigo-700 rounded-lg text-xs font-bold">Aggiorna API Key Gemini</button>
+                </div>
+
+                <div class="settings-card border-red-100 bg-red-50">
+                    <button onclick="clearHistory()" class="w-full p-2 text-red-600 text-[10px] font-bold uppercase tracking-widest">
+                        Resetta tutti i dati
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal Inserimento -->
+        <div id="modal" class="hidden fixed inset-0 bg-black/60 z-50 flex items-end justify-center backdrop-blur-sm">
+            <div id="modal-content" class="bg-white w-full max-w-md p-6 rounded-t-3xl modal-transition transform translate-y-full pb-safe">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 id="modal-title" class="text-2xl font-bold text-gray-800 italic">Movimento</h3>
+                    <button onclick="closeModal()" class="text-gray-400 p-2"><svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg></button>
+                </div>
+
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1 ml-1">Conto</label>
+                        <select id="modal-account-select" class="w-full p-3 bg-gray-100 rounded-xl font-bold outline-none"></select>
+                    </div>
+
+                    <div class="relative">
+                        <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1 ml-1">Importo (€)</label>
+                        <input type="number" id="amount-input" step="0.01" inputmode="decimal" placeholder="0.00" class="w-full p-4 bg-gray-100 rounded-2xl text-3xl font-bold text-center focus:ring-2 focus:ring-indigo-500 outline-none">
+                        
+                        <button id="camera-btn" onclick="triggerCamera()" class="absolute right-3 bottom-3 p-3 bg-white shadow-md rounded-full text-indigo-600 active:scale-90 transition-transform">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+                        </button>
+                        <input type="file" id="camera-input" accept="image/*" capture="environment" class="hidden" onchange="handleImage(event)">
+                        
+                        <div id="camera-loader" class="absolute inset-0 bg-white/80 rounded-2xl flex items-center justify-center hidden">
+                            <div class="loader mr-2"></div>
+                            <span class="text-xs font-bold text-indigo-600 uppercase tracking-tighter">Analisi Scontrino...</span>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1 ml-1">Descrizione</label>
+                        <input type="text" id="desc-input" placeholder="Esempio: Spesa" class="w-full p-4 bg-gray-100 rounded-2xl outline-none">
+                    </div>
+
+                    <div>
+                        <label class="block text-[10px] font-bold text-gray-400 uppercase mb-2 ml-1">Categoria</label>
+                        <div id="category-grid" class="grid grid-cols-4 gap-2"></div>
+                    </div>
+
+                    <div class="flex gap-3">
+                        <button id="delete-btn" onclick="deleteTx(editingTxId)" class="hidden flex-1 py-4 bg-red-100 text-red-600 rounded-2xl font-bold text-xl active:scale-95 transition-transform">Elimina</button>
+                        <button onclick="saveTransaction()" id="save-btn" class="flex-[2] py-4 rounded-2xl text-white font-bold text-xl shadow-lg active:scale-95 transition-transform">Salva</button>
+                    </div>
+                </div>
+                <div class="h-6"></div>
+            </div>
+        </div>
     </div>
-    <div id="budget-info" class="text-xs mt-1"></div>
-  </div>
-</header>
 
-<main class="p-4">
+    <script>
+        const STORAGE_TX = 'spese_v3_data';
+        const STORAGE_ACC = 'spese_v3_accounts';
+        let apiKey = localStorage.getItem('gemini_api_key') || ""; 
 
-<div class="grid grid-cols-2 gap-4 mb-4">
-<button onclick="openModal('income')" class="bg-green-500 text-white p-4 rounded-xl font-bold">Entrata</button>
-<button onclick="openModal('expense')" class="bg-red-500 text-white p-4 rounded-xl font-bold">Uscita</button>
-</div>
+        const categories = {
+            expense: [
+                { id: 'cibo', label: 'Cibo', icon: '🍎', color: '#f87171' },
+                { id: 'casa', label: 'Casa', icon: '🏠', color: '#60a5fa' },
+                { id: 'trasporti', label: 'Auto', icon: '🚗', color: '#fbbf24' },
+                { id: 'svago', label: 'Svago', icon: '🎮', color: '#a78bfa' },
+                { id: 'salute', label: 'Salute', icon: '💊', color: '#34d399' },
+                { id: 'shopping', label: 'Shopping', icon: '🛍️', color: '#f472b6' },
+                { id: 'altro', label: 'Altro', icon: '📦', color: '#9ca3af' }
+            ],
+            income: [
+                { id: 'stipendio', label: 'Stipendio', icon: '💰', color: '#10b981' },
+                { id: 'regalo', label: 'Regalo', icon: '🎁', color: '#f59e0b' },
+                { id: 'altro_in', label: 'Altro', icon: '📈', color: '#6b7280' }
+            ]
+        };
 
-<div id="chartBox" class="hidden mb-4">
-<canvas id="chart"></canvas>
-</div>
+        let transactions = JSON.parse(localStorage.getItem(STORAGE_TX)) || [];
+        let accounts = JSON.parse(localStorage.getItem(STORAGE_ACC)) || [{ id: 'acc_01', name: 'Conto Corrente' }];
+        let activeAccountId = accounts[0].id;
+        let viewDate = new Date();
+        let currentMode = 'expense';
+        let selectedCategory = 'altro';
+        let editingTxId = null;
+        let chartInstance = null;
 
-<div id="list" class="space-y-2"></div>
+        function showToast(msg) {
+            const t = document.getElementById('toast');
+            t.textContent = msg;
+            t.style.opacity = '1';
+            setTimeout(() => t.style.opacity = '0', 2500);
+        }
 
-<div class="flex justify-between mt-6 text-xs font-bold">
-<button onclick="openSettings()" class="text-indigo-600">⚙️ Conti</button>
-<button onclick="exportCSV()" class="text-green-600">📤 Export CSV</button>
-</div>
+        async function saveToFileSystem() {
+            const data = { 
+                app: "SpesePro", 
+                version: "3.1", 
+                timestamp: new Date().toISOString(),
+                transactions, 
+                accounts 
+            };
+            const json = JSON.stringify(data, null, 2);
+            
+            if ('showSaveFilePicker' in window) {
+                try {
+                    const handle = await window.showSaveFilePicker({
+                        suggestedName: `FinanzaPro_Backup_${new Date().toISOString().split('T')[0]}.json`,
+                        types: [{
+                            description: 'File JSON di Backup',
+                            accept: { 'application/json': ['.json'] }
+                        }],
+                    });
+                    const writable = await handle.createWritable();
+                    await writable.write(json);
+                    await writable.close();
+                    showToast("✅ Backup salvato!");
+                } catch (err) {
+                    if(err.name !== 'AbortError') showToast("❌ Errore salvataggio");
+                }
+            } else {
+                downloadBackupManual(json, `FinanzaPro_Backup_${new Date().toISOString().split('T')[0]}.json`);
+            }
+        }
 
-</main>
-</div>
+        function downloadBackupManual(content, filename, isBlob = false) {
+            const blob = isBlob ? content : new Blob([content], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
 
-<!-- MODAL -->
-<div id="modal" class="fixed inset-0 bg-black/60 hidden items-end">
-<div class="bg-white w-full p-6 rounded-t-3xl">
-<h2 id="modal-title" class="text-xl font-bold mb-4"></h2>
+        // --- Logica Conti (Rinomina Inclusa) ---
+        function addAccount() {
+            const input = document.getElementById('new-account-name');
+            const name = input.value.trim();
+            if(!name) return;
+            accounts.push({ id: 'acc_' + Date.now(), name });
+            saveAccounts();
+            input.value = '';
+            renderSettingsAccounts();
+            updateUI();
+        }
 
-<select id="modal-account" class="w-full mb-3 p-2 bg-gray-100 rounded"></select>
+        function renameAccount(id) {
+            const acc = accounts.find(a => a.id === id);
+            if (!acc) return;
+            
+            const newName = prompt("Inserisci il nuovo nome per il conto:", acc.name);
+            if (newName !== null && newName.trim() !== "") {
+                acc.name = newName.trim();
+                saveAccounts();
+                renderSettingsAccounts();
+                updateUI();
+                showToast("✅ Conto rinominato");
+            }
+        }
 
-<label class="text-xs font-bold">Data</label>
-<input type="date" id="date-input" class="w-full mb-3 p-2 bg-gray-100 rounded">
+        function deleteAccount(id) {
+            if(accounts.length <= 1) return alert("Devi avere almeno un conto.");
+            if(confirm("Sei sicuro di voler eliminare questo conto? I movimenti non verranno eliminati ma non saranno più visibili sotto questo conto.")) {
+                accounts = accounts.filter(a => a.id !== id);
+                if(activeAccountId === id) activeAccountId = accounts[0].id;
+                saveAccounts();
+                renderSettingsAccounts();
+                updateUI();
+            }
+        }
 
-<input id="amount" type="number" placeholder="Importo" class="w-full mb-3 p-3 bg-gray-100 rounded text-xl font-bold">
-<input id="desc" placeholder="Descrizione" class="w-full mb-4 p-3 bg-gray-100 rounded">
+        function saveAccounts() {
+            localStorage.setItem(STORAGE_ACC, JSON.stringify(accounts));
+        }
 
-<button id="saveBtn" onclick="saveTx()" class="w-full py-3 rounded-xl text-white font-bold">Salva</button>
-<button onclick="closeModal()" class="mt-3 w-full text-xs text-gray-500">Annulla</button>
-</div>
-</div>
+        function renderSettingsAccounts() {
+            const list = document.getElementById('account-list-settings');
+            list.innerHTML = accounts.map(a => `
+                <div class="flex items-center justify-between p-3 bg-gray-50 rounded-xl">
+                    <span class="font-bold text-sm truncate ${a.id === activeAccountId ? 'text-indigo-600' : 'text-gray-700'}">${a.name}</span>
+                    <div class="flex space-x-2">
+                        <button onclick="renameAccount('${a.id}')" class="p-2 text-indigo-500 hover:bg-indigo-50 rounded-lg">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
+                        </button>
+                        <button onclick="deleteAccount('${a.id}')" class="p-2 text-red-400 hover:bg-red-50 rounded-lg">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                        </button>
+                    </div>
+                </div>`).join('');
+        }
+        
+        // --- Fine Logica Conti ---
 
-<!-- SETTINGS -->
-<div id="settings" class="fixed inset-0 bg-white hidden p-6 overflow-y-auto">
-<h2 class="text-lg font-bold mb-4">Conti & Budget</h2>
-<div id="accounts-settings" class="space-y-4"></div>
-<button onclick="closeSettings()" class="mt-6 text-xs text-indigo-600">⬅ Torna</button>
-</div>
+        function navigateAccount(dir) {
+            const idx = accounts.findIndex(a => a.id === activeAccountId);
+            let nextIdx = (idx + dir + accounts.length) % accounts.length;
+            activeAccountId = accounts[nextIdx].id;
+            updateUI();
+        }
 
-<script>
-const TX_KEY='spese_tx';
-const ACC_KEY='spese_acc';
-const BUD_KEY='spese_budget';
+        function toggleSettings(show) {
+            const view = document.getElementById('settings-view');
+            if(show) { renderSettingsAccounts(); view.classList.remove('hidden'); }
+            else { view.classList.add('hidden'); }
+        }
 
-let accounts=JSON.parse(localStorage.getItem(ACC_KEY))||[
- {id:'acc1',name:'Conto Principale',budget:0}
-];
-let budgets=JSON.parse(localStorage.getItem(BUD_KEY))||{};
-let transactions=JSON.parse(localStorage.getItem(TX_KEY))||[];
-let activeAccount=accounts[0].id;
-let mode='expense',chart;
+        function updateUI() {
+            const m = viewDate.getMonth();
+            const y = viewDate.getFullYear();
+            const currentAcc = accounts.find(a => a.id === activeAccountId) || accounts[0];
+            
+            document.getElementById('current-month-display').textContent = viewDate.toLocaleDateString('it-IT', { month: 'long', year: 'numeric' });
+            document.getElementById('account-name-display').textContent = currentAcc.name;
 
-/* UTIL */
-function toast(m){
- let t=document.getElementById('toast');
- t.textContent=m;t.style.opacity=1;
- setTimeout(()=>t.style.opacity=0,2500);
-}
+            const filtered = transactions.filter(t => {
+                const d = new Date(t.date);
+                return d.getMonth() === m && d.getFullYear() === y && t.accountId === activeAccountId;
+            });
 
-/* MODAL */
-function openModal(m){
- mode=m;
- modal.classList.remove('hidden');
- modalTitle.textContent=m==='income'?'Entrata':'Uscita';
- saveBtn.className='w-full py-3 rounded-xl text-white font-bold '+
-  (m==='income'?'bg-green-500':'bg-red-500');
- dateInput.value=new Date().toISOString().split('T')[0];
- modalAccount.innerHTML=accounts.map(a=>`<option value="${a.id}">${a.name}</option>`).join('');
-}
-function closeModal(){modal.classList.add('hidden');}
+            const inc = filtered.filter(t => t.type === 'income').reduce((s, t) => s + t.amount, 0);
+            const exp = filtered.filter(t => t.type === 'expense').reduce((s, t) => s + t.amount, 0);
+            const bal = inc - exp;
 
-/* SAVE */
-function saveTx(){
- let amt=parseFloat(amount.value);
- if(!amt||amt<=0)return;
- let iso=new Date(dateInput.value+'T12:00:00').toISOString();
- transactions.push({
-  id:Date.now(),type:mode,amount:amt,
-  description:desc.value,accountId:modalAccount.value,date:iso
- });
- localStorage.setItem(TX_KEY,JSON.stringify(transactions));
- closeModal();refresh();
-}
+            const balEl = document.getElementById('balance');
+            balEl.textContent = `€ ${bal.toLocaleString('it-IT', { minimumFractionDigits: 2 })}`;
+            balEl.className = bal >= 0 ? 'text-4xl font-bold text-white' : 'text-4xl font-bold text-red-300';
 
-/* SETTINGS */
-function openSettings(){
- settings.classList.remove('hidden');
- let y=new Date().getFullYear(),m=new Date().getMonth()+1;
- accountsSettings.innerHTML=accounts.map(a=>`
- <div class="p-4 bg-gray-50 rounded-xl">
- <b>${a.name}</b>
- <label class="block text-xs mt-2">Budget base (€)</label>
- <input type="number" value="${a.budget||''}" class="w-full p-2"
- onchange="setBaseBudget('${a.id}',this.value)">
- <label class="block text-xs mt-2">Budget ${m}/${y}</label>
- <input type="number" value="${getMonthBudget(a.id,y,m)||''}" class="w-full p-2"
- onchange="setMonthBudget('${a.id}',${y},${m},this.value)">
- </div>`).join('');
-}
-function closeSettings(){settings.classList.add('hidden');}
+            const listEl = document.getElementById('transaction-list');
+            if (filtered.length === 0) {
+                listEl.innerHTML = `<div class="text-center py-10 text-gray-300 italic font-bold">Nessun movimento</div>`;
+            } else {
+                listEl.innerHTML = filtered.sort((a,b) => b.id - a.id).map(t => {
+                    const cat = [...categories.expense, ...categories.income].find(c => c.id === t.category);
+                    return `
+                    <div onclick="editTransaction(${t.id})" class="transaction-card flex items-center justify-between p-4 bg-gray-50 rounded-2xl border-l-4 cursor-pointer transition-all" style="border-color: ${cat?.color}">
+                        <div class="flex items-center space-x-3 truncate mr-2">
+                            <span class="text-2xl">${cat?.icon}</span>
+                            <div class="truncate">
+                                <div class="font-bold text-gray-800 truncate text-sm">${t.description || cat?.label}</div>
+                                <div class="text-[9px] text-gray-400 font-bold">${new Date(t.date).toLocaleDateString()}</div>
+                            </div>
+                        </div>
+                        <span class="font-black whitespace-nowrap text-sm ${t.type === 'income' ? 'text-green-600' : 'text-red-600'}">
+                            ${t.type === 'income' ? '+' : '-'} €${t.amount.toFixed(2)}
+                        </span>
+                    </div>`;
+                }).join('');
+            }
+            renderChart(filtered.filter(t => t.type === 'expense'));
+        }
 
-function setBaseBudget(id,v){
- let a=accounts.find(x=>x.id===id);
- a.budget=parseFloat(v)||0;
- localStorage.setItem(ACC_KEY,JSON.stringify(accounts));
- refresh();
-}
-function setMonthBudget(id,y,m,v){
- budgets[`${id}_${y}_${m}`]=parseFloat(v)||0;
- localStorage.setItem(BUD_KEY,JSON.stringify(budgets));
- refresh();
-}
-function getMonthBudget(id,y,m){
- return budgets[`${id}_${y}_${m}`]||accounts.find(a=>a.id===id).budget||0;
-}
+        async function handleImage(event) {
+            const file = event.target.files[0];
+            if (!file || !apiKey) return;
+            const loader = document.getElementById('camera-loader');
+            loader.classList.remove('hidden');
+            try {
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = async () => {
+                    const b64 = reader.result.split(',')[1];
+                    const result = await analyzeReceipt(b64);
+                    if (result.amount) document.getElementById('amount-input').value = result.amount;
+                    if (result.description) document.getElementById('desc-input').value = result.description;
+                    loader.classList.add('hidden');
+                };
+            } catch (err) { alert("Errore AI"); loader.classList.add('hidden'); }
+        }
 
-/* EXPORT */
-function exportCSV(){
- let rows=[['Data','Conto','Tipo','Importo','Descrizione']];
- transactions.forEach(t=>{
-  rows.push([
-   new Date(t.date).toLocaleDateString('it-IT'),
-   accounts.find(a=>a.id===t.accountId).name,
-   t.type,t.amount,t.description
-  ]);
- });
- let csv=rows.map(r=>r.join(';')).join('\n');
- let a=document.createElement('a');
- a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(csv);
- a.download='SpesePro.csv';a.click();
-}
+        async function analyzeReceipt(base64) {
+            const prompt = "JSON format: { 'amount': float, 'description': 'store' }. Only raw JSON.";
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    contents: [{ parts: [{ text: prompt }, { inlineData: { mimeType: "image/jpeg", data: base64 } }] }],
+                    generationConfig: { responseMimeType: "application/json" }
+                })
+            });
+            const data = await response.json();
+            return JSON.parse(data.candidates[0].content.parts[0].text);
+        }
 
-/* RENDER */
-function refresh(){
- let now=new Date(),y=now.getFullYear(),m=now.getMonth()+1;
- let acc=accounts.find(a=>a.id===activeAccount);
- accountName.textContent=acc.name;
+        function triggerCamera() {
+            if(!apiKey) { promptApiKey(); return; }
+            document.getElementById('camera-input').click();
+        }
 
- let tx=transactions.filter(t=>{
-  let d=new Date(t.date);
-  return d.getMonth()+1===m && d.getFullYear()===y && t.accountId===acc.id;
- });
+        function openModal(mode, tx = null) {
+            currentMode = mode;
+            editingTxId = tx ? tx.id : null;
+            selectedCategory = tx ? tx.category : categories[mode][0].id;
+            
+            document.getElementById('modal').classList.remove('hidden');
+            document.getElementById('modal-title').textContent = editingTxId ? 'Modifica' : (mode === 'income' ? 'Entrata' : 'Uscita');
+            document.getElementById('delete-btn').classList.toggle('hidden', !editingTxId);
 
- let inc=tx.filter(t=>t.type==='income').reduce((s,t)=>s+t.amount,0);
- let exp=tx.filter(t=>t.type==='expense').reduce((s,t)=>s+t.amount,0);
- let bal=inc-exp;
- balance.textContent='€ '+bal.toFixed(2);
+            const saveBtn = document.getElementById('save-btn');
+            saveBtn.className = `flex-[2] py-4 rounded-2xl text-white font-bold text-xl shadow-lg active:scale-95 transition-transform ${mode === 'income' ? 'bg-green-500' : 'bg-red-500'}`;
 
- let bud=getMonthBudget(acc.id,y,m);
- let perc=bud?Math.min(100,(exp/bud)*100):0;
+            const accSelect = document.getElementById('modal-account-select');
+            accSelect.innerHTML = accounts.map(a => `<option value="${a.id}" ${a.id === (tx ? tx.accountId : activeAccountId) ? 'selected' : ''}>${a.name}</option>`).join('');
 
- budgetInfo.textContent=bud?`Speso €${exp.toFixed(2)} / €${bud}`:'Nessun budget';
- let bar=budgetBar;
- bar.style.width=perc+'%';
- bar.style.background=perc<70?'#22c55e':perc<100?'#eab308':'#ef4444';
+            const grid = document.getElementById('category-grid');
+            grid.innerHTML = categories[mode].map(c => `
+                <button onclick="selectCategory('${c.id}')" id="cat-${c.id}" class="cat-btn p-2 rounded-xl border-2 flex flex-col items-center transition-all ${c.id === selectedCategory ? 'border-indigo-500 bg-indigo-50' : 'border-transparent bg-gray-50'}">
+                    <span class="text-xl">${c.icon}</span>
+                    <span class="text-[9px] font-bold text-gray-500 mt-1 uppercase">${c.label}</span>
+                </button>`).join('');
 
- balance.className='text-4xl font-bold '+(perc>100?'text-red-200':'');
- list.innerHTML=tx.map(t=>`
- <div class="p-3 bg-gray-100 rounded flex justify-between">
- <span>${t.description||'-'}</span>
- <b class="${t.type==='income'?'text-green-600':'text-red-600'}">
- ${t.type==='income'?'+':'-'}€${t.amount.toFixed(2)}
- </b></div>`).join('');
+            document.getElementById('amount-input').value = tx ? tx.amount : '';
+            document.getElementById('desc-input').value = tx ? tx.description : '';
+            setTimeout(() => document.getElementById('modal-content').classList.remove('translate-y-full'), 10);
+        }
 
- renderChart(tx.filter(t=>t.type==='expense'));
-}
+        function editTransaction(id) { const tx = transactions.find(t => t.id === id); if (tx) openModal(tx.type, tx); }
 
-/* CHART */
-function renderChart(exps){
- if(!exps.length){chartBox.classList.add('hidden');return;}
- chartBox.classList.remove('hidden');
- if(chart)chart.destroy();
- chart=new Chart(document.getElementById('chart'),{
-  type:'doughnut',
-  data:{labels:['Spese'],datasets:[{data:[exps.reduce((s,t)=>s+t.amount,0)],backgroundColor:['#ef4444']}]},
-  options:{cutout:'70%'}
- });
-}
+        function selectCategory(id) {
+            selectedCategory = id;
+            document.querySelectorAll('.cat-btn').forEach(b => { b.classList.remove('border-indigo-500', 'bg-indigo-50'); b.classList.add('border-transparent', 'bg-gray-50'); });
+            document.getElementById('cat-' + id).classList.add('border-indigo-500', 'bg-indigo-50');
+        }
 
-refresh();
-</script>
+        function saveTransaction() {
+            const amt = parseFloat(document.getElementById('amount-input').value);
+            if (isNaN(amt) || amt <= 0) return;
+            const desc = document.getElementById('desc-input').value.trim();
+            const targetAccId = document.getElementById('modal-account-select').value;
+            
+            if (editingTxId) {
+                const idx = transactions.findIndex(t => t.id === editingTxId);
+                transactions[idx] = { ...transactions[idx], amount: amt, description: desc, category: selectedCategory, accountId: targetAccId };
+            } else {
+                transactions.push({ id: Date.now(), amount: amt, description: desc, category: selectedCategory, type: currentMode, accountId: targetAccId, date: new Date().toISOString() });
+            }
+            localStorage.setItem(STORAGE_TX, JSON.stringify(transactions));
+            activeAccountId = targetAccId;
+            updateUI(); 
+            closeModal();
+        }
+
+        function deleteTx(id) { if(confirm("Eliminare?")) { transactions = transactions.filter(t => t.id !== id); localStorage.setItem(STORAGE_TX, JSON.stringify(transactions)); updateUI(); closeModal(); } }
+        function changeMonth(d) { viewDate.setMonth(viewDate.getMonth() + d); updateUI(); }
+        function closeModal() { document.getElementById('modal-content').classList.add('translate-y-full'); setTimeout(() => document.getElementById('modal').classList.add('hidden'), 300); }
+
+        function promptApiKey() {
+            const key = prompt("Inserisci API Key Gemini:", apiKey);
+            if (key !== null) { apiKey = key; localStorage.setItem('gemini_api_key', key); }
+        }
+
+        function renderChart(exps) {
+            const ctx = document.getElementById('expenseChart');
+            const container = document.getElementById('chart-container');
+            if (exps.length === 0) { container.classList.add('hidden'); return; }
+            container.classList.remove('hidden');
+            const dataMap = {};
+            exps.forEach(e => {
+                const label = categories.expense.find(c => c.id === e.category)?.label || 'Altro';
+                dataMap[label] = (dataMap[label] || 0) + e.amount;
+            });
+            if (chartInstance) chartInstance.destroy();
+            chartInstance = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: Object.keys(dataMap),
+                    datasets: [{
+                        data: Object.values(dataMap),
+                        backgroundColor: Object.keys(dataMap).map(l => categories.expense.find(c => c.label === l)?.color),
+                        borderWidth: 0
+                    }]
+                },
+                options: { 
+                    plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 10 }, padding: 10 } } }, 
+                    cutout: '70%', maintainAspectRatio: false
+                }
+            });
+        }
+
+        function exportCSV() {
+            const headers = ["Data", "Descrizione", "Importo", "Categoria", "Tipo", "Conto"];
+            const rows = transactions.map(t => [
+                new Date(t.date).toLocaleDateString(),
+                t.description,
+                t.amount.toFixed(2),
+                t.category,
+                t.type,
+                accounts.find(a => a.id === t.accountId)?.name || "N/A"
+            ].join(';'));
+            const blob = new Blob(["\ufeff" + [headers.join(';'), ...rows].join('\n')], { type: 'text/csv' });
+            downloadBackupManual(blob, `spese_export_${new Date().toISOString().split('T')[0]}.csv`, true);
+        }
+
+        function importJSON(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const r = new FileReader();
+            r.onload = (e) => {
+                try {
+                    const d = JSON.parse(e.target.result);
+                    if (confirm("Ripristinare backup? I dati attuali verranno sostituiti.")) {
+                        transactions = d.transactions || [];
+                        accounts = d.accounts || accounts;
+                        localStorage.setItem(STORAGE_TX, JSON.stringify(transactions));
+                        localStorage.setItem(STORAGE_ACC, JSON.stringify(accounts));
+                        location.reload();
+                    }
+                } catch { showToast("❌ File non valido"); }
+            };
+            r.readAsText(file);
+        }
+
+        function clearHistory() { if(confirm("Cancellare tutto?")) { localStorage.clear(); location.reload(); } }
+
+        window.onload = updateUI;
+        document.getElementById('modal').onclick = (e) => { if(e.target === document.getElementById('modal')) closeModal(); };
+    </script>
 </body>
 </html>
+
