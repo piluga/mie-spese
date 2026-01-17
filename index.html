@@ -2,7 +2,7 @@
 <html lang="it">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     
     <title>FinanzaPro Multi-Conto</title>
     
@@ -58,22 +58,27 @@
             transition: opacity 0.3s;
             pointer-events: none;
         }
+
+        .category-btn.active {
+            border-color: currentColor;
+            background-color: rgba(0,0,0,0.05);
+        }
     </style>
 </head>
 <body class="antialiased text-gray-900">
 
     <div id="toast" class="toast">Messaggio</div>
 
-    <div id="app" class="max-w-md mx-auto min-h-screen flex flex-col bg-white shadow-lg relative">
+    <div id="app" class="max-w-md mx-auto min-h-screen flex flex-col bg-white shadow-lg relative overflow-x-hidden">
         
         <!-- View Principale -->
-        <div id="main-view">
+        <div id="main-view" class="w-full">
             <header class="bg-indigo-600 text-white p-6 rounded-b-[2.5rem] shadow-xl">
                 <div class="flex justify-between items-center mb-4">
                     <button onclick="changeMonth(-1)" class="p-2 hover:bg-indigo-500 rounded-full transition-colors active:bg-indigo-400">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" /></svg>
                     </button>
-                    <h2 id="current-month-display" class="text-lg font-semibold uppercase tracking-wider">Mese</h2>
+                    <h2 id="current-month-display" class="text-lg font-semibold uppercase tracking-wider text-center">Mese</h2>
                     <button onclick="changeMonth(1)" class="p-2 hover:bg-indigo-500 rounded-full transition-colors active:bg-indigo-400">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>
                     </button>
@@ -108,7 +113,7 @@
                     </button>
                 </div>
 
-                <div id="chart-container" class="mb-8 bg-gray-50 p-4 rounded-2xl hidden">
+                <div id="chart-section" class="mb-8 bg-gray-50 p-4 rounded-2xl hidden">
                     <canvas id="expenseChart" width="200" height="200"></canvas>
                 </div>
 
@@ -144,30 +149,18 @@
                 <!-- Sezione Backup Avanzato -->
                 <div class="settings-card">
                     <h3 class="text-xs font-bold text-gray-400 uppercase mb-3">Salvataggio & Cloud</h3>
-                    <p class="text-[11px] text-gray-500 mb-4 leading-tight">Puoi salvare il backup su Google Drive, iCloud o nel tuo File System per non perdere mai i dati.</p>
+                    <p class="text-[11px] text-gray-500 mb-4 leading-tight">Esporta i tuoi dati per sicurezza o trasferiscili su un altro dispositivo.</p>
                     
                     <div class="space-y-3">
-                        <!-- Opzione 1: Condivisione -->
                         <button onclick="shareBackup()" class="w-full flex items-center justify-between p-4 bg-indigo-600 text-white rounded-xl shadow-sm active:bg-indigo-700 transition-colors">
                             <div class="flex items-center space-x-3 text-left">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 100-3.316 3 3 0 000 3.316m0 0a3 3 0 100 3.316 3 3 0 000-3.316" /></svg>
                                 <div>
-                                    <div class="font-bold text-sm">Invia a Cloud / Drive</div>
-                                    <div class="text-[10px] opacity-80 uppercase font-medium">Usa menu di sistema</div>
+                                    <div class="font-bold text-sm">Condividi Backup</div>
+                                    <div class="text-[10px] opacity-80 uppercase font-medium">Invia file JSON</div>
                                 </div>
                             </div>
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>
-                        </button>
-
-                        <!-- Opzione 2: File System Access -->
-                        <button onclick="saveToFileSystem()" class="w-full flex items-center justify-between p-4 bg-white border border-gray-200 text-gray-700 rounded-xl shadow-sm active:bg-gray-50 transition-colors">
-                            <div class="flex items-center space-x-3 text-left">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 19a2 2 0 01-2-2V7a2 2 0 012-2h4l2 2h4a2 2 0 012 2v1m-6 9l3-3m0 0l3 3m-3-3V10" /></svg>
-                                <div>
-                                    <div class="font-bold text-sm text-gray-800">Salva in locale</div>
-                                    <div class="text-[10px] text-gray-400 uppercase font-medium">Scegli cartella o Drive</div>
-                                </div>
-                            </div>
                         </button>
 
                         <div class="grid grid-cols-2 gap-3">
@@ -187,6 +180,7 @@
 
                 <div class="settings-card">
                     <h3 class="text-xs font-bold text-gray-400 uppercase mb-3">AI Engine</h3>
+                    <p class="text-[10px] text-gray-500 mb-2">Inserisci la tua API Key di Google Gemini per analizzare gli scontrini con la fotocamera.</p>
                     <button onclick="promptApiKey()" class="w-full py-2 bg-indigo-50 text-indigo-700 rounded-lg text-xs font-bold">Aggiorna API Key Gemini</button>
                 </div>
 
@@ -237,7 +231,7 @@
                         <div id="category-grid" class="grid grid-cols-4 gap-2"></div>
                     </div>
 
-                    <div class="flex gap-3">
+                    <div class="flex gap-3 pt-2">
                         <button id="delete-btn" onclick="deleteTx(editingTxId)" class="hidden flex-1 py-4 bg-red-100 text-red-600 rounded-2xl font-bold text-xl active:scale-95 transition-transform">Elimina</button>
                         <button onclick="saveTransaction()" id="save-btn" class="flex-[2] py-4 rounded-2xl text-white font-bold text-xl shadow-lg active:scale-95 transition-transform">Salva</button>
                     </div>
@@ -278,7 +272,7 @@
         let editingTxId = null;
         let chartInstance = null;
 
-        // UI TOAST
+        // --- UI UTILS ---
         function showToast(msg) {
             const t = document.getElementById('toast');
             t.textContent = msg;
@@ -286,7 +280,7 @@
             setTimeout(() => t.style.opacity = '0', 2500);
         }
 
-        // BACKUP AVANZATO
+        // --- BACKUP & EXPORT ---
         async function shareBackup() {
             const data = { app: "SpesePro", version: "3.0", transactions, accounts };
             const json = JSON.stringify(data, null, 2);
@@ -297,37 +291,14 @@
                 try {
                     await navigator.share({
                         title: 'Backup SpesePro',
-                        text: 'File di backup della mia app di gestione spese.',
                         files: [file]
                     });
-                    showToast("Menu condivisione aperto!");
+                    showToast("Backup condiviso!");
                 } catch (err) {
-                    if(err.name !== 'AbortError') showToast("Errore condivisione");
-                    downloadBackupManual(json, filename);
+                    if(err.name !== 'AbortError') downloadBackupManual(json, filename);
                 }
             } else {
                 downloadBackupManual(json, filename);
-            }
-        }
-
-        async function saveToFileSystem() {
-            const data = { app: "SpesePro", transactions, accounts };
-            const json = JSON.stringify(data, null, 2);
-            if ('showSaveFilePicker' in window) {
-                try {
-                    const handle = await window.showSaveFilePicker({
-                        suggestedName: `backup_spese_${new Date().toISOString().split('T')[0]}.json`,
-                        types: [{ description: 'JSON File', accept: { 'application/json': ['.json'] } }],
-                    });
-                    const writable = await handle.createWritable();
-                    await writable.write(json);
-                    await writable.close();
-                    showToast("Salvato con successo!");
-                } catch (err) {
-                    if(err.name !== 'AbortError') showToast("Impossibile salvare");
-                }
-            } else {
-                downloadBackupManual(json, `backup_spese_${new Date().toISOString().split('T')[0]}.json`);
             }
         }
 
@@ -342,39 +313,48 @@
             showToast("Backup scaricato!");
         }
 
-        // LOGICA CONTI
-        function addAccount() {
-            const input = document.getElementById('new-account-name');
-            const name = input.value.trim();
-            if(!name) return;
-            accounts.push({ id: 'acc_' + Date.now(), name });
+        function exportCSV() {
+            let csv = "Data,Conto,Tipo,Categoria,Descrizione,Importo\n";
+            transactions.forEach(t => {
+                const acc = accounts.find(a => a.id === t.accountId)?.name || 'N/A';
+                csv += `${new Date(t.date).toLocaleDateString()},${acc},${t.type},${t.category},"${t.description || ''}",${t.amount}\n`;
+            });
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `movimenti_finanza_${new Date().toISOString().split('T')[0]}.csv`;
+            a.click();
+        }
+
+        function importJSON(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    const data = JSON.parse(e.target.result);
+                    if (data.transactions) transactions = data.transactions;
+                    if (data.accounts) accounts = data.accounts;
+                    saveAll();
+                    updateUI();
+                    showToast("Dati importati!");
+                } catch (err) {
+                    showToast("Errore file JSON");
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        // --- CORE LOGIC ---
+        function saveAll() {
+            localStorage.setItem(STORAGE_TX, JSON.stringify(transactions));
             localStorage.setItem(STORAGE_ACC, JSON.stringify(accounts));
-            input.value = '';
-            renderSettingsAccounts();
+        }
+
+        function changeMonth(dir) {
+            viewDate.setMonth(viewDate.getMonth() + dir);
             updateUI();
-        }
-
-        function renameAccount(id) {
-            const acc = accounts.find(a => a.id === id);
-            if (!acc) return;
-            const newName = prompt("Rinomina conto:", acc.name);
-            if (newName) {
-                acc.name = newName;
-                localStorage.setItem(STORAGE_ACC, JSON.stringify(accounts));
-                renderSettingsAccounts();
-                updateUI();
-            }
-        }
-
-        function deleteAccount(id) {
-            if(accounts.length <= 1) return alert("Minimo 1 conto.");
-            if(confirm("Eliminare conto?")) {
-                accounts = accounts.filter(a => a.id !== id);
-                if(activeAccountId === id) activeAccountId = accounts[0].id;
-                localStorage.setItem(STORAGE_ACC, JSON.stringify(accounts));
-                renderSettingsAccounts();
-                updateUI();
-            }
         }
 
         function navigateAccount(dir) {
@@ -382,24 +362,6 @@
             let nextIdx = (idx + dir + accounts.length) % accounts.length;
             activeAccountId = accounts[nextIdx].id;
             updateUI();
-        }
-
-        function renderSettingsAccounts() {
-            const list = document.getElementById('account-list-settings');
-            list.innerHTML = accounts.map(a => `
-                <div class="flex items-center justify-between p-3 bg-gray-50 rounded-xl">
-                    <span class="font-bold text-sm truncate ${a.id === activeAccountId ? 'text-indigo-600' : ''}">${a.name}</span>
-                    <div class="flex space-x-2">
-                        <button onclick="renameAccount('${a.id}')" class="p-1 text-gray-400"><svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg></button>
-                        <button onclick="deleteAccount('${a.id}')" class="p-1 text-red-300"><svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg></button>
-                    </div>
-                </div>`).join('');
-        }
-        
-        function toggleSettings(show) {
-            const view = document.getElementById('settings-view');
-            if(show) { renderSettingsAccounts(); view.classList.remove('hidden'); }
-            else { view.classList.add('hidden'); }
         }
 
         function updateUI() {
@@ -426,6 +388,7 @@
             const listEl = document.getElementById('transaction-list');
             if (filtered.length === 0) {
                 listEl.innerHTML = `<div class="text-center py-10 text-gray-300 italic font-bold">Nessun movimento</div>`;
+                document.getElementById('chart-section').classList.add('hidden');
             } else {
                 listEl.innerHTML = filtered.sort((a,b) => b.id - a.id).map(t => {
                     const cat = [...categories.expense, ...categories.income].find(c => c.id === t.category);
@@ -443,11 +406,89 @@
                         </span>
                     </div>`;
                 }).join('');
+                
+                const expensesOnly = filtered.filter(t => t.type === 'expense');
+                if (expensesOnly.length > 0) {
+                    document.getElementById('chart-section').classList.remove('hidden');
+                    renderChart(expensesOnly);
+                } else {
+                    document.getElementById('chart-section').classList.add('hidden');
+                }
             }
-            renderChart(filtered.filter(t => t.type === 'expense'));
         }
 
-        // AI CAMERA LOGIC
+        // --- ACCOUNT SETTINGS ---
+        function addAccount() {
+            const input = document.getElementById('new-account-name');
+            const name = input.value.trim();
+            if(!name) return;
+            accounts.push({ id: 'acc_' + Date.now(), name });
+            saveAll();
+            input.value = '';
+            renderSettingsAccounts();
+            updateUI();
+        }
+
+        function renameAccount(id) {
+            const acc = accounts.find(a => a.id === id);
+            if (!acc) return;
+            const newName = prompt("Rinomina conto:", acc.name);
+            if (newName) {
+                acc.name = newName;
+                saveAll();
+                renderSettingsAccounts();
+                updateUI();
+            }
+        }
+
+        function deleteAccount(id) {
+            if(accounts.length <= 1) return alert("Minimo 1 conto richiesto.");
+            if(confirm("Tutti i movimenti di questo conto rimarranno ma il conto verrà eliminato. Procedere?")) {
+                accounts = accounts.filter(a => a.id !== id);
+                if(activeAccountId === id) activeAccountId = accounts[0].id;
+                saveAll();
+                renderSettingsAccounts();
+                updateUI();
+            }
+        }
+
+        function renderSettingsAccounts() {
+            const list = document.getElementById('account-list-settings');
+            list.innerHTML = accounts.map(a => `
+                <div class="flex items-center justify-between p-3 bg-gray-50 rounded-xl">
+                    <span class="font-bold text-sm truncate ${a.id === activeAccountId ? 'text-indigo-600' : ''}">${a.name}</span>
+                    <div class="flex space-x-2">
+                        <button onclick="renameAccount('${a.id}')" class="p-1 text-gray-400"><svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg></button>
+                        <button onclick="deleteAccount('${a.id}')" class="p-1 text-red-300"><svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg></button>
+                    </div>
+                </div>`).join('');
+        }
+
+        function toggleSettings(show) {
+            const view = document.getElementById('settings-view');
+            if(show) { renderSettingsAccounts(); view.classList.remove('hidden'); }
+            else { view.classList.add('hidden'); }
+        }
+
+        // --- AI & CAMERA ---
+        function promptApiKey() {
+            const key = prompt("Inserisci la tua Google Gemini API Key:", apiKey);
+            if (key !== null) {
+                apiKey = key;
+                localStorage.setItem('gemini_api_key', key);
+                showToast("API Key aggiornata!");
+            }
+        }
+
+        function triggerCamera() {
+            if(!apiKey) { 
+                showToast("Inserisci prima l'API Key!");
+                setTimeout(promptApiKey, 500);
+                return; 
+            }
+            document.getElementById('camera-input').click();
+        }
+
         async function handleImage(event) {
             const file = event.target.files[0];
             if (!file || !apiKey) return;
@@ -462,12 +503,17 @@
                     if (result.amount) document.getElementById('amount-input').value = result.amount;
                     if (result.description) document.getElementById('desc-input').value = result.description;
                     loader.classList.add('hidden');
+                    showToast("Scontrino analizzato!");
                 };
-            } catch (err) { alert(err.message); loader.classList.add('hidden'); }
+            } catch (err) { 
+                console.error(err);
+                showToast("Errore analisi AI");
+                loader.classList.add('hidden'); 
+            }
         }
 
         async function analyzeReceipt(base64) {
-            const prompt = "JSON: { 'amount': float, 'description': 'store_name' }. Only JSON.";
+            const prompt = "Analizza questo scontrino e restituisci SOLO un oggetto JSON con questa struttura: { 'amount': float, 'description': 'nome_negozio' }. Sii preciso.";
             const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
             const response = await fetch(url, {
                 method: 'POST',
@@ -481,146 +527,150 @@
             return JSON.parse(data.candidates[0].content.parts[0].text);
         }
 
-        function triggerCamera() {
-            if(!apiKey) { promptApiKey(); return; }
-            document.getElementById('camera-input').click();
-        }
-
-        // GESTIONE MODAL
+        // --- MODAL & FORM ---
         function openModal(mode, tx = null) {
             currentMode = mode;
             editingTxId = tx ? tx.id : null;
             selectedCategory = tx ? tx.category : categories[mode][0].id;
             
-            document.getElementById('modal').classList.remove('hidden');
+            const modal = document.getElementById('modal');
+            const content = document.getElementById('modal-content');
+            
             document.getElementById('modal-title').textContent = editingTxId ? 'Modifica' : (mode === 'income' ? 'Entrata' : 'Uscita');
             document.getElementById('delete-btn').classList.toggle('hidden', !editingTxId);
-
-            // Dinamicamente aggiorna il colore del tasto Salva
-            const saveBtn = document.getElementById('save-btn');
-            if(mode === 'income') {
-                saveBtn.classList.remove('bg-red-500');
-                saveBtn.classList.add('bg-green-500');
-            } else {
-                saveBtn.classList.remove('bg-green-500');
-                saveBtn.classList.add('bg-red-500');
-            }
-
+            
+            // Popola selettore conti nel modal
             const accSelect = document.getElementById('modal-account-select');
             accSelect.innerHTML = accounts.map(a => `<option value="${a.id}" ${a.id === (tx ? tx.accountId : activeAccountId) ? 'selected' : ''}>${a.name}</option>`).join('');
-
-            const grid = document.getElementById('category-grid');
-            grid.innerHTML = categories[mode].map(c => `
-                <button onclick="selectCategory('${c.id}')" id="cat-${c.id}" class="cat-btn p-2 rounded-xl border-2 flex flex-col items-center transition-all ${c.id === selectedCategory ? 'border-indigo-500 bg-indigo-50' : 'border-transparent bg-gray-50'}">
-                    <span class="text-xl">${c.icon}</span>
-                    <span class="text-[9px] font-bold text-gray-500 mt-1 uppercase">${c.label}</span>
-                </button>`).join('');
-
+            
+            // Popola campi
             document.getElementById('amount-input').value = tx ? tx.amount : '';
             document.getElementById('desc-input').value = tx ? tx.description : '';
-            setTimeout(() => document.getElementById('modal-content').classList.remove('translate-y-full'), 10);
+            
+            renderCategories();
+            
+            const saveBtn = document.getElementById('save-btn');
+            saveBtn.className = mode === 'income' 
+                ? "flex-[2] py-4 rounded-2xl text-white font-bold text-xl shadow-lg active:scale-95 transition-transform bg-green-500"
+                : "flex-[2] py-4 rounded-2xl text-white font-bold text-xl shadow-lg active:scale-95 transition-transform bg-red-500";
+
+            modal.classList.remove('hidden');
+            setTimeout(() => content.classList.remove('translate-y-full'), 10);
         }
 
-        function editTransaction(id) { const tx = transactions.find(t => t.id === id); if (tx) openModal(tx.type, tx); }
+        function closeModal() {
+            const content = document.getElementById('modal-content');
+            content.classList.add('translate-y-full');
+            setTimeout(() => document.getElementById('modal').classList.add('hidden'), 300);
+        }
+
+        function renderCategories() {
+            const grid = document.getElementById('category-grid');
+            grid.innerHTML = categories[currentMode].map(c => `
+                <button onclick="selectCategory('${c.id}')" class="category-btn flex flex-col items-center p-2 rounded-xl border-2 border-transparent transition-all ${selectedCategory === c.id ? 'active' : ''}" style="color: ${c.color}">
+                    <span class="text-xl">${c.icon}</span>
+                    <span class="text-[9px] font-bold uppercase truncate w-full text-center">${c.label}</span>
+                </button>
+            `).join('');
+        }
 
         function selectCategory(id) {
             selectedCategory = id;
-            document.querySelectorAll('.cat-btn').forEach(b => { b.classList.remove('border-indigo-500', 'bg-indigo-50'); b.classList.add('border-transparent', 'bg-gray-50'); });
-            document.getElementById('cat-' + id).classList.add('border-indigo-500', 'bg-indigo-50');
+            renderCategories();
         }
 
         function saveTransaction() {
-            const amt = parseFloat(document.getElementById('amount-input').value);
-            if (isNaN(amt) || amt <= 0) return;
-            const desc = document.getElementById('desc-input').value.trim();
-            const targetAccId = document.getElementById('modal-account-select').value;
+            const amount = parseFloat(document.getElementById('amount-input').value);
+            const desc = document.getElementById('desc-input').value;
+            const accId = document.getElementById('modal-account-select').value;
             
+            if (!amount) return showToast("Inserisci importo");
+
+            const txData = {
+                id: editingTxId || Date.now(),
+                amount,
+                description: desc,
+                category: selectedCategory,
+                type: currentMode,
+                accountId: accId,
+                date: editingTxId ? transactions.find(t => t.id === editingTxId).date : new Date().toISOString()
+            };
+
             if (editingTxId) {
-                const idx = transactions.findIndex(t => t.id === editingTxId);
-                transactions[idx] = { ...transactions[idx], amount: amt, description: desc, category: selectedCategory, accountId: targetAccId };
+                transactions = transactions.map(t => t.id === editingTxId ? txData : t);
             } else {
-                transactions.push({ id: Date.now(), amount: amt, description: desc, category: selectedCategory, type: currentMode, accountId: targetAccId, date: new Date().toISOString() });
+                transactions.push(txData);
             }
-            localStorage.setItem(STORAGE_TX, JSON.stringify(transactions));
-            activeAccountId = targetAccId;
-            updateUI(); 
+
+            saveAll();
+            updateUI();
             closeModal();
+            showToast("Salvato!");
         }
 
-        function deleteTx(id) { if(confirm("Eliminare?")) { transactions = transactions.filter(t => t.id !== id); localStorage.setItem(STORAGE_TX, JSON.stringify(transactions)); updateUI(); closeModal(); } }
-        function changeMonth(d) { viewDate.setMonth(viewDate.getMonth() + d); updateUI(); }
-        function closeModal() { document.getElementById('modal-content').classList.add('translate-y-full'); setTimeout(() => document.getElementById('modal').classList.add('hidden'), 300); }
-
-        function promptApiKey() {
-            const key = prompt("Inserisci API Key Gemini:", apiKey);
-            if (key !== null) { apiKey = key; localStorage.setItem('gemini_api_key', key); }
+        function editTransaction(id) {
+            const tx = transactions.find(t => t.id === id);
+            if(tx) openModal(tx.type, tx);
         }
 
-        function renderChart(exps) {
-            const ctx = document.getElementById('expenseChart');
-            const container = document.getElementById('chart-container');
-            if (exps.length === 0) { container.classList.add('hidden'); return; }
-            container.classList.remove('hidden');
+        function deleteTx(id) {
+            if(confirm("Eliminare movimento?")) {
+                transactions = transactions.filter(t => t.id !== id);
+                saveAll();
+                updateUI();
+                closeModal();
+                showToast("Eliminato");
+            }
+        }
+
+        function clearHistory() {
+            if(confirm("ATTENZIONE: Questo cancellerà PER SEMPRE tutti i dati. Sei sicuro?")) {
+                transactions = [];
+                accounts = [{ id: 'acc_01', name: 'Conto Corrente' }];
+                activeAccountId = accounts[0].id;
+                saveAll();
+                location.reload();
+            }
+        }
+
+        // --- CHARTING ---
+        function renderChart(expenses) {
+            const ctx = document.getElementById('expenseChart').getContext('2d');
             const dataMap = {};
-            exps.forEach(e => {
-                const label = categories.expense.find(c => c.id === e.category)?.label || 'Altro';
-                dataMap[label] = (dataMap[label] || 0) + e.amount;
+            
+            expenses.forEach(e => {
+                dataMap[e.category] = (dataMap[e.category] || 0) + e.amount;
             });
+
+            const labels = Object.keys(dataMap).map(id => categories.expense.find(c => c.id === id)?.label || 'Altro');
+            const colors = Object.keys(dataMap).map(id => categories.expense.find(c => c.id === id)?.color || '#999');
+            const values = Object.values(dataMap);
+
             if (chartInstance) chartInstance.destroy();
             chartInstance = new Chart(ctx, {
                 type: 'doughnut',
                 data: {
-                    labels: Object.keys(dataMap),
+                    labels,
                     datasets: [{
-                        data: Object.values(dataMap),
-                        backgroundColor: Object.keys(dataMap).map(l => categories.expense.find(c => c.label === l)?.color),
-                        borderWidth: 0
+                        data: values,
+                        backgroundColor: colors,
+                        borderWidth: 0,
+                        hoverOffset: 10
                     }]
                 },
-                options: { 
-                    plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 10 }, padding: 10 } } }, 
-                    cutout: '70%', maintainAspectRatio: false
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: {
+                        legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 10 } } }
+                    },
+                    cutout: '70%'
                 }
             });
         }
 
-        function exportCSV() {
-            const headers = ["Data", "Descrizione", "Importo", "Categoria", "Tipo", "Conto"];
-            const rows = transactions.map(t => [
-                new Date(t.date).toLocaleDateString(),
-                t.description,
-                t.amount.toFixed(2),
-                t.category,
-                t.type,
-                accounts.find(a => a.id === t.accountId)?.name || "N/A"
-            ].join(';'));
-            const blob = new Blob(["\ufeff" + [headers.join(';'), ...rows].join('\n')], { type: 'text/csv' });
-            downloadBackupManual(blob, `spese_export.csv`);
-        }
-
-        function importJSON(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-            const r = new FileReader();
-            r.onload = (e) => {
-                try {
-                    const d = JSON.parse(e.target.result);
-                    if (confirm("Ripristinare backup?")) {
-                        transactions = d.transactions || [];
-                        accounts = d.accounts || accounts;
-                        localStorage.setItem(STORAGE_TX, JSON.stringify(transactions));
-                        localStorage.setItem(STORAGE_ACC, JSON.stringify(accounts));
-                        location.reload();
-                    }
-                } catch { showToast("File non valido"); }
-            };
-            r.readAsText(file);
-        }
-
-        function clearHistory() { if(confirm("Cancellare TUTTO?")) { localStorage.clear(); location.reload(); } }
-
+        // Init
         window.onload = updateUI;
-        document.getElementById('modal').onclick = (e) => { if(e.target === document.getElementById('modal')) closeModal(); };
     </script>
 </body>
 </html>
