@@ -80,7 +80,7 @@
                 <div class="text-center">
                     <div class="flex items-center justify-center space-x-4 mb-1">
                         <button onclick="navigateAccount(-1)" class="p-1 opacity-50 hover:opacity-100"><svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd" /></svg></button>
-                        <h1 id="account-name-display" class="text-xs uppercase font-medium tracking-widest text-indigo-100">Conto Corrente</h1>
+                        <h1 id="account-name-display" class="text-xs uppercase font-medium tracking-widest text-indigo-100">Conto</h1>
                         <button onclick="navigateAccount(1)" class="p-1 opacity-50 hover:opacity-100"><svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" /></svg></button>
                     </div>
                     <div id="balance" class="text-4xl font-bold">€ 0.00</div>
@@ -129,7 +129,7 @@
             </header>
             
             <div class="p-6 space-y-6">
-                <!-- Sezione Conti -->
+                <!-- Sezione Conti con funzione di Rinomina -->
                 <div class="settings-card">
                     <h3 class="text-xs font-bold text-gray-400 uppercase mb-3">I Tuoi Conti</h3>
                     <div id="account-list-settings" class="space-y-2 mb-4"></div>
@@ -145,7 +145,6 @@
                     <p class="text-[11px] text-gray-500 mb-4 leading-tight">Esporta i tuoi dati e scegli dove salvarli sul tuo dispositivo.</p>
                     
                     <div class="space-y-3">
-                        <!-- Pulsante Salvataggio con scelta percorso -->
                         <button onclick="saveToFileSystem()" class="w-full flex items-center justify-between p-4 bg-indigo-600 text-white rounded-xl shadow-sm active:bg-indigo-700 transition-colors">
                             <div class="flex items-center space-x-3 text-left">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" /></svg>
@@ -272,7 +271,6 @@
             setTimeout(() => t.style.opacity = '0', 2500);
         }
 
-        // Funzione Salvataggio con scelta percorso (File System Access API)
         async function saveToFileSystem() {
             const data = { 
                 app: "SpesePro", 
@@ -295,15 +293,11 @@
                     const writable = await handle.createWritable();
                     await writable.write(json);
                     await writable.close();
-                    showToast("✅ Backup salvato con successo!");
+                    showToast("✅ Backup salvato!");
                 } catch (err) {
-                    if(err.name !== 'AbortError') {
-                        console.error(err);
-                        showToast("❌ Errore durante il salvataggio");
-                    }
+                    if(err.name !== 'AbortError') showToast("❌ Errore salvataggio");
                 }
             } else {
-                showToast("Scegli percorso non supportato. Download...");
                 downloadBackupManual(json, `FinanzaPro_Backup_${new Date().toISOString().split('T')[0]}.json`);
             }
         }
@@ -318,45 +312,70 @@
             URL.revokeObjectURL(url);
         }
 
-        // Logica Conti
+        // --- Logica Conti (Rinomina Inclusa) ---
         function addAccount() {
             const input = document.getElementById('new-account-name');
             const name = input.value.trim();
             if(!name) return;
             accounts.push({ id: 'acc_' + Date.now(), name });
-            localStorage.setItem(STORAGE_ACC, JSON.stringify(accounts));
+            saveAccounts();
             input.value = '';
             renderSettingsAccounts();
             updateUI();
         }
 
-        function navigateAccount(dir) {
-            const idx = accounts.findIndex(a => a.id === activeAccountId);
-            let nextIdx = (idx + dir + accounts.length) % accounts.length;
-            activeAccountId = accounts[nextIdx].id;
-            updateUI();
+        function renameAccount(id) {
+            const acc = accounts.find(a => a.id === id);
+            if (!acc) return;
+            
+            const newName = prompt("Inserisci il nuovo nome per il conto:", acc.name);
+            if (newName !== null && newName.trim() !== "") {
+                acc.name = newName.trim();
+                saveAccounts();
+                renderSettingsAccounts();
+                updateUI();
+                showToast("✅ Conto rinominato");
+            }
+        }
+
+        function deleteAccount(id) {
+            if(accounts.length <= 1) return alert("Devi avere almeno un conto.");
+            if(confirm("Sei sicuro di voler eliminare questo conto? I movimenti non verranno eliminati ma non saranno più visibili sotto questo conto.")) {
+                accounts = accounts.filter(a => a.id !== id);
+                if(activeAccountId === id) activeAccountId = accounts[0].id;
+                saveAccounts();
+                renderSettingsAccounts();
+                updateUI();
+            }
+        }
+
+        function saveAccounts() {
+            localStorage.setItem(STORAGE_ACC, JSON.stringify(accounts));
         }
 
         function renderSettingsAccounts() {
             const list = document.getElementById('account-list-settings');
             list.innerHTML = accounts.map(a => `
                 <div class="flex items-center justify-between p-3 bg-gray-50 rounded-xl">
-                    <span class="font-bold text-sm truncate ${a.id === activeAccountId ? 'text-indigo-600' : ''}">${a.name}</span>
+                    <span class="font-bold text-sm truncate ${a.id === activeAccountId ? 'text-indigo-600' : 'text-gray-700'}">${a.name}</span>
                     <div class="flex space-x-2">
-                        <button onclick="deleteAccount('${a.id}')" class="p-1 text-red-300"><svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg></button>
+                        <button onclick="renameAccount('${a.id}')" class="p-2 text-indigo-500 hover:bg-indigo-50 rounded-lg">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
+                        </button>
+                        <button onclick="deleteAccount('${a.id}')" class="p-2 text-red-400 hover:bg-red-50 rounded-lg">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                        </button>
                     </div>
                 </div>`).join('');
         }
         
-        function deleteAccount(id) {
-            if(accounts.length <= 1) return alert("Minimo 1 conto.");
-            if(confirm("Eliminare conto?")) {
-                accounts = accounts.filter(a => a.id !== id);
-                if(activeAccountId === id) activeAccountId = accounts[0].id;
-                localStorage.setItem(STORAGE_ACC, JSON.stringify(accounts));
-                renderSettingsAccounts();
-                updateUI();
-            }
+        // --- Fine Logica Conti ---
+
+        function navigateAccount(dir) {
+            const idx = accounts.findIndex(a => a.id === activeAccountId);
+            let nextIdx = (idx + dir + accounts.length) % accounts.length;
+            activeAccountId = accounts[nextIdx].id;
+            updateUI();
         }
 
         function toggleSettings(show) {
@@ -410,7 +429,6 @@
             renderChart(filtered.filter(t => t.type === 'expense'));
         }
 
-        // AI Analisi Scontrino
         async function handleImage(event) {
             const file = event.target.files[0];
             if (!file || !apiKey) return;
@@ -426,11 +444,11 @@
                     if (result.description) document.getElementById('desc-input').value = result.description;
                     loader.classList.add('hidden');
                 };
-            } catch (err) { alert(err.message); loader.classList.add('hidden'); }
+            } catch (err) { alert("Errore AI"); loader.classList.add('hidden'); }
         }
 
         async function analyzeReceipt(base64) {
-            const prompt = "JSON: { 'amount': float, 'description': 'store_name' }. Only JSON.";
+            const prompt = "JSON format: { 'amount': float, 'description': 'store' }. Only raw JSON.";
             const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
             const response = await fetch(url, {
                 method: 'POST',
@@ -449,7 +467,6 @@
             document.getElementById('camera-input').click();
         }
 
-        // Modale Inserimento
         function openModal(mode, tx = null) {
             currentMode = mode;
             editingTxId = tx ? tx.id : null;
@@ -460,13 +477,7 @@
             document.getElementById('delete-btn').classList.toggle('hidden', !editingTxId);
 
             const saveBtn = document.getElementById('save-btn');
-            if(mode === 'income') {
-                saveBtn.classList.remove('bg-red-500');
-                saveBtn.classList.add('bg-green-500');
-            } else {
-                saveBtn.classList.remove('bg-green-500');
-                saveBtn.classList.add('bg-red-500');
-            }
+            saveBtn.className = `flex-[2] py-4 rounded-2xl text-white font-bold text-xl shadow-lg active:scale-95 transition-transform ${mode === 'income' ? 'bg-green-500' : 'bg-red-500'}`;
 
             const accSelect = document.getElementById('modal-account-select');
             accSelect.innerHTML = accounts.map(a => `<option value="${a.id}" ${a.id === (tx ? tx.accountId : activeAccountId) ? 'selected' : ''}>${a.name}</option>`).join('');
@@ -567,7 +578,7 @@
             r.onload = (e) => {
                 try {
                     const d = JSON.parse(e.target.result);
-                    if (confirm("Ripristinare backup? Tutti i dati correnti verranno sostituiti.")) {
+                    if (confirm("Ripristinare backup? I dati attuali verranno sostituiti.")) {
                         transactions = d.transactions || [];
                         accounts = d.accounts || accounts;
                         localStorage.setItem(STORAGE_TX, JSON.stringify(transactions));
@@ -579,7 +590,7 @@
             r.readAsText(file);
         }
 
-        function clearHistory() { if(confirm("Cancellare TUTTO? L'azione è irreversibile.")) { localStorage.clear(); location.reload(); } }
+        function clearHistory() { if(confirm("Cancellare tutto?")) { localStorage.clear(); location.reload(); } }
 
         window.onload = updateUI;
         document.getElementById('modal').onclick = (e) => { if(e.target === document.getElementById('modal')) closeModal(); };
