@@ -12,11 +12,6 @@
     <meta name="apple-mobile-web-app-title" content="SpesePro">
     <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/6039/6039232.png">
     
-    <!-- Manifest Base64 -->
-    <link rel="manifest" href="data:application/json;base64,ewogICJkZWZhdWx0X2xvY2FsZSI6ICJpdCIsCiAgIm5hbWUiOiAiR2VzdGlvbmUgU3Blc2UgUHJvIiwKICAic2hvcnRfbmFtZSI6ICJTcGVzZVBybyIsCiAgInN0YXJ0X3VybCI6ICIuIiwKICAiaWNvbnMiOiBbCiAgICB7CiAgICAgICJzcmMiOiAiaHR0cHM6Ly9jZG4taWNvbnMtcG5nLmZsYXRpY29uLmNvbS81MTIvNjAzOS82MDM5MjMyLnBuZyIsCiAgICAgICJ0eXBlIjogImltYWdlL3BuZyIsCiAgICAgICJzaXplcyI6ICI1MTJ4NTEyIiwKICAgICAgInB1cnBvc2UiOiAiYW55IG1hc2thYmxlIgogICAgfQogIF0sCiAgImRpc3BsYXkiOiAic3RhbmRhbG9uZSIsCiAgImJhY2tncm91bmRfY29sb3IiOiAiIzRmNDZlNSIsCiAgInRoZW1lX2NvbG9yIjogIiM0ZjQ2ZTUiCn0=">
-
-    <meta name="theme-color" content="#4f46e5">
-    
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
@@ -37,12 +32,6 @@
         }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         .modal-transition { transition: transform 0.3s ease-out; }
-        input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
-        .transaction-card:active { transform: scale(0.98); background-color: #f9fafb; }
-        .settings-card { background: white; border-radius: 1rem; padding: 1rem; margin-bottom: 1rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
-        header { padding-top: env(safe-area-inset-top, 2.5rem); }
-        .pb-safe { padding-bottom: env(safe-area-inset-bottom, 1rem); }
-        
         .toast {
             position: fixed;
             bottom: 2rem;
@@ -58,11 +47,12 @@
             transition: opacity 0.3s;
             pointer-events: none;
         }
-
         .category-btn.active {
             border-color: currentColor;
             background-color: rgba(0,0,0,0.05);
         }
+        .pb-safe { padding-bottom: env(safe-area-inset-bottom, 1rem); }
+        header { padding-top: env(safe-area-inset-top, 2.5rem); }
     </style>
 </head>
 <body class="antialiased text-gray-900">
@@ -71,15 +61,15 @@
 
     <div id="app" class="max-w-md mx-auto min-h-screen flex flex-col bg-white shadow-lg relative overflow-x-hidden">
         
-        <!-- View Principale -->
+        <!-- Vista Principale -->
         <div id="main-view" class="w-full">
             <header class="bg-indigo-600 text-white p-6 rounded-b-[2.5rem] shadow-xl">
                 <div class="flex justify-between items-center mb-4">
-                    <button onclick="changeMonth(-1)" class="p-2 hover:bg-indigo-500 rounded-full transition-colors active:bg-indigo-400">
+                    <button onclick="changeMonth(-1)" class="p-2 hover:bg-indigo-500 rounded-full transition-colors">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" /></svg>
                     </button>
                     <h2 id="current-month-display" class="text-lg font-semibold uppercase tracking-wider text-center">Mese</h2>
-                    <button onclick="changeMonth(1)" class="p-2 hover:bg-indigo-500 rounded-full transition-colors active:bg-indigo-400">
+                    <button onclick="changeMonth(1)" class="p-2 hover:bg-indigo-500 rounded-full transition-colors">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>
                     </button>
                 </div>
@@ -87,7 +77,7 @@
                 <div class="text-center">
                     <div class="flex items-center justify-center space-x-4 mb-1">
                         <button onclick="navigateAccount(-1)" class="p-1 opacity-50 hover:opacity-100"><svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd" /></svg></button>
-                        <h1 id="account-name-display" class="text-xs uppercase font-medium tracking-widest text-indigo-100">Conto Corrente</h1>
+                        <h1 id="account-name-display" class="text-xs uppercase font-medium tracking-widest text-indigo-100">Conto</h1>
                         <button onclick="navigateAccount(1)" class="p-1 opacity-50 hover:opacity-100"><svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" /></svg></button>
                     </div>
                     <div id="balance" class="text-4xl font-bold">€ 0.00</div>
@@ -117,74 +107,74 @@
                     <canvas id="expenseChart" width="200" height="200"></canvas>
                 </div>
 
-                <div class="flex justify-between items-center mb-4">
-                    <h2 class="text-xl font-bold text-gray-800 italic">Movimenti</h2>
-                </div>
-                
+                <h2 class="text-xl font-bold text-gray-800 italic mb-4">Movimenti</h2>
                 <div id="transaction-list" class="space-y-3 pb-24"></div>
             </main>
         </div>
 
-        <!-- View Impostazioni -->
+        <!-- Impostazioni e Cloud -->
         <div id="settings-view" class="hidden absolute inset-0 bg-gray-50 z-40 overflow-y-auto pb-10">
             <header class="bg-white p-6 border-b sticky top-0 flex items-center justify-between">
                 <button onclick="toggleSettings(false)" class="p-2 text-indigo-600">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7 7-7" /></svg>
                 </button>
-                <h2 class="text-lg font-bold">Impostazioni & Backup</h2>
+                <h2 class="text-lg font-bold">Cloud & Backup</h2>
                 <div class="w-10"></div>
             </header>
             
             <div class="p-6 space-y-6">
-                <!-- Sezione Conti -->
-                <div class="settings-card">
-                    <h3 class="text-xs font-bold text-gray-400 uppercase mb-3">I Tuoi Conti</h3>
-                    <div id="account-list-settings" class="space-y-2 mb-4"></div>
-                    <div class="flex gap-2">
-                        <input type="text" id="new-account-name" placeholder="Nuovo conto..." class="flex-1 p-2 bg-gray-50 rounded-lg text-sm border outline-none">
-                        <button onclick="addAccount()" class="px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-bold">Aggiungi</button>
-                    </div>
-                </div>
-
                 <!-- Sezione Backup Avanzato -->
-                <div class="settings-card">
-                    <h3 class="text-xs font-bold text-gray-400 uppercase mb-3">Salvataggio & Cloud</h3>
-                    <p class="text-[11px] text-gray-500 mb-4 leading-tight">Esporta i tuoi dati per sicurezza o trasferiscili su un altro dispositivo.</p>
+                <div class="bg-white rounded-2xl p-4 shadow-sm">
+                    <h3 class="text-xs font-bold text-gray-400 uppercase mb-3">Sincronizzazione Manuale</h3>
+                    <p class="text-[11px] text-gray-500 mb-4 leading-tight">Usa il pulsante "Condividi" per scegliere dove salvare il file (WhatsApp, Drive, Email) o inviarlo ad altri dispositivi.</p>
                     
                     <div class="space-y-3">
-                        <button onclick="shareBackup()" class="w-full flex items-center justify-between p-4 bg-indigo-600 text-white rounded-xl shadow-sm active:bg-indigo-700 transition-colors">
-                            <div class="flex items-center space-x-3 text-left">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 100-3.316 3 3 0 000 3.316m0 0a3 3 0 100 3.316 3 3 0 000-3.316" /></svg>
-                                <div>
-                                    <div class="font-bold text-sm">Condividi Backup</div>
-                                    <div class="text-[10px] opacity-80 uppercase font-medium">Invia file JSON</div>
+                        <button onclick="shareBackupFile()" class="w-full flex items-center justify-between p-5 bg-indigo-600 text-white rounded-2xl shadow-lg active:scale-95 transition-transform">
+                            <div class="flex items-center space-x-4">
+                                <div class="bg-indigo-500 p-2 rounded-lg">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 100-3.316 3 3 0 000 3.316m0 0a3 3 0 100 3.316 3 3 0 000-3.316" /></svg>
+                                </div>
+                                <div class="text-left">
+                                    <div class="font-bold text-base">Esporta & Condividi</div>
+                                    <div class="text-[10px] opacity-80 uppercase tracking-widest font-bold">Scegli destinazione</div>
                                 </div>
                             </div>
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>
                         </button>
 
                         <div class="grid grid-cols-2 gap-3">
-                            <label class="flex flex-col items-center justify-center p-3 bg-gray-50 border-2 border-dashed border-gray-300 rounded-xl cursor-pointer hover:border-indigo-400 transition-colors">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" /></svg>
-                                <span class="text-[10px] font-bold text-gray-500 mt-1 uppercase">Importa</span>
+                            <label class="flex flex-col items-center justify-center p-4 bg-gray-50 border-2 border-dashed border-gray-200 rounded-2xl cursor-pointer hover:border-indigo-400 transition-colors">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-400 mb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" /></svg>
+                                <span class="text-[10px] font-bold text-gray-500 uppercase">Carica File</span>
                                 <input type="file" id="import-json" class="hidden" accept=".json" onchange="importJSON(event)">
                             </label>
                             
-                            <button onclick="exportCSV()" class="flex flex-col items-center justify-center p-3 bg-green-50 border border-green-200 rounded-xl">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
-                                <span class="text-[10px] font-bold text-green-700 mt-1 uppercase">Export CSV</span>
+                            <button onclick="exportCSV()" class="flex flex-col items-center justify-center p-4 bg-green-50 border border-green-100 rounded-2xl">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-green-600 mb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+                                <span class="text-[10px] font-bold text-green-700 uppercase">Excel/CSV</span>
                             </button>
                         </div>
                     </div>
                 </div>
 
-                <div class="settings-card">
-                    <h3 class="text-xs font-bold text-gray-400 uppercase mb-3">AI Engine</h3>
-                    <p class="text-[10px] text-gray-500 mb-2">Inserisci la tua API Key di Google Gemini per analizzare gli scontrini con la fotocamera.</p>
-                    <button onclick="promptApiKey()" class="w-full py-2 bg-indigo-50 text-indigo-700 rounded-lg text-xs font-bold">Aggiorna API Key Gemini</button>
+                <!-- Gestione Conti -->
+                <div class="bg-white rounded-2xl p-4 shadow-sm">
+                    <h3 class="text-xs font-bold text-gray-400 uppercase mb-3">I Tuoi Conti</h3>
+                    <div id="account-list-settings" class="space-y-2 mb-4"></div>
+                    <div class="flex gap-2">
+                        <input type="text" id="new-account-name" placeholder="Nome nuovo conto..." class="flex-1 p-3 bg-gray-50 rounded-xl text-sm border-none focus:ring-1 focus:ring-indigo-500 outline-none">
+                        <button onclick="addAccount()" class="px-4 bg-indigo-600 text-white rounded-xl text-sm font-bold">Aggiungi</button>
+                    </div>
                 </div>
 
-                <div class="settings-card border-red-100 bg-red-50">
+                <!-- AI Engine -->
+                <div class="bg-white rounded-2xl p-4 shadow-sm">
+                    <h3 class="text-xs font-bold text-gray-400 uppercase mb-1">AI Scontrini</h3>
+                    <p class="text-[10px] text-gray-500 mb-3">Analizza le foto degli scontrini con Google Gemini.</p>
+                    <button onclick="promptApiKey()" class="w-full py-2 bg-indigo-50 text-indigo-700 rounded-lg text-xs font-bold">Imposta API Key</button>
+                </div>
+
+                <div class="bg-red-50 rounded-2xl p-2">
                     <button onclick="clearHistory()" class="w-full p-2 text-red-600 text-[10px] font-bold uppercase tracking-widest">
                         Resetta tutti i dati
                     </button>
@@ -192,51 +182,50 @@
             </div>
         </div>
 
-        <!-- Modal Inserimento -->
+        <!-- Modal Form (Sostituito document.execCommand con logica file) -->
         <div id="modal" class="hidden fixed inset-0 bg-black/60 z-50 flex items-end justify-center backdrop-blur-sm">
             <div id="modal-content" class="bg-white w-full max-w-md p-6 rounded-t-3xl modal-transition transform translate-y-full pb-safe">
-                <div class="flex justify-between items-center mb-4">
+                <div class="flex justify-between items-center mb-6">
                     <h3 id="modal-title" class="text-2xl font-bold text-gray-800 italic">Movimento</h3>
                     <button onclick="closeModal()" class="text-gray-400 p-2"><svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg></button>
                 </div>
 
                 <div class="space-y-4">
-                    <div>
-                        <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1 ml-1">Conto</label>
-                        <select id="modal-account-select" class="w-full p-3 bg-gray-100 rounded-xl font-bold outline-none"></select>
+                    <div class="flex flex-col">
+                        <label class="text-[10px] font-bold text-gray-400 uppercase mb-1 ml-1">Importo (€)</label>
+                        <div class="relative">
+                            <input type="number" id="amount-input" step="0.01" inputmode="decimal" placeholder="0.00" class="w-full p-5 bg-gray-100 rounded-2xl text-4xl font-black text-center focus:ring-2 focus:ring-indigo-500 outline-none">
+                            <button onclick="triggerCamera()" class="absolute right-3 top-1/2 -translate-y-1/2 p-3 bg-white shadow-md rounded-full text-indigo-600 active:scale-90 transition-transform">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+                            </button>
+                            <input type="file" id="camera-input" accept="image/*" capture="environment" class="hidden" onchange="handleImage(event)">
+                            <div id="camera-loader" class="absolute inset-0 bg-white/90 rounded-2xl flex items-center justify-center hidden">
+                                <div class="loader mr-2"></div><span class="text-xs font-bold text-indigo-600 uppercase">Analisi AI...</span>
+                            </div>
+                        </div>
                     </div>
 
-                    <div class="relative">
-                        <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1 ml-1">Importo (€)</label>
-                        <input type="number" id="amount-input" step="0.01" inputmode="decimal" placeholder="0.00" class="w-full p-4 bg-gray-100 rounded-2xl text-3xl font-bold text-center focus:ring-2 focus:ring-indigo-500 outline-none">
-                        
-                        <button id="camera-btn" onclick="triggerCamera()" class="absolute right-3 bottom-3 p-3 bg-white shadow-md rounded-full text-indigo-600 active:scale-90 transition-transform">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
-                        </button>
-                        <input type="file" id="camera-input" accept="image/*" capture="environment" class="hidden" onchange="handleImage(event)">
-                        
-                        <div id="camera-loader" class="absolute inset-0 bg-white/80 rounded-2xl flex items-center justify-center hidden">
-                            <div class="loader mr-2"></div>
-                            <span class="text-xs font-bold text-indigo-600 uppercase tracking-tighter">Analisi Scontrino...</span>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="text-[10px] font-bold text-gray-400 uppercase mb-1 ml-1">Conto</label>
+                            <select id="modal-account-select" class="w-full p-3 bg-gray-100 rounded-xl font-bold outline-none border-none text-sm"></select>
+                        </div>
+                        <div>
+                            <label class="text-[10px] font-bold text-gray-400 uppercase mb-1 ml-1">Descrizione</label>
+                            <input type="text" id="desc-input" placeholder="Es. Cena" class="w-full p-3 bg-gray-100 rounded-xl outline-none text-sm">
                         </div>
                     </div>
 
                     <div>
-                        <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1 ml-1">Descrizione</label>
-                        <input type="text" id="desc-input" placeholder="Esempio: Spesa" class="w-full p-4 bg-gray-100 rounded-2xl outline-none">
-                    </div>
-
-                    <div>
-                        <label class="block text-[10px] font-bold text-gray-400 uppercase mb-2 ml-1">Categoria</label>
+                        <label class="text-[10px] font-bold text-gray-400 uppercase mb-2 ml-1">Categoria</label>
                         <div id="category-grid" class="grid grid-cols-4 gap-2"></div>
                     </div>
 
-                    <div class="flex gap-3 pt-2">
-                        <button id="delete-btn" onclick="deleteTx(editingTxId)" class="hidden flex-1 py-4 bg-red-100 text-red-600 rounded-2xl font-bold text-xl active:scale-95 transition-transform">Elimina</button>
+                    <div class="flex gap-3 pt-4">
+                        <button id="delete-btn" onclick="deleteTx(editingTxId)" class="hidden flex-1 py-4 bg-red-100 text-red-600 rounded-2xl font-bold active:scale-95 transition-transform">Elimina</button>
                         <button onclick="saveTransaction()" id="save-btn" class="flex-[2] py-4 rounded-2xl text-white font-bold text-xl shadow-lg active:scale-95 transition-transform">Salva</button>
                     </div>
                 </div>
-                <div class="h-6"></div>
             </div>
         </div>
     </div>
@@ -272,7 +261,6 @@
         let editingTxId = null;
         let chartInstance = null;
 
-        // --- UI UTILS ---
         function showToast(msg) {
             const t = document.getElementById('toast');
             t.textContent = msg;
@@ -280,88 +268,48 @@
             setTimeout(() => t.style.opacity = '0', 2500);
         }
 
-        // --- BACKUP & EXPORT ---
-        async function shareBackup() {
+        // --- NUOVA LOGICA DI CONDIVISIONE FILE (WEB SHARE API v2) ---
+        async function shareBackupFile() {
             const data = { app: "SpesePro", version: "3.0", transactions, accounts };
             const json = JSON.stringify(data, null, 2);
-            const filename = `backup_spesepro_${new Date().toISOString().split('T')[0]}.json`;
-            
-            if (navigator.share) {
-                const file = new File([json], filename, { type: 'application/json' });
-                try {
+            const dateStr = new Date().toISOString().split('T')[0];
+            const fileName = `backup_spese_${dateStr}.json`;
+
+            try {
+                // Crea un file virtuale
+                const file = new File([json], fileName, { type: 'application/json' });
+
+                // Verifica se il browser supporta la condivisione di file
+                if (navigator.canShare && navigator.canShare({ files: [file] })) {
                     await navigator.share({
+                        files: [file],
                         title: 'Backup SpesePro',
-                        files: [file]
+                        text: `Backup dei dati di FinanzaPro del ${dateStr}`
                     });
-                    showToast("Backup condiviso!");
-                } catch (err) {
-                    if(err.name !== 'AbortError') downloadBackupManual(json, filename);
+                    showToast("Condivisione avviata!");
+                } else {
+                    // Fallback per browser che non supportano la condivisione file (es. desktop o vecchi browser)
+                    const blob = new Blob([json], { type: 'application/json' });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = fileName;
+                    a.click();
+                    URL.revokeObjectURL(url);
+                    showToast("Download avviato (Fallback)");
                 }
-            } else {
-                downloadBackupManual(json, filename);
+            } catch (err) {
+                if (err.name !== 'AbortError') {
+                    console.error(err);
+                    showToast("Errore nella condivisione");
+                }
             }
         }
 
-        function downloadBackupManual(json, filename) {
-            const blob = new Blob([json], { type: 'application/json' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = filename;
-            a.click();
-            URL.revokeObjectURL(url);
-            showToast("Backup scaricato!");
-        }
-
-        function exportCSV() {
-            let csv = "Data,Conto,Tipo,Categoria,Descrizione,Importo\n";
-            transactions.forEach(t => {
-                const acc = accounts.find(a => a.id === t.accountId)?.name || 'N/A';
-                csv += `${new Date(t.date).toLocaleDateString()},${acc},${t.type},${t.category},"${t.description || ''}",${t.amount}\n`;
-            });
-            const blob = new Blob([csv], { type: 'text/csv' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `movimenti_finanza_${new Date().toISOString().split('T')[0]}.csv`;
-            a.click();
-        }
-
-        function importJSON(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                try {
-                    const data = JSON.parse(e.target.result);
-                    if (data.transactions) transactions = data.transactions;
-                    if (data.accounts) accounts = data.accounts;
-                    saveAll();
-                    updateUI();
-                    showToast("Dati importati!");
-                } catch (err) {
-                    showToast("Errore file JSON");
-                }
-            };
-            reader.readAsText(file);
-        }
-
-        // --- CORE LOGIC ---
+        // --- RESTO DELLA LOGICA ---
         function saveAll() {
             localStorage.setItem(STORAGE_TX, JSON.stringify(transactions));
             localStorage.setItem(STORAGE_ACC, JSON.stringify(accounts));
-        }
-
-        function changeMonth(dir) {
-            viewDate.setMonth(viewDate.getMonth() + dir);
-            updateUI();
-        }
-
-        function navigateAccount(dir) {
-            const idx = accounts.findIndex(a => a.id === activeAccountId);
-            let nextIdx = (idx + dir + accounts.length) % accounts.length;
-            activeAccountId = accounts[nextIdx].id;
-            updateUI();
         }
 
         function updateUI() {
@@ -393,11 +341,11 @@
                 listEl.innerHTML = filtered.sort((a,b) => b.id - a.id).map(t => {
                     const cat = [...categories.expense, ...categories.income].find(c => c.id === t.category);
                     return `
-                    <div onclick="editTransaction(${t.id})" class="transaction-card flex items-center justify-between p-4 bg-gray-50 rounded-2xl border-l-4 cursor-pointer transition-all" style="border-color: ${cat?.color}">
-                        <div class="flex items-center space-x-3 truncate mr-2">
+                    <div onclick="editTransaction(${t.id})" class="flex items-center justify-between p-4 bg-gray-50 rounded-2xl border-l-4 cursor-pointer active:scale-[0.98] transition-all" style="border-color: ${cat?.color}">
+                        <div class="flex items-center space-x-3 truncate">
                             <span class="text-2xl">${cat?.icon}</span>
                             <div class="truncate">
-                                <div class="font-bold text-gray-800 truncate text-sm">${t.description || cat?.label}</div>
+                                <div class="font-bold text-gray-800 text-sm truncate">${t.description || cat?.label}</div>
                                 <div class="text-[9px] text-gray-400 font-bold">${new Date(t.date).toLocaleDateString()}</div>
                             </div>
                         </div>
@@ -417,46 +365,23 @@
             }
         }
 
-        // --- ACCOUNT SETTINGS ---
-        function addAccount() {
-            const input = document.getElementById('new-account-name');
-            const name = input.value.trim();
-            if(!name) return;
-            accounts.push({ id: 'acc_' + Date.now(), name });
-            saveAll();
-            input.value = '';
-            renderSettingsAccounts();
+        function changeMonth(dir) { viewDate.setMonth(viewDate.getMonth() + dir); updateUI(); }
+        function navigateAccount(dir) {
+            const idx = accounts.findIndex(a => a.id === activeAccountId);
+            activeAccountId = accounts[(idx + dir + accounts.length) % accounts.length].id;
             updateUI();
         }
 
-        function renameAccount(id) {
-            const acc = accounts.find(a => a.id === id);
-            if (!acc) return;
-            const newName = prompt("Rinomina conto:", acc.name);
-            if (newName) {
-                acc.name = newName;
-                saveAll();
-                renderSettingsAccounts();
-                updateUI();
-            }
-        }
-
-        function deleteAccount(id) {
-            if(accounts.length <= 1) return alert("Minimo 1 conto richiesto.");
-            if(confirm("Tutti i movimenti di questo conto rimarranno ma il conto verrà eliminato. Procedere?")) {
-                accounts = accounts.filter(a => a.id !== id);
-                if(activeAccountId === id) activeAccountId = accounts[0].id;
-                saveAll();
-                renderSettingsAccounts();
-                updateUI();
-            }
+        function toggleSettings(show) {
+            if(show) renderSettingsAccounts();
+            document.getElementById('settings-view').classList.toggle('hidden', !show);
         }
 
         function renderSettingsAccounts() {
             const list = document.getElementById('account-list-settings');
             list.innerHTML = accounts.map(a => `
                 <div class="flex items-center justify-between p-3 bg-gray-50 rounded-xl">
-                    <span class="font-bold text-sm truncate ${a.id === activeAccountId ? 'text-indigo-600' : ''}">${a.name}</span>
+                    <span class="font-bold text-sm ${a.id === activeAccountId ? 'text-indigo-600' : 'text-gray-700'}">${a.name}</span>
                     <div class="flex space-x-2">
                         <button onclick="renameAccount('${a.id}')" class="p-1 text-gray-400"><svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg></button>
                         <button onclick="deleteAccount('${a.id}')" class="p-1 text-red-300"><svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg></button>
@@ -464,148 +389,70 @@
                 </div>`).join('');
         }
 
-        function toggleSettings(show) {
-            const view = document.getElementById('settings-view');
-            if(show) { renderSettingsAccounts(); view.classList.remove('hidden'); }
-            else { view.classList.add('hidden'); }
+        function addAccount() {
+            const name = document.getElementById('new-account-name').value.trim();
+            if(!name) return;
+            accounts.push({ id: 'acc_' + Date.now(), name });
+            saveAll();
+            document.getElementById('new-account-name').value = '';
+            renderSettingsAccounts();
+            updateUI();
         }
 
-        // --- AI & CAMERA ---
-        function promptApiKey() {
-            const key = prompt("Inserisci la tua Google Gemini API Key:", apiKey);
-            if (key !== null) {
-                apiKey = key;
-                localStorage.setItem('gemini_api_key', key);
-                showToast("API Key aggiornata!");
-            }
-        }
-
-        function triggerCamera() {
-            if(!apiKey) { 
-                showToast("Inserisci prima l'API Key!");
-                setTimeout(promptApiKey, 500);
-                return; 
-            }
-            document.getElementById('camera-input').click();
-        }
-
-        async function handleImage(event) {
-            const file = event.target.files[0];
-            if (!file || !apiKey) return;
-            const loader = document.getElementById('camera-loader');
-            loader.classList.remove('hidden');
-            try {
-                const reader = new FileReader();
-                reader.readAsDataURL(file);
-                reader.onload = async () => {
-                    const b64 = reader.result.split(',')[1];
-                    const result = await analyzeReceipt(b64);
-                    if (result.amount) document.getElementById('amount-input').value = result.amount;
-                    if (result.description) document.getElementById('desc-input').value = result.description;
-                    loader.classList.add('hidden');
-                    showToast("Scontrino analizzato!");
-                };
-            } catch (err) { 
-                console.error(err);
-                showToast("Errore analisi AI");
-                loader.classList.add('hidden'); 
-            }
-        }
-
-        async function analyzeReceipt(base64) {
-            const prompt = "Analizza questo scontrino e restituisci SOLO un oggetto JSON con questa struttura: { 'amount': float, 'description': 'nome_negozio' }. Sii preciso.";
-            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
-            const response = await fetch(url, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    contents: [{ parts: [{ text: prompt }, { inlineData: { mimeType: "image/jpeg", data: base64 } }] }],
-                    generationConfig: { responseMimeType: "application/json" }
-                })
-            });
-            const data = await response.json();
-            return JSON.parse(data.candidates[0].content.parts[0].text);
-        }
-
-        // --- MODAL & FORM ---
         function openModal(mode, tx = null) {
             currentMode = mode;
             editingTxId = tx ? tx.id : null;
             selectedCategory = tx ? tx.category : categories[mode][0].id;
             
-            const modal = document.getElementById('modal');
-            const content = document.getElementById('modal-content');
-            
             document.getElementById('modal-title').textContent = editingTxId ? 'Modifica' : (mode === 'income' ? 'Entrata' : 'Uscita');
             document.getElementById('delete-btn').classList.toggle('hidden', !editingTxId);
             
-            // Popola selettore conti nel modal
             const accSelect = document.getElementById('modal-account-select');
             accSelect.innerHTML = accounts.map(a => `<option value="${a.id}" ${a.id === (tx ? tx.accountId : activeAccountId) ? 'selected' : ''}>${a.name}</option>`).join('');
             
-            // Popola campi
             document.getElementById('amount-input').value = tx ? tx.amount : '';
             document.getElementById('desc-input').value = tx ? tx.description : '';
             
             renderCategories();
+            document.getElementById('save-btn').className = `flex-[2] py-4 rounded-2xl text-white font-bold text-xl shadow-lg active:scale-95 transition-transform ${mode === 'income' ? 'bg-green-500' : 'bg-red-500'}`;
             
-            const saveBtn = document.getElementById('save-btn');
-            saveBtn.className = mode === 'income' 
-                ? "flex-[2] py-4 rounded-2xl text-white font-bold text-xl shadow-lg active:scale-95 transition-transform bg-green-500"
-                : "flex-[2] py-4 rounded-2xl text-white font-bold text-xl shadow-lg active:scale-95 transition-transform bg-red-500";
-
-            modal.classList.remove('hidden');
-            setTimeout(() => content.classList.remove('translate-y-full'), 10);
+            document.getElementById('modal').classList.remove('hidden');
+            setTimeout(() => document.getElementById('modal-content').classList.remove('translate-y-full'), 10);
         }
 
         function closeModal() {
-            const content = document.getElementById('modal-content');
-            content.classList.add('translate-y-full');
+            document.getElementById('modal-content').classList.add('translate-y-full');
             setTimeout(() => document.getElementById('modal').classList.add('hidden'), 300);
         }
 
         function renderCategories() {
             const grid = document.getElementById('category-grid');
             grid.innerHTML = categories[currentMode].map(c => `
-                <button onclick="selectCategory('${c.id}')" class="category-btn flex flex-col items-center p-2 rounded-xl border-2 border-transparent transition-all ${selectedCategory === c.id ? 'active' : ''}" style="color: ${c.color}">
+                <button onclick="selectedCategory='${c.id}';renderCategories()" class="category-btn flex flex-col items-center p-2 rounded-xl border-2 border-transparent transition-all ${selectedCategory === c.id ? 'active' : ''}" style="color: ${c.color}">
                     <span class="text-xl">${c.icon}</span>
                     <span class="text-[9px] font-bold uppercase truncate w-full text-center">${c.label}</span>
                 </button>
             `).join('');
         }
 
-        function selectCategory(id) {
-            selectedCategory = id;
-            renderCategories();
-        }
-
         function saveTransaction() {
             const amount = parseFloat(document.getElementById('amount-input').value);
-            const desc = document.getElementById('desc-input').value;
-            const accId = document.getElementById('modal-account-select').value;
-            
-            if (!amount) return showToast("Inserisci importo");
+            if (!amount) return showToast("Manca l'importo");
 
-            const txData = {
+            const tx = {
                 id: editingTxId || Date.now(),
                 amount,
-                description: desc,
+                description: document.getElementById('desc-input').value,
                 category: selectedCategory,
                 type: currentMode,
-                accountId: accId,
+                accountId: document.getElementById('modal-account-select').value,
                 date: editingTxId ? transactions.find(t => t.id === editingTxId).date : new Date().toISOString()
             };
 
-            if (editingTxId) {
-                transactions = transactions.map(t => t.id === editingTxId ? txData : t);
-            } else {
-                transactions.push(txData);
-            }
+            if(editingTxId) transactions = transactions.map(t => t.id === editingTxId ? tx : t);
+            else transactions.push(tx);
 
-            saveAll();
-            updateUI();
-            closeModal();
-            showToast("Salvato!");
+            saveAll(); updateUI(); closeModal(); showToast("Salvato!");
         }
 
         function editTransaction(id) {
@@ -614,62 +461,85 @@
         }
 
         function deleteTx(id) {
-            if(confirm("Eliminare movimento?")) {
+            if(confirm("Eliminare?")) {
                 transactions = transactions.filter(t => t.id !== id);
-                saveAll();
-                updateUI();
-                closeModal();
-                showToast("Eliminato");
+                saveAll(); updateUI(); closeModal(); showToast("Eliminato");
             }
         }
 
-        function clearHistory() {
-            if(confirm("ATTENZIONE: Questo cancellerà PER SEMPRE tutti i dati. Sei sicuro?")) {
-                transactions = [];
-                accounts = [{ id: 'acc_01', name: 'Conto Corrente' }];
-                activeAccountId = accounts[0].id;
-                saveAll();
-                location.reload();
-            }
+        function importJSON(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    const data = JSON.parse(e.target.result);
+                    if (data.transactions) transactions = data.transactions;
+                    if (data.accounts) accounts = data.accounts;
+                    saveAll(); updateUI(); showToast("Importato!");
+                } catch(err) { showToast("File non valido"); }
+            };
+            reader.readAsText(file);
         }
 
-        // --- CHARTING ---
         function renderChart(expenses) {
             const ctx = document.getElementById('expenseChart').getContext('2d');
             const dataMap = {};
-            
-            expenses.forEach(e => {
-                dataMap[e.category] = (dataMap[e.category] || 0) + e.amount;
-            });
-
+            expenses.forEach(e => dataMap[e.category] = (dataMap[e.category] || 0) + e.amount);
             const labels = Object.keys(dataMap).map(id => categories.expense.find(c => c.id === id)?.label || 'Altro');
             const colors = Object.keys(dataMap).map(id => categories.expense.find(c => c.id === id)?.color || '#999');
-            const values = Object.values(dataMap);
-
             if (chartInstance) chartInstance.destroy();
             chartInstance = new Chart(ctx, {
                 type: 'doughnut',
-                data: {
-                    labels,
-                    datasets: [{
-                        data: values,
-                        backgroundColor: colors,
-                        borderWidth: 0,
-                        hoverOffset: 10
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: true,
-                    plugins: {
-                        legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 10 } } }
-                    },
-                    cutout: '70%'
-                }
+                data: { labels, datasets: [{ data: Object.values(dataMap), backgroundColor: colors, borderWidth: 0 }] },
+                options: { cutout: '75%', plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 10 } } } } }
             });
         }
 
-        // Init
+        // --- AI (Sostituito document.execCommand con messaggi custom) ---
+        function promptApiKey() {
+            const key = prompt("Inserisci API Key Gemini:", apiKey);
+            if(key !== null) { apiKey = key; localStorage.setItem('gemini_api_key', key); showToast("API Key Salvata"); }
+        }
+
+        function triggerCamera() {
+            if(!apiKey) { showToast("Imposta prima l'API Key!"); return; }
+            document.getElementById('camera-input').click();
+        }
+
+        async function handleImage(event) {
+            const file = event.target.files[0];
+            if(!file || !apiKey) return;
+            const loader = document.getElementById('camera-loader');
+            loader.classList.remove('hidden');
+            try {
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = async () => {
+                    const b64 = reader.result.split(',')[1];
+                    const res = await analyzeReceipt(b64);
+                    if(res.amount) document.getElementById('amount-input').value = res.amount;
+                    if(res.description) document.getElementById('desc-input').value = res.description;
+                    loader.classList.add('hidden');
+                    showToast("Analisi completata!");
+                };
+            } catch(e) { loader.classList.add('hidden'); showToast("Errore AI"); }
+        }
+
+        async function analyzeReceipt(base64) {
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    contents: [{ parts: [{ text: "Restituisci JSON: { 'amount': float, 'description': string } da questo scontrino." }, { inlineData: { mimeType: "image/jpeg", data: base64 } }] }],
+                    generationConfig: { responseMimeType: "application/json" }
+                })
+            });
+            const data = await response.json();
+            return JSON.parse(data.candidates[0].content.parts[0].text);
+        }
+
         window.onload = updateUI;
     </script>
 </body>
