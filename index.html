@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     
-    <title>FinanzaPro v3.2.1 + Budget & AI</title>
+    <title>FinanzaPro v3.2.2 + Advanced Scanner</title>
     
     <!-- PWA Meta per iOS -->
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -23,7 +23,8 @@
             touch-action: manipulation;
             -webkit-tap-highlight-color: transparent;
         }
-        /* Loader Spinner classico */
+        
+        /* --- LOADER & SCANNER AVANZATO --- */
         .loader-ring {
             display: inline-block;
             width: 32px;
@@ -42,26 +43,36 @@
         }
         @keyframes ring { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-        /* Nuova Animazione Scanner - PIÙ VISIBILE */
+        /* Animazione Laser Scanner */
         .scan-line-anim {
             position: absolute;
             top: 0;
             left: 0;
             right: 0;
-            height: 6px; /* Più spessa */
-            background: linear-gradient(to right, transparent, #3b82f6, #6366f1, #3b82f6, transparent);
-            box-shadow: 0 0 15px rgba(99, 102, 241, 0.8); /* Ombra neon più forte */
-            animation: scanMove 1.5s cubic-bezier(0.4, 0, 0.2, 1) infinite;
-            z-index: 60; /* Z-index altissimo */
+            height: 4px;
+            background: linear-gradient(90deg, rgba(99,102,241,0) 0%, rgba(99,102,241,1) 50%, rgba(99,102,241,0) 100%);
+            box-shadow: 0 0 15px rgba(99, 102, 241, 0.8), 0 0 30px rgba(99, 102, 241, 0.4);
+            animation: scanMove 2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+            z-index: 60;
             pointer-events: none;
         }
         
         @keyframes scanMove {
-            0% { top: 0; opacity: 0; }
-            15% { opacity: 1; }
-            85% { opacity: 1; }
-            100% { top: 100%; opacity: 0; }
+            0% { top: -5%; opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { top: 105%; opacity: 0; }
         }
+
+        /* Pulsazione Sfondo Overlay */
+        .pulse-overlay {
+            animation: pulseBg 2s infinite ease-in-out;
+        }
+        @keyframes pulseBg {
+            0%, 100% { background-color: rgba(255, 255, 255, 0.92); }
+            50% { background-color: rgba(238, 242, 255, 0.95); } /* Tint di indaco leggero */
+        }
+        /* --------------------------------- */
 
         .modal-transition { transition: transform 0.3s ease-out; }
         input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
@@ -245,7 +256,7 @@
                         <select id="modal-account-select" class="w-full p-3 bg-gray-100 rounded-xl font-bold outline-none"></select>
                     </div>
 
-                    <!-- CONTAINER INPUT E ANIMAZIONE -->
+                    <!-- CONTAINER INPUT E ANIMAZIONE SCANNER -->
                     <div class="relative overflow-hidden rounded-2xl bg-gray-100">
                         <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1 ml-4 mt-2">Importo (€)</label>
                         <input type="number" id="amount-input" step="0.01" inputmode="decimal" placeholder="0.00" class="w-full p-4 bg-transparent text-3xl font-bold text-center focus:ring-0 outline-none z-10 relative">
@@ -257,16 +268,17 @@
                         <input type="file" id="camera-input" accept="image/*" capture="environment" class="hidden" onchange="handleImage(event)">
                         
                         <!-- LOADER SOVRAPPOSTO (Z-INDEX 50) -->
-                        <div id="camera-loader" class="absolute inset-0 z-50 bg-white/95 flex flex-col items-center justify-center hidden">
-                            <!-- Linea Scanner -->
+                        <div id="camera-loader" class="absolute inset-0 z-50 bg-white/95 pulse-overlay flex flex-col items-center justify-center hidden">
+                            <!-- Linea Scanner Laser -->
                             <div class="scan-line-anim"></div>
                             
                             <!-- Contenuto Centrale -->
                             <div class="relative mb-2">
-                                <div class="absolute inset-0 bg-indigo-400 rounded-full opacity-20 animate-ping"></div>
+                                <div class="absolute inset-0 bg-indigo-500 rounded-full opacity-30 animate-ping"></div>
                                 <div class="loader-ring"></div>
                             </div>
-                            <span class="text-[10px] font-black text-indigo-600 uppercase tracking-widest animate-pulse">Analisi AI...</span>
+                            <!-- Testo Dinamico -->
+                            <span id="scan-status-text" class="text-[10px] font-black text-indigo-600 uppercase tracking-widest animate-pulse">Analisi...</span>
                         </div>
                     </div>
 
@@ -540,11 +552,22 @@
             const file = event.target.files[0];
             if (!file) return;
 
-            // Mostra loader IMMEDIATAMENTE
+            // Elementi DOM
             const loader = document.getElementById('camera-loader');
+            const statusText = document.getElementById('scan-status-text');
+            
+            // Mostra loader IMMEDIATAMENTE
             loader.classList.remove('hidden');
 
-            // Timeout per permettere al browser di aggiornare l'UI prima di bloccare per il FileReader
+            // Sequenza Messaggi Dinamici
+            const messages = ["Analisi...", "Lettura...", "Sincronizzazione...", "Elaborazione...", "Decodifica..."];
+            let msgIdx = 0;
+            const msgInterval = setInterval(() => {
+                msgIdx = (msgIdx + 1) % messages.length;
+                statusText.textContent = messages[msgIdx];
+            }, 750); // Cambia messaggio ogni 750ms
+
+            // Timeout per UI
             await new Promise(r => setTimeout(r, 50));
 
             try {
@@ -581,10 +604,12 @@
             } catch (err) {
                 showToast("Errore analisi scontrino");
             } finally {
-                // Nascondi SOLO alla fine
+                // PULIZIA FINALE: Resetta tutto anche se fallisce
+                clearInterval(msgInterval);
                 setTimeout(() => {
                     loader.classList.add('hidden');
-                }, 500); // Piccolo delay per finire l'animazione piacevolmente
+                    statusText.textContent = "Analisi..."; // Reset testo iniziale
+                }, 500); 
             }
         }
 
