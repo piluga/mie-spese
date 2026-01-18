@@ -23,16 +23,44 @@
             touch-action: manipulation;
             -webkit-tap-highlight-color: transparent;
         }
-        .loader {
-            border: 2px solid #f3f3f3;
-            border-top: 2px solid #4f46e5;
-            border-radius: 50%;
-            width: 16px;
-            height: 16px;
-            animation: spin 1s linear infinite;
+        /* Loader Spinner classico */
+        .loader-ring {
             display: inline-block;
+            width: 24px;
+            height: 24px;
         }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .loader-ring:after {
+            content: " ";
+            display: block;
+            width: 20px;
+            height: 20px;
+            margin: 2px;
+            border-radius: 50%;
+            border: 2px solid #4f46e5;
+            border-color: #4f46e5 transparent #4f46e5 transparent;
+            animation: ring 1.2s linear infinite;
+        }
+        @keyframes ring { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        /* Nuova Animazione Scanner */
+        .scan-line-anim {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(to right, transparent, #4f46e5, #818cf8, #4f46e5, transparent);
+            box-shadow: 0 0 10px rgba(79, 70, 229, 0.5);
+            animation: scanMove 1.5s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+            z-index: 20;
+        }
+        @keyframes scanMove {
+            0% { top: 0; opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { top: 100%; opacity: 0; }
+        }
+
         .modal-transition { transition: transform 0.3s ease-out; }
         input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
         .transaction-card:active { transform: scale(0.98); background-color: #f9fafb; }
@@ -52,7 +80,7 @@
             font-size: 0.875rem;
             z-index: 100;
             opacity: 0;
-            transition: opacity 0.3s;
+            transition: opacity 0.3s, background-color 0.3s;
             pointer-events: none;
             text-align: center;
             min-width: 200px;
@@ -215,18 +243,26 @@
                         <select id="modal-account-select" class="w-full p-3 bg-gray-100 rounded-xl font-bold outline-none"></select>
                     </div>
 
-                    <div class="relative">
+                    <div class="relative overflow-hidden rounded-2xl">
                         <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1 ml-1">Importo (€)</label>
                         <input type="number" id="amount-input" step="0.01" inputmode="decimal" placeholder="0.00" class="w-full p-4 bg-gray-100 rounded-2xl text-3xl font-bold text-center focus:ring-2 focus:ring-indigo-500 outline-none">
                         
-                        <button id="camera-btn" onclick="triggerCamera()" class="absolute right-3 bottom-3 p-3 bg-white shadow-md rounded-full text-indigo-600 active:scale-90 transition-transform">
+                        <button id="camera-btn" onclick="triggerCamera()" class="absolute right-3 bottom-3 p-3 bg-white shadow-md rounded-full text-indigo-600 active:scale-90 transition-transform z-30">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
                         </button>
                         <input type="file" id="camera-input" accept="image/*" capture="environment" class="hidden" onchange="handleImage(event)">
                         
-                        <div id="camera-loader" class="absolute inset-0 bg-white/80 rounded-2xl flex items-center justify-center hidden">
-                            <div class="loader mr-2"></div>
-                            <span class="text-xs font-bold text-indigo-600 uppercase tracking-tighter">Lettura AI...</span>
+                        <!-- LOADER SOVRAPPOSTO -->
+                        <div id="camera-loader" class="absolute inset-0 z-20 bg-white/95 rounded-2xl flex flex-col items-center justify-center hidden backdrop-blur-sm transition-opacity duration-300">
+                            <!-- Linea Scanner -->
+                            <div class="scan-line-anim"></div>
+                            
+                            <!-- Contenuto Centrale -->
+                            <div class="relative mb-2">
+                                <div class="absolute inset-0 bg-indigo-400 rounded-full opacity-20 animate-ping"></div>
+                                <div class="loader-ring"></div>
+                            </div>
+                            <span class="text-[10px] font-black text-indigo-600 uppercase tracking-widest animate-pulse">Analisi AI...</span>
                         </div>
                     </div>
 
@@ -286,7 +322,9 @@
             const t = document.getElementById('toast');
             t.textContent = msg;
             t.style.opacity = '1';
-            setTimeout(() => t.style.opacity = '0', duration);
+            setTimeout(() => {
+                t.style.opacity = '0';
+            }, duration);
         }
 
         function saveApiKey() {
@@ -522,7 +560,19 @@
                         document.getElementById('amount-input').value = data.amount;
                         document.getElementById('desc-input').value = data.description;
                         if (data.category) selectCategory(data.category);
-                        showToast("Scontrino analizzato!");
+                        
+                        // --- NUOVA LOGICA AVVISO ---
+                        if (navigator.vibrate) navigator.vibrate([100, 50, 100]); // Vibrazione di successo
+                        
+                        // Modifica temporanea del toast per renderlo "verde" e visibile
+                        const t = document.getElementById('toast');
+                        const originalBg = t.style.backgroundColor;
+                        t.style.backgroundColor = "#10b981"; // Verde successo
+                        showToast("✅ Scontrino Letto!");
+                        
+                        // Ripristina colore dopo 3 secondi
+                        setTimeout(() => { t.style.backgroundColor = ""; }, 3000);
+                        // ---------------------------
                     }
                 };
             } catch (err) {
@@ -600,4 +650,3 @@
     </script>
 </body>
 </html>
-
