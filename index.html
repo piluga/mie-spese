@@ -4,16 +4,16 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     
-    <title>FinanzaPro Multi-Conto</title>
+    <title>FinanzaPro Budget</title>
     
     <!-- PWA Meta -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="SpesePro">
-    <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/6039/6039232.png">
+    <link rel="apple-touch-icon" href="https://i.ibb.co/vx96Xb8Q/budget.png">
     
     <!-- Manifest Base64 -->
-    <link rel="manifest" href="data:application/json;base64,ewogICJkZWZhdWx0X2xvY2FsZSI6ICJpdCIsCiAgIm5hbWUiOiAiR2VzdGlvbmUgU3Blc2UgUHJvIiwKICAic2hvcnRfbmFtZSI6ICJTcGVzZVBybyIsCiAgInN0YXJ0X3VybCI6ICIuIiwKICAiaWNvbnMiOiBbCiAgICB7CiAgICAgICJzcmMiOiAiaHR0cHM6Ly9jZG4taWNvbnMtcG5nLmZsYXRpY29uLmNvbS81MTIvNjAzOS82MDM5MjMyLnBuZyIsCiAgICAgICJ0eXBlIjogImltYWdlL3BuZyIsCiAgICAgICJzaXplcyI6ICI1MTJ4NTEyIiwKICAgICAgInB1cnBvc2UiOiAiYW55IG1hc2thYmxlIgogICAgfQogIF0sCiAgImRpc3BsYXkiOiAic3RhbmRhbG9uZSIsCiAgImJhY2tncm91bmRfY29sb3IiOiAiIzRmNDZlNSIsCiAgInRoZW1lX2NvbG9yIjogIiM0ZjQ2ZTUiCn0=">
+    <link rel="manifest" href="data:application/json;base64,ewogICJkZWZhdWx0X2xvY2FsZSI6ICJpdCIsCiAgIm5hbWUiOiAiR2VzdGlvbmUgU3Blc2UgUHJvIiwKICAic2hvcnRfbmFtZSI6ICJTcGVzZVBybyIsCiAgInN0YXJ0X3VybCI6ICIuIiwKICAiaWNvbnMiOiBbCiAgICB7CiAgICAgICJzcmMiOiAiaHR0cHM6Ly9pLmliYi5jby92eDk2WGI4US9idWRnZXQucG5nIiwKICAgICAgInNpemVzIjogIjUxMng1MTIiLAogICAgICAidHlwZSI6ICJpbWFnZS9wbmciCiAgICB9CiAgXSwKICAiZGlzcGxheSI6ICJzdGFuZGFsb25lIiwKICAiYmFja2dyb3VuZF9jb2xvciI6ICIjZjNmNGY2IiwKICAidGhlbWVfY29sb3IiOiAiIzI1NjNmMSIKfQ==">
 
     <meta name="theme-color" content="#4f46e5">
     
@@ -88,10 +88,21 @@
                     <div id="balance" class="text-4xl font-bold">€ 0.00</div>
                 </div>
 
-                <div class="text-center mt-4">
-                    <button onclick="toggleSettings(true)" class="text-[10px] bg-indigo-500/50 px-3 py-1 rounded-full hover:bg-indigo-400 transition-colors inline-flex items-center space-x-1">
+                <!-- SEZIONE BUDGET NUOVA -->
+                <div id="budget-container" class="mt-4 px-4 hidden">
+                    <div class="flex justify-between text-[10px] text-indigo-200 mb-1 font-medium">
+                        <span class="flex items-center"><span class="w-1.5 h-1.5 bg-white rounded-full mr-1 opacity-50"></span>Speso: <span id="budget-spent" class="ml-1 text-white">€0</span></span>
+                        <span class="opacity-80">Budget: <span id="budget-total">€0</span></span>
+                    </div>
+                    <div class="w-full bg-indigo-900/30 rounded-full h-1.5 overflow-hidden backdrop-blur-sm border border-indigo-500/20">
+                        <div id="budget-bar" class="bg-white h-full rounded-full transition-all duration-700 ease-out shadow-[0_0_10px_rgba(255,255,255,0.3)]" style="width: 0%"></div>
+                    </div>
+                </div>
+
+                <div class="text-center mt-5">
+                    <button onclick="toggleSettings(true)" class="text-[10px] bg-indigo-500/50 px-3 py-1 rounded-full hover:bg-indigo-400 transition-colors inline-flex items-center space-x-1 backdrop-blur-sm border border-indigo-400/20">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
-                        <span>Impostazioni & Cloud</span>
+                        <span>Impostazioni & Budget</span>
                     </button>
                 </div>
             </header>
@@ -122,22 +133,29 @@
 
         <!-- View Impostazioni -->
         <div id="settings-view" class="hidden absolute inset-0 bg-gray-50 z-40 overflow-y-auto pb-10">
-            <header class="bg-white p-6 border-b sticky top-0 flex items-center justify-between">
+            <header class="bg-white p-6 border-b sticky top-0 flex items-center justify-between z-10">
                 <button onclick="toggleSettings(false)" class="p-2 text-indigo-600">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7 7-7" /></svg>
                 </button>
-                <h2 class="text-lg font-bold">Impostazioni & Backup</h2>
+                <h2 class="text-lg font-bold">Impostazioni</h2>
                 <div class="w-10"></div>
             </header>
             
             <div class="p-6 space-y-6">
                 <!-- Sezione Conti -->
                 <div class="settings-card">
-                    <h3 class="text-xs font-bold text-gray-400 uppercase mb-3">I Tuoi Conti</h3>
+                    <h3 class="text-xs font-bold text-gray-400 uppercase mb-3">I Tuoi Conti & Budget</h3>
                     <div id="account-list-settings" class="space-y-2 mb-4"></div>
-                    <div class="flex gap-2">
-                        <input type="text" id="new-account-name" placeholder="Nuovo conto..." class="flex-1 p-2 bg-gray-50 rounded-lg text-sm border outline-none">
-                        <button onclick="addAccount()" class="px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-bold">Aggiungi</button>
+                    
+                    <div class="bg-gray-50 p-3 rounded-xl border border-dashed border-gray-300">
+                        <div class="text-[10px] font-bold text-gray-400 uppercase mb-2">Aggiungi nuovo conto</div>
+                        <div class="flex flex-col gap-2">
+                            <div class="flex gap-2">
+                                <input type="text" id="new-account-name" placeholder="Nome (es. Carta Hype)" class="flex-[2] p-2 bg-white rounded-lg text-sm border outline-none shadow-sm">
+                                <input type="number" id="new-account-budget" placeholder="Budget €" class="flex-1 p-2 bg-white rounded-lg text-sm border outline-none shadow-sm">
+                            </div>
+                            <button onclick="addAccount()" class="w-full py-2 bg-indigo-600 text-white rounded-lg text-sm font-bold active:bg-indigo-700 transition-colors">Aggiungi Conto</button>
+                        </div>
                     </div>
                 </div>
 
@@ -147,7 +165,6 @@
                     <p class="text-[11px] text-gray-500 mb-4 leading-tight">Puoi salvare il backup su Google Drive, iCloud o nel tuo File System per non perdere mai i dati.</p>
                     
                     <div class="space-y-3">
-                        <!-- Opzione 1: Condivisione -->
                         <button onclick="shareBackup()" class="w-full flex items-center justify-between p-4 bg-indigo-600 text-white rounded-xl shadow-sm active:bg-indigo-700 transition-colors">
                             <div class="flex items-center space-x-3 text-left">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 100-3.316 3 3 0 000 3.316m0 0a3 3 0 100 3.316 3 3 0 000-3.316" /></svg>
@@ -159,7 +176,6 @@
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>
                         </button>
 
-                        <!-- Opzione 2: File System Access -->
                         <button onclick="saveToFileSystem()" class="w-full flex items-center justify-between p-4 bg-white border border-gray-200 text-gray-700 rounded-xl shadow-sm active:bg-gray-50 transition-colors">
                             <div class="flex items-center space-x-3 text-left">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 19a2 2 0 01-2-2V7a2 2 0 012-2h4l2 2h4a2 2 0 012 2v1m-6 9l3-3m0 0l3 3m-3-3V10" /></svg>
@@ -270,7 +286,10 @@
         };
 
         let transactions = JSON.parse(localStorage.getItem(STORAGE_TX)) || [];
-        let accounts = JSON.parse(localStorage.getItem(STORAGE_ACC)) || [{ id: 'acc_01', name: 'Conto Corrente' }];
+        // Accounts migration: ensure existing accounts have budget set to 0 if not present
+        let rawAccounts = JSON.parse(localStorage.getItem(STORAGE_ACC)) || [{ id: 'acc_01', name: 'Conto Corrente', budget: 0 }];
+        let accounts = rawAccounts.map(a => ({...a, budget: a.budget || 0}));
+        
         let activeAccountId = accounts[0].id;
         let viewDate = new Date();
         let currentMode = 'expense';
@@ -288,7 +307,7 @@
 
         // BACKUP AVANZATO
         async function shareBackup() {
-            const data = { app: "SpesePro", version: "3.0", transactions, accounts };
+            const data = { app: "SpesePro", version: "3.1", transactions, accounts };
             const json = JSON.stringify(data, null, 2);
             const filename = `backup_spesepro_${new Date().toISOString().split('T')[0]}.json`;
             
@@ -342,14 +361,18 @@
             showToast("Backup scaricato!");
         }
 
-        // LOGICA CONTI
+        // LOGICA CONTI E BUDGET
         function addAccount() {
-            const input = document.getElementById('new-account-name');
-            const name = input.value.trim();
+            const nameInput = document.getElementById('new-account-name');
+            const budgetInput = document.getElementById('new-account-budget');
+            const name = nameInput.value.trim();
+            const budget = parseFloat(budgetInput.value) || 0;
+            
             if(!name) return;
-            accounts.push({ id: 'acc_' + Date.now(), name });
+            accounts.push({ id: 'acc_' + Date.now(), name, budget });
             localStorage.setItem(STORAGE_ACC, JSON.stringify(accounts));
-            input.value = '';
+            nameInput.value = '';
+            budgetInput.value = '';
             renderSettingsAccounts();
             updateUI();
         }
@@ -363,6 +386,23 @@
                 localStorage.setItem(STORAGE_ACC, JSON.stringify(accounts));
                 renderSettingsAccounts();
                 updateUI();
+            }
+        }
+
+        function setBudget(id) {
+            const acc = accounts.find(a => a.id === id);
+            if (!acc) return;
+            const newBudget = prompt("Imposta budget mensile (€):", acc.budget || 0);
+            if (newBudget !== null) {
+                const parsed = parseFloat(newBudget);
+                if (!isNaN(parsed) && parsed >= 0) {
+                    acc.budget = parsed;
+                    localStorage.setItem(STORAGE_ACC, JSON.stringify(accounts));
+                    renderSettingsAccounts();
+                    updateUI();
+                } else {
+                    alert("Inserisci un numero valido.");
+                }
             }
         }
 
@@ -387,11 +427,21 @@
         function renderSettingsAccounts() {
             const list = document.getElementById('account-list-settings');
             list.innerHTML = accounts.map(a => `
-                <div class="flex items-center justify-between p-3 bg-gray-50 rounded-xl">
-                    <span class="font-bold text-sm truncate ${a.id === activeAccountId ? 'text-indigo-600' : ''}">${a.name}</span>
-                    <div class="flex space-x-2">
-                        <button onclick="renameAccount('${a.id}')" class="p-1 text-gray-400"><svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg></button>
-                        <button onclick="deleteAccount('${a.id}')" class="p-1 text-red-300"><svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg></button>
+                <div class="flex items-center justify-between p-3 bg-gray-50 rounded-xl mb-2 border border-gray-100">
+                    <div class="flex flex-col overflow-hidden mr-2">
+                        <span class="font-bold text-sm truncate ${a.id === activeAccountId ? 'text-indigo-600' : 'text-gray-800'}">${a.name}</span>
+                        <span class="text-[10px] text-gray-500 font-medium">Budget: €${(a.budget || 0).toLocaleString('it-IT')}</span>
+                    </div>
+                    <div class="flex space-x-1 shrink-0">
+                        <button onclick="setBudget('${a.id}')" class="p-2 bg-indigo-50 text-indigo-600 rounded-lg hover:bg-indigo-100 transition-colors" title="Imposta Budget">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
+                        </button>
+                        <button onclick="renameAccount('${a.id}')" class="p-2 bg-gray-100 text-gray-500 rounded-lg hover:bg-gray-200 transition-colors">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
+                        </button>
+                        <button onclick="deleteAccount('${a.id}')" class="p-2 bg-red-50 text-red-500 rounded-lg hover:bg-red-100 transition-colors">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                        </button>
                     </div>
                 </div>`).join('');
         }
@@ -421,7 +471,37 @@
 
             const balEl = document.getElementById('balance');
             balEl.textContent = `€ ${bal.toLocaleString('it-IT', { minimumFractionDigits: 2 })}`;
-            balEl.className = bal >= 0 ? 'text-4xl font-bold text-white' : 'text-4xl font-bold text-red-300';
+            balEl.className = bal >= 0 ? 'text-4xl font-bold text-white' : 'text-4xl font-bold text-red-200';
+
+            // GESTIONE BUDGET DISPLAY
+            const budgetContainer = document.getElementById('budget-container');
+            const budget = currentAcc.budget || 0;
+            
+            if (budget > 0) {
+                budgetContainer.classList.remove('hidden');
+                document.getElementById('budget-total').textContent = '€ ' + budget.toLocaleString('it-IT');
+                document.getElementById('budget-spent').textContent = '€ ' + exp.toLocaleString('it-IT');
+                
+                let perc = (exp / budget) * 100;
+                let displayPerc = perc > 100 ? 100 : perc;
+                
+                const bar = document.getElementById('budget-bar');
+                bar.style.width = displayPerc + '%';
+                
+                if (exp > budget) {
+                    bar.classList.remove('bg-white');
+                    bar.classList.add('bg-red-400');
+                    document.getElementById('budget-spent').classList.add('text-red-200');
+                    document.getElementById('budget-spent').classList.remove('text-white');
+                } else {
+                    bar.classList.add('bg-white');
+                    bar.classList.remove('bg-red-400');
+                    document.getElementById('budget-spent').classList.add('text-white');
+                    document.getElementById('budget-spent').classList.remove('text-red-200');
+                }
+            } else {
+                budgetContainer.classList.add('hidden');
+            }
 
             const listEl = document.getElementById('transaction-list');
             if (filtered.length === 0) {
@@ -585,15 +665,18 @@
         }
 
         function exportCSV() {
-            const headers = ["Data", "Descrizione", "Importo", "Categoria", "Tipo", "Conto"];
-            const rows = transactions.map(t => [
+            const headers = ["Data", "Descrizione", "Importo", "Categoria", "Tipo", "Conto", "Budget Conto"];
+            const rows = transactions.map(t => {
+                const acc = accounts.find(a => a.id === t.accountId);
+                return [
                 new Date(t.date).toLocaleDateString(),
                 t.description,
                 t.amount.toFixed(2),
                 t.category,
                 t.type,
-                accounts.find(a => a.id === t.accountId)?.name || "N/A"
-            ].join(';'));
+                acc?.name || "N/A",
+                acc?.budget || 0
+            ].join(';')});
             const blob = new Blob(["\ufeff" + [headers.join(';'), ...rows].join('\n')], { type: 'text/csv' });
             downloadBackupManual(blob, `spese_export.csv`);
         }
