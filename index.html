@@ -86,6 +86,9 @@
                         <button onclick="navigateAccount(1)" class="p-1 opacity-50 hover:opacity-100"><svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" /></svg></button>
                     </div>
                     <div id="balance" class="text-4xl font-bold">€ 0.00</div>
+                    <div id="initial-balance-display"
+                         class="text-[11px] mt-1 font-medium text-indigo-100 hidden">
+                    </div>
                 </div>
 
                 <!-- SEZIONE BUDGET NUOVA -->
@@ -511,8 +514,8 @@ function deleteAccount(id) {
                 <div class="flex items-center justify-between p-3 bg-gray-50 rounded-xl mb-2 border border-gray-100">
                     <div class="flex flex-col overflow-hidden mr-2">
                         <span class="font-bold text-sm truncate ${a.id === activeAccountId ? 'text-indigo-600' : 'text-gray-800'}">${a.name}</span>
-                        <span class="text-[10px] text-gray-500 font-medium">Budget: €${(a.budget || 0).toLocaleString('it-IT')}</span>
-                        <span class="text-[10px] text-gray-500 font-medium"> Saldo iniziale: €${(a.initialBalance || 0).toLocaleString('it-IT')} </span>
+                        <span class="text-[10px] text-gray-500 font-medium">Budget: € ${(a.budget || 0).toLocaleString('it-IT')}</span>
+                        <span class="text-[10px] text-green-500 font-medium"> Saldo iniziale: € ${(a.initialBalance || 0).toLocaleString('it-IT')}</span>
                     </div>
                     <div class="flex space-x-1 shrink-0">
                         <button onclick="setInitialBalance('${a.id}')" class="p-2 bg-green-50 text-green-600 rounded-lg hover:bg-green-100 transition-colors" title="Saldo iniziale">
@@ -563,6 +566,15 @@ if (!currentAcc && accounts.length) {
 
             const balEl = document.getElementById('balance');
             balEl.textContent = `€ ${bal.toLocaleString('it-IT', { minimumFractionDigits: 2 })}`;
+            const initEl = document.getElementById('initial-balance-display');
+
+            if ((currentAcc.initialBalance || 0) !== 0) {
+                initEl.textContent =
+                    `Saldo iniziale: € ${currentAcc.initialBalance.toLocaleString('it-IT', { minimumFractionDigits: 2 })}`;
+                initEl.classList.remove('hidden');
+            } else {
+                initEl.classList.add('hidden');
+            }
             balEl.className = bal >= 0 ? 'text-4xl font-bold text-white' : 'text-4xl font-bold text-red-200';
 
             // GESTIONE BUDGET DISPLAY
