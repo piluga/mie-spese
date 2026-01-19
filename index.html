@@ -249,6 +249,12 @@
                         </div>
                     </div>
 
+<div>
+    <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1 ml-1">Data operazione</label>
+    <input type="date" id="date-input"
+        class="w-full p-3 bg-gray-100 rounded-xl font-bold outline-none">
+</div>
+
                     <div>
                         <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1 ml-1">Descrizione</label>
                         <input type="text" id="desc-input" placeholder="Esempio: Spesa" class="w-full p-4 bg-gray-100 rounded-2xl outline-none">
@@ -605,6 +611,13 @@
             document.getElementById('amount-input').value = tx ? tx.amount : '';
             document.getElementById('desc-input').value = tx ? tx.description : '';
             setTimeout(() => document.getElementById('modal-content').classList.remove('translate-y-full'), 10);
+const dateInput = document.getElementById('date-input');
+
+if (tx && tx.date) {
+    dateInput.value = tx.date.split('T')[0];
+} else {
+    dateInput.value = new Date().toISOString().split('T')[0];
+}
         }
 
         function editTransaction(id) { const tx = transactions.find(t => t.id === id); if (tx) openModal(tx.type, tx); }
@@ -620,12 +633,25 @@
             if (isNaN(amt) || amt <= 0) return;
             const desc = document.getElementById('desc-input').value.trim();
             const targetAccId = document.getElementById('modal-account-select').value;
+
+const selectedDate = document.getElementById('date-input').value;
+
+const isoDate = selectedDate
+    ? new Date(selectedDate + 'T12:00:00').toISOString()
+    : new Date().toISOString();
             
             if (editingTxId) {
                 const idx = transactions.findIndex(t => t.id === editingTxId);
-                transactions[idx] = { ...transactions[idx], amount: amt, description: desc, category: selectedCategory, accountId: targetAccId };
+                transactions[idx] = {
+    ...transactions[idx],
+    amount: amt,
+    description: desc,
+    category: selectedCategory,
+    accountId: targetAccId,
+    date: isoDate
+};
             } else {
-                transactions.push({ id: Date.now(), amount: amt, description: desc, category: selectedCategory, type: currentMode, accountId: targetAccId, date: new Date().toISOString() });
+                transactions.push({ id: Date.now(), amount: amt, description: desc, category: selectedCategory, type: currentMode, accountId: targetAccId, date: isoDate });
             }
             localStorage.setItem(STORAGE_TX, JSON.stringify(transactions));
             activeAccountId = targetAccId;
@@ -713,3 +739,4 @@
     </script>
 </body>
 </html>
+
