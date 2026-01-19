@@ -459,10 +459,10 @@ function deleteAccount(id) {
     // 🧹 ELIMINA CONTO
     accounts = accounts.filter(a => a.id !== id);
 
-    // 🔄 SE ERA ATTIVO
-    if (activeAccountId === id && accounts.length) {
-        activeAccountId = accounts[0].id;
-    }
+    // 🔄 riallinea sempre il conto attivo
+    if (activeAccountId === id || !accounts.find(a => a.id === activeAccountId)) {
+    activeAccountId = accounts[0].id;
+}
 
     // 💾 SALVA
     localStorage.setItem(STORAGE_ACC, JSON.stringify(accounts));
@@ -783,3 +783,4 @@ const isoDate = selectedDate
     </script>
 </body>
 </html>
+
