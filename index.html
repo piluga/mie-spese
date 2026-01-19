@@ -418,16 +418,54 @@
             }
         }
 
-        function deleteAccount(id) {
-            if(accounts.length <= 1) return alert("Minimo 1 conto.");
-            if(confirm("Eliminare conto?")) {
-                accounts = accounts.filter(a => a.id !== id);
-                if(activeAccountId === id) activeAccountId = accounts[0].id;
-                localStorage.setItem(STORAGE_ACC, JSON.stringify(accounts));
-                renderSettingsAccounts();
-                updateUI();
+function deleteAccount(id) {
+
+    const txCount = transactions.filter(t => t.accountId === id).length;
+
+    if (txCount > 0) {
+
+        const choice = confirm(
+            `Questo conto ha ${txCount} movimenti.\n\n` +
+            `OK = Elimina anche i movimenti\n` +
+            `ANNULLA = Sposta i movimenti su un altro conto`
+        );
+
+        if (choice) {
+            // 🔴 ELIMINA MOVIMENTI
+            transactions = transactions.filter(t => t.accountId !== id);
+        } else {
+            // 🔁 SPOSTA MOVIMENTI
+            const target = prompt(
+                "Inserisci l'ID del conto di destinazione:\n" +
+                accounts.filter(a => a.id !== id).map(a => `${a.id} → ${a.name}`).join('\n')
+            );
+
+            if (!target || !accounts.find(a => a.id === target)) {
+                alert("Operazione annullata");
+                return;
             }
+
+            transactions.forEach(t => {
+                if (t.accountId === id) t.accountId = target;
+            });
         }
+    }
+
+    // 🧹 ELIMINA CONTO
+    accounts = accounts.filter(a => a.id !== id);
+
+    // 🔄 SE ERA ATTIVO
+    if (activeAccountId === id && accounts.length) {
+        activeAccountId = accounts[0].id;
+    }
+
+    // 💾 SALVA
+    localStorage.setItem(STORAGE_ACC, JSON.stringify(accounts));
+    localStorage.setItem(STORAGE_TX, JSON.stringify(transactions));
+
+    renderAccounts();
+    render();
+}
 
         function navigateAccount(dir) {
             const idx = accounts.findIndex(a => a.id === activeAccountId);
@@ -739,4 +777,3 @@ const isoDate = selectedDate
     </script>
 </body>
 </html>
-
