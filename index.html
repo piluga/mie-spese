@@ -420,6 +420,11 @@
 
 function deleteAccount(id) {
 
+    if (accounts.length === 1) {
+        alert("Non puoi eliminare l'ultimo conto.\nCrea prima un nuovo conto.");
+        return;
+    }
+
     const txCount = transactions.filter(t => t.accountId === id).length;
 
     if (txCount > 0) {
@@ -463,6 +468,7 @@ function deleteAccount(id) {
     localStorage.setItem(STORAGE_ACC, JSON.stringify(accounts));
     localStorage.setItem(STORAGE_TX, JSON.stringify(transactions));
 
+    renderAccountSettings();
     renderAccounts();
     render();
 }
