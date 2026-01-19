@@ -462,15 +462,17 @@ function deleteAccount(id) {
     // 🔄 riallinea sempre il conto attivo
     if (activeAccountId === id || !accounts.find(a => a.id === activeAccountId)) {
     activeAccountId = accounts[0].id;
+
+    renderSettingsAccounts();
+    updateUI();
 }
 
     // 💾 SALVA
     localStorage.setItem(STORAGE_ACC, JSON.stringify(accounts));
     localStorage.setItem(STORAGE_TX, JSON.stringify(transactions));
 
-    renderAccountSettings();
-    renderAccounts();
-    render();
+    renderSettingsAccounts();
+    updateUI();
 }
 
         function navigateAccount(dir) {
@@ -511,7 +513,13 @@ function deleteAccount(id) {
         function updateUI() {
             const m = viewDate.getMonth();
             const y = viewDate.getFullYear();
-            const currentAcc = accounts.find(a => a.id === activeAccountId) || accounts[0];
+            let currentAcc = accounts.find(a => a.id === activeAccountId);
+
+if (!currentAcc && accounts.length) {
+    activeAccountId = accounts[0].id;
+    currentAcc = accounts[0];
+}
+
             
             document.getElementById('current-month-display').textContent = viewDate.toLocaleDateString('it-IT', { month: 'long', year: 'numeric' });
             document.getElementById('account-name-display').textContent = currentAcc.name;
@@ -783,4 +791,3 @@ const isoDate = selectedDate
     </script>
 </body>
 </html>
-
