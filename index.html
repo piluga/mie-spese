@@ -249,11 +249,11 @@
                         </div>
                     </div>
 
-<div>
-    <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1 ml-1">Data operazione</label>
-    <input type="date" id="date-input"
-        class="w-full p-3 bg-gray-100 rounded-xl font-bold outline-none">
-</div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1 ml-1">Data operazione</label>
+                        <input type="date" id="date-input"
+                        class="w-full p-3 bg-gray-100 rounded-xl font-bold outline-none">
+                    </div>
 
                     <div>
                         <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1 ml-1">Descrizione</label>
@@ -300,7 +300,11 @@
         let transactions = JSON.parse(localStorage.getItem(STORAGE_TX)) || [];
         // Accounts migration: ensure existing accounts have budget set to 0 if not present
         let rawAccounts = JSON.parse(localStorage.getItem(STORAGE_ACC)) || [{ id: 'acc_01', name: 'Conto Corrente', budget: 0 }];
-        let accounts = rawAccounts.map(a => ({...a, budget: a.budget || 0}));
+        let accounts = rawAccounts.map(a => ({
+            ...a,
+            budget: a.budget || 0,
+            initialBalance: a.initialBalance || 0
+        }));
         
         let activeAccountId = accounts[0].id;
         let viewDate = new Date();
@@ -379,9 +383,10 @@
             const budgetInput = document.getElementById('new-account-budget');
             const name = nameInput.value.trim();
             const budget = parseFloat(budgetInput.value) || 0;
+            const initialBalance = parseFloat(prompt("Saldo iniziale del conto (€):", "0")) || 0;
             
             if(!name) return;
-            accounts.push({ id: 'acc_' + Date.now(), name, budget });
+            accounts.push({ id: 'acc_' + Date.now(),name,budget,initialBalance });
             localStorage.setItem(STORAGE_ACC, JSON.stringify(accounts));
             nameInput.value = '';
             budgetInput.value = '';
@@ -416,6 +421,24 @@
                     alert("Inserisci un numero valido.");
                 }
             }
+        }
+
+        function setInitialBalance(id) {
+            const acc = accounts.find(a => a.id === id);
+            if (!acc) return;
+
+            const val = prompt("Saldo iniziale del conto (€):", acc.initialBalance || 0);
+            if (val === null) return;
+
+            const parsed = parseFloat(val);
+            if (isNaN(parsed)) {
+                alert("Inserisci un numero valido");
+                return;
+            }
+            acc.initialBalance = parsed;
+            localStorage.setItem(STORAGE_ACC, JSON.stringify(accounts));
+            renderSettingsAccounts();
+            updateUI();
         }
 
 function deleteAccount(id) {
@@ -489,15 +512,19 @@ function deleteAccount(id) {
                     <div class="flex flex-col overflow-hidden mr-2">
                         <span class="font-bold text-sm truncate ${a.id === activeAccountId ? 'text-indigo-600' : 'text-gray-800'}">${a.name}</span>
                         <span class="text-[10px] text-gray-500 font-medium">Budget: €${(a.budget || 0).toLocaleString('it-IT')}</span>
+                        <span class="text-[10px] text-gray-500 font-medium"> Saldo iniziale: €${(a.initialBalance || 0).toLocaleString('it-IT')} </span>
                     </div>
                     <div class="flex space-x-1 shrink-0">
+                        <button onclick="setInitialBalance('${a.id}')" class="p-2 bg-green-50 text-green-600 rounded-lg hover:bg-green-100 transition-colors" title="Saldo iniziale">
+                            €
+                        </button>
                         <button onclick="setBudget('${a.id}')" class="p-2 bg-indigo-50 text-indigo-600 rounded-lg hover:bg-indigo-100 transition-colors" title="Imposta Budget">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
                         </button>
-                        <button onclick="renameAccount('${a.id}')" class="p-2 bg-gray-100 text-gray-500 rounded-lg hover:bg-gray-200 transition-colors">
+                        <button onclick="renameAccount('${a.id}')" class="p-2 bg-gray-100 text-gray-500 rounded-lg hover:bg-gray-200 transition-colors" title="Rinomina Conto">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
                         </button>
-                        <button onclick="deleteAccount('${a.id}')" class="p-2 bg-red-50 text-red-500 rounded-lg hover:bg-red-100 transition-colors">
+                        <button onclick="deleteAccount('${a.id}')" class="p-2 bg-red-50 text-red-500 rounded-lg hover:bg-red-100 transition-colors" title="Elimina Conto">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
                         </button>
                     </div>
@@ -531,7 +558,7 @@ if (!currentAcc && accounts.length) {
 
             const inc = filtered.filter(t => t.type === 'income').reduce((s, t) => s + t.amount, 0);
             const exp = filtered.filter(t => t.type === 'expense').reduce((s, t) => s + t.amount, 0);
-            const bal = inc - exp;
+            const bal = (currentAcc.initialBalance || 0) + inc - exp;
 
             const balEl = document.getElementById('balance');
             balEl.textContent = `€ ${bal.toLocaleString('it-IT', { minimumFractionDigits: 2 })}`;
