@@ -905,8 +905,24 @@
             if (!isHorizontalSwipe) return;
 
             const dx = e.changedTouches[0].clientX - touchStartX;
-            if (Math.abs(dx) > 80) {
+
+            if (Math.abs(dx) < 80) return;
+
+            const settingsEl = document.getElementById('settings-view');
+
+            // 📌 SE SONO NELLE IMPOSTAZIONI → TORNA ALLA HOME
+            if (settingsEl && !settingsEl.classList.contains('hidden')) {
                 toggleSettings(false);
+                return;
+            }
+
+            // 📌 SE SONO IN HOME → CAMBIO CONTO
+            if (dx < 0) {
+                // swipe sinistra → conto successivo
+                navigateAccount(1);
+            } else {
+                // swipe destra → conto precedente
+                navigateAccount(-1);
             }
         });
 
