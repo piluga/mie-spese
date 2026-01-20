@@ -965,25 +965,28 @@
         }, { passive: false });
 
         document.addEventListener('touchend', e => {
-
             if (!isHorizontalSwipe) return;
 
             const dx = e.changedTouches[0].clientX - touchStartX;
+            const dy = e.changedTouches[0].clientY - touchStartY;
+
+            // 🔒 se è più verticale che orizzontale → IGNORA
+            if (Math.abs(dy) > Math.abs(dx)) return;
+
             if (Math.abs(dx) < 80) return;
 
             const settingsEl = document.getElementById('settings-view');
 
-            // 📌 IMPOSTAZIONI → TORNA HOME
             if (settingsEl && !settingsEl.classList.contains('hidden')) {
                 toggleSettings(false);
                 return;
             }
 
-            // 📌 HOME → CAMBIO CONTO
+            // Home → cambio conto
             if (dx < 0) {
-                navigateAccount(1);   // swipe sinistra
+                navigateAccount(1);
             } else {
-                navigateAccount(-1);  // swipe destra
+                navigateAccount(-1);
             }
         });
 
