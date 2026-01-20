@@ -315,6 +315,8 @@
         let selectedCategory = 'altro';
         let editingTxId = null;
         let chartInstance = null;
+        let touchStartX = 0;
+        let touchEndX = 0;
 
         // UI TOAST
         function showToast(msg) {
@@ -506,6 +508,20 @@ function deleteAccount(id) {
             let nextIdx = (idx + dir + accounts.length) % accounts.length;
             activeAccountId = accounts[nextIdx].id;
             updateUI();
+        }
+
+        function handleSwipe() {
+            const swipeDistance = touchEndX - touchStartX;
+
+            // evita swipe accidentali
+            if (Math.abs(swipeDistance) < 80) return;
+
+            // verifica se le impostazioni sono aperte
+            const settingsEl = document.getElementById('settings');
+            if (!settingsEl || settingsEl.classList.contains('hidden')) return;
+
+            // swipe orizzontale → torna alla home
+            closeSettings();
         }
 
         function renderSettingsAccounts() {
@@ -827,7 +843,16 @@ const isoDate = selectedDate
         function clearHistory() { if(confirm("Cancellare TUTTO?")) { localStorage.clear(); location.reload(); } }
 
         window.onload = updateUI;
-        document.getElementById('modal').onclick = (e) => { if(e.target === document.getElementById('modal')) closeModal(); };
+        document.getElementById('modal').onclick = (e) => { if (e.target === document.getElementById('modal')) closeModal(); 
+
+        document.addEventListener('touchstart', e => {
+            touchStartX = e.changedTouches[0].screenX;
+        }, { passive: true });
+
+        document.addEventListener('touchend', e => {
+            touchEndX = e.changedTouches[0].screenX;
+            handleSwipe();
+        });
     </script>
 </body>
 </html>
