@@ -950,6 +950,14 @@
         }, { passive: false });
 
         document.addEventListener('touchend', e => {
+
+            // 🔒 se il modal è aperto → chiudi e basta
+            const modal = document.getElementById('numberModal');
+            if (modal && !modal.classList.contains('hidden')) {
+                closeNumberModal();
+                return;
+            }
+
             if (!isHorizontalSwipe) return;
 
             const dx = e.changedTouches[0].clientX - touchStartX;
