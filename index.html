@@ -927,26 +927,11 @@
         let touchStartY = 0;
         let isHorizontalSwipe = false;
 
-        let modalTouchStartY = 0;
-
         document.addEventListener('touchstart', e => {
-            const modal = document.getElementById('numberModal');
-            if (!modal || modal.classList.contains('hidden')) return;
-
-            modalTouchStartY = e.touches[0].clientY;
+            touchStartX = e.touches[0].clientX;
+            touchStartY = e.touches[0].clientY;
+            isHorizontalSwipe = false;
         }, { passive: true });
-
-        document.addEventListener('touchend', e => {
-            const modal = document.getElementById('numberModal');
-            if (!modal || modal.classList.contains('hidden')) return;
-
-            const dy = e.changedTouches[0].clientY - modalTouchStartY;
-
-            // 🔽 chiude SOLO se swipe down deciso
-            if (dy > 80) {
-                closeNumberModal();
-            }
-        });
 
         document.addEventListener('touchmove', e => {
             const dx = e.touches[0].clientX - touchStartX;
@@ -965,28 +950,32 @@
         }, { passive: false });
 
         document.addEventListener('touchend', e => {
+
+            // 🔒 se il modal è aperto → chiudi e basta
+            const modal = document.getElementById('numberModal');
+            if (modal && !modal.classList.contains('hidden')) {
+                closeNumberModal();
+                return;
+            }
+
             if (!isHorizontalSwipe) return;
 
             const dx = e.changedTouches[0].clientX - touchStartX;
-            const dy = e.changedTouches[0].clientY - touchStartY;
-
-            // 🔒 se è più verticale che orizzontale → IGNORA
-            if (Math.abs(dy) > Math.abs(dx)) return;
-
             if (Math.abs(dx) < 80) return;
 
             const settingsEl = document.getElementById('settings-view');
 
+            // 📌 IMPOSTAZIONI → TORNA HOME
             if (settingsEl && !settingsEl.classList.contains('hidden')) {
                 toggleSettings(false);
                 return;
             }
 
-            // Home → cambio conto
+            // 📌 HOME → CAMBIO CONTO
             if (dx < 0) {
-                navigateAccount(1);
+                navigateAccount(1);   // swipe sinistra
             } else {
-                navigateAccount(-1);
+                navigateAccount(-1);  // swipe destra
             }
         });
 
