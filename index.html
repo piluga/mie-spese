@@ -892,10 +892,13 @@
             const dx = e.touches[0].clientX - touchStartX;
             const dy = e.touches[0].clientY - touchStartY;
 
+            // riconosce swipe orizzontale (ovunque)
             if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 30) {
+                isHorizontalSwipe = true;
+
+                // 🔒 blocca gesture di sistema SOLO nelle impostazioni
                 const settingsEl = document.getElementById('settings-view');
                 if (settingsEl && !settingsEl.classList.contains('hidden')) {
-                    isHorizontalSwipe = true;
                     e.preventDefault();
                 }
             }
@@ -905,24 +908,21 @@
             if (!isHorizontalSwipe) return;
 
             const dx = e.changedTouches[0].clientX - touchStartX;
-
             if (Math.abs(dx) < 80) return;
 
             const settingsEl = document.getElementById('settings-view');
 
-            // 📌 SE SONO NELLE IMPOSTAZIONI → TORNA ALLA HOME
+            // 📌 IMPOSTAZIONI → TORNA HOME
             if (settingsEl && !settingsEl.classList.contains('hidden')) {
                 toggleSettings(false);
                 return;
             }
 
-            // 📌 SE SONO IN HOME → CAMBIO CONTO
+            // 📌 HOME → CAMBIO CONTO
             if (dx < 0) {
-                // swipe sinistra → conto successivo
-                navigateAccount(1);
+                navigateAccount(1);   // swipe sinistra
             } else {
-                // swipe destra → conto precedente
-                navigateAccount(-1);
+                navigateAccount(-1);  // swipe destra
             }
         });
 
