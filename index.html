@@ -949,26 +949,14 @@
             }
         }, { passive: false });
 
-        let modalTouchStartY = 0;
-
-        document.addEventListener('touchstart', e => {
-            const modal = document.getElementById('numberModal');
-            if (!modal || modal.classList.contains('hidden')) return;
-
-            modalTouchStartY = e.touches[0].clientY;
-        }, { passive: true });
-
         document.addEventListener('touchend', e => {
+
+            // 🔒 se il modal è aperto → chiudi e basta
             const modal = document.getElementById('numberModal');
-            if (!modal || modal.classList.contains('hidden')) return;
-
-            const dy = e.changedTouches[0].clientY - modalTouchStartY;
-
-            // 🔽 chiude SOLO se swipe down deciso
-            if (dy > 80) {
+            if (modal && !modal.classList.contains('hidden')) {
                 closeNumberModal();
+                return;
             }
-        });
 
             if (!isHorizontalSwipe) return;
 
