@@ -350,10 +350,6 @@
         let editingTxId = null;
         let chartInstance = null;
 
-        let touchStartX = 0;
-        let touchStartY = 0;
-        let isHorizontalSwipe = false;
-
         // UI TOAST
         function showToast(msg) {
             const t = document.getElementById('toast');
@@ -881,6 +877,10 @@
 
         window.onload = updateUI;
         document.getElementById('modal').onclick = (e) => { if (e.target === document.getElementById('modal')) closeModal(); };
+
+        let touchStartX = 0;
+        let touchStartY = 0;
+        let isHorizontalSwipe = false;
 
         document.addEventListener('touchstart', e => {
             touchStartX = e.touches[0].clientX;
