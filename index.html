@@ -3,20 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    
+
     <title>FinanzaPro Budget</title>
-    
+
     <!-- PWA Meta -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="SpesePro">
     <link rel="apple-touch-icon" href="https://i.ibb.co/vx96Xb8Q/budget.png">
-    
+
     <!-- Manifest Base64 -->
     <link rel="manifest" href="data:application/json;base64,ewogICJkZWZhdWx0X2xvY2FsZSI6ICJpdCIsCiAgIm5hbWUiOiAiR2VzdGlvbmUgU3Blc2UgUHJvIiwKICAic2hvcnRfbmFtZSI6ICJTcGVzZVBybyIsCiAgInN0YXJ0X3VybCI6ICIuIiwKICAiaWNvbnMiOiBbCiAgICB7CiAgICAgICJzcmMiOiAiaHR0cHM6Ly9pLmliYi5jby92eDk2WGI4US9idWRnZXQucG5nIiwKICAgICAgInNpemVzIjogIjUxMng1MTIiLAogICAgICAidHlwZSI6ICJpbWFnZS9wbmciCiAgICB9CiAgXSwKICAiZGlzcGxheSI6ICJzdGFuZGFsb25lIiwKICAiYmFja2dyb3VuZF9jb2xvciI6ICIjZjNmNGY2IiwKICAidGhlbWVfY29sb3IiOiAiIzI1NjNmMSIKfQ==">
 
     <meta name="theme-color" content="#4f46e5">
-    
+
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
@@ -26,6 +26,7 @@
             touch-action: manipulation;
             -webkit-tap-highlight-color: transparent;
         }
+
         .loader {
             border: 2px solid #f3f3f3;
             border-top: 2px solid #4f46e5;
@@ -35,14 +36,47 @@
             animation: spin 1s linear infinite;
             display: inline-block;
         }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        .modal-transition { transition: transform 0.3s ease-out; }
-        input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
-        .transaction-card:active { transform: scale(0.98); background-color: #f9fafb; }
-        .settings-card { background: white; border-radius: 1rem; padding: 1rem; margin-bottom: 1rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
-        header { padding-top: env(safe-area-inset-top, 2.5rem); }
-        .pb-safe { padding-bottom: env(safe-area-inset-bottom, 1rem); }
-        
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        .modal-transition {
+            transition: transform 0.3s ease-out;
+        }
+
+        input::-webkit-outer-spin-button, input::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        .transaction-card:active {
+            transform: scale(0.98);
+            background-color: #f9fafb;
+        }
+
+        .settings-card {
+            background: white;
+            border-radius: 1rem;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        header {
+            padding-top: env(safe-area-inset-top, 2.5rem);
+        }
+
+        .pb-safe {
+            padding-bottom: env(safe-area-inset-bottom, 1rem);
+        }
+
         .toast {
             position: fixed;
             bottom: 2rem;
@@ -65,7 +99,7 @@
     <div id="toast" class="toast">Messaggio</div>
 
     <div id="app" class="max-w-md mx-auto min-h-screen flex flex-col bg-white shadow-lg relative">
-        
+
         <!-- View Principale -->
         <div id="main-view">
             <header class="bg-indigo-600 text-white p-6 rounded-b-[2.5rem] shadow-xl">
@@ -78,7 +112,7 @@
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>
                     </button>
                 </div>
-                
+
                 <div class="text-center">
                     <div class="flex items-center justify-center space-x-4 mb-1">
                         <button onclick="navigateAccount(-1)" class="p-1 opacity-50 hover:opacity-100"><svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd" /></svg></button>
@@ -129,7 +163,7 @@
                 <div class="flex justify-between items-center mb-4">
                     <h2 class="text-xl font-bold text-gray-800 italic">Movimenti</h2>
                 </div>
-                
+
                 <div id="transaction-list" class="space-y-3 pb-24"></div>
             </main>
         </div>
@@ -143,25 +177,25 @@
                 <h2 class="text-lg font-bold">Impostazioni</h2>
                 <div class="w-10"></div>
             </header>
-            
+
             <div class="p-6 space-y-6">
                 <!-- Sezione Conti -->
                 <div class="settings-card">
                     <h3 class="text-xs font-bold text-gray-400 uppercase mb-3">I Tuoi Conti & Budget</h3>
                     <div id="account-list-settings" class="space-y-2 mb-4"></div>
-                    
+
                     <div class="bg-gray-50 p-3 rounded-xl border border-dashed border-gray-300">
                         <div class="text-[10px] font-bold text-gray-400 uppercase mb-2">Aggiungi nuovo conto</div>
                         <div class="flex flex-col gap-2">
                             <div class="flex gap-2">
-                                <input type="text" id="new-account-name" placeholder="Nome (es. Hype)" 
-                                    class="flex-1 min-w-0 p-2 bg-white rounded-lg text-sm border outline-none shadow-sm">
-                                
-                                <input type="number" id="new-account-budget" placeholder="Budget €" 
-                                    class="w-20 p-2 bg-white rounded-lg text-sm border outline-none shadow-sm text-center">
+                                <input type="text" id="new-account-name" placeholder="Nome (es. Hype)"
+                                       class="flex-1 min-w-0 p-2 bg-white rounded-lg text-sm border outline-none shadow-sm">
+
+                                <input type="number" id="new-account-budget" placeholder="Budget €"
+                                       class="w-20 p-2 bg-white rounded-lg text-sm border outline-none shadow-sm text-center">
                             </div>
-                            <button onclick="addAccount()" 
-                                class="w-full py-2 bg-indigo-600 text-white rounded-lg text-sm font-bold active:bg-indigo-700 transition-colors">
+                            <button onclick="addAccount()"
+                                    class="w-full py-2 bg-indigo-600 text-white rounded-lg text-sm font-bold active:bg-indigo-700 transition-colors">
                                 Aggiungi Conto
                             </button>
                         </div>
@@ -172,7 +206,7 @@
                 <div class="settings-card">
                     <h3 class="text-xs font-bold text-gray-400 uppercase mb-3">Salvataggio & Cloud</h3>
                     <p class="text-[11px] text-gray-500 mb-4 leading-tight">Puoi salvare il backup su Google Drive, iCloud o nel tuo File System per non perdere mai i dati.</p>
-                    
+
                     <div class="space-y-3">
                         <button onclick="shareBackup()" class="w-full flex items-center justify-between p-4 bg-indigo-600 text-white rounded-xl shadow-sm active:bg-indigo-700 transition-colors">
                             <div class="flex items-center space-x-3 text-left">
@@ -201,7 +235,7 @@
                                 <span class="text-[10px] font-bold text-gray-500 mt-1 uppercase">Importa</span>
                                 <input type="file" id="import-json" class="hidden" accept=".json" onchange="importJSON(event)">
                             </label>
-                            
+
                             <button onclick="exportCSV()" class="flex flex-col items-center justify-center p-3 bg-green-50 border border-green-200 rounded-xl">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
                                 <span class="text-[10px] font-bold text-green-700 mt-1 uppercase">Export CSV</span>
@@ -240,12 +274,12 @@
                     <div class="relative">
                         <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1 ml-1">Importo (€)</label>
                         <input type="number" id="amount-input" step="0.01" inputmode="decimal" placeholder="0.00" class="w-full p-4 bg-gray-100 rounded-2xl text-3xl font-bold text-center focus:ring-2 focus:ring-indigo-500 outline-none">
-                        
+
                         <button id="camera-btn" onclick="triggerCamera()" class="absolute right-3 bottom-3 p-3 bg-white shadow-md rounded-full text-indigo-600 active:scale-90 transition-transform">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
                         </button>
                         <input type="file" id="camera-input" accept="image/*" capture="environment" class="hidden" onchange="handleImage(event)">
-                        
+
                         <div id="camera-loader" class="absolute inset-0 bg-white/80 rounded-2xl flex items-center justify-center hidden">
                             <div class="loader mr-2"></div>
                             <span class="text-xs font-bold text-indigo-600 uppercase tracking-tighter">Analisi Scontrino...</span>
@@ -255,7 +289,7 @@
                     <div>
                         <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1 ml-1">Data operazione</label>
                         <input type="date" id="date-input"
-                        class="w-full p-3 bg-gray-100 rounded-xl font-bold outline-none">
+                               class="w-full p-3 bg-gray-100 rounded-xl font-bold outline-none">
                     </div>
 
                     <div>
@@ -281,7 +315,7 @@
     <script>
         const STORAGE_TX = 'spese_v3_data';
         const STORAGE_ACC = 'spese_v3_accounts';
-        let apiKey = localStorage.getItem('gemini_api_key') || ""; 
+        let apiKey = localStorage.getItem('gemini_api_key') || "";
 
         const categories = {
             expense: [
@@ -308,7 +342,7 @@
             budget: a.budget || 0,
             initialBalance: a.initialBalance || 0
         }));
-        
+
         let activeAccountId = accounts[0].id;
         let viewDate = new Date();
         let currentMode = 'expense';
@@ -331,7 +365,7 @@
             const data = { app: "SpesePro", version: "3.1", transactions, accounts };
             const json = JSON.stringify(data, null, 2);
             const filename = `backup_spesepro_${new Date().toISOString().split('T')[0]}.json`;
-            
+
             if (navigator.share) {
                 const file = new File([json], filename, { type: 'application/json' });
                 try {
@@ -342,7 +376,7 @@
                     });
                     showToast("Menu condivisione aperto!");
                 } catch (err) {
-                    if(err.name !== 'AbortError') showToast("Errore condivisione");
+                    if (err.name !== 'AbortError') showToast("Errore condivisione");
                     downloadBackupManual(json, filename);
                 }
             } else {
@@ -364,7 +398,7 @@
                     await writable.close();
                     showToast("Salvato con successo!");
                 } catch (err) {
-                    if(err.name !== 'AbortError') showToast("Impossibile salvare");
+                    if (err.name !== 'AbortError') showToast("Impossibile salvare");
                 }
             } else {
                 downloadBackupManual(json, `backup_spese_${new Date().toISOString().split('T')[0]}.json`);
@@ -389,9 +423,9 @@
             const name = nameInput.value.trim();
             const budget = parseFloat(budgetInput.value) || 0;
             const initialBalance = parseFloat(prompt("Saldo iniziale del conto (€):", "0")) || 0;
-            
-            if(!name) return;
-            accounts.push({ id: 'acc_' + Date.now(),name,budget,initialBalance });
+
+            if (!name) return;
+            accounts.push({ id: 'acc_' + Date.now(), name, budget, initialBalance });
             localStorage.setItem(STORAGE_ACC, JSON.stringify(accounts));
             nameInput.value = '';
             budgetInput.value = '';
@@ -446,62 +480,62 @@
             updateUI();
         }
 
-function deleteAccount(id) {
+        function deleteAccount(id) {
 
-    if (accounts.length === 1) {
-        alert("Non puoi eliminare l'ultimo conto.\nCrea prima un nuovo conto.");
-        return;
-    }
-
-    const txCount = transactions.filter(t => t.accountId === id).length;
-
-    if (txCount > 0) {
-
-        const choice = confirm(
-            `Questo conto ha ${txCount} movimenti.\n\n` +
-            `OK = Elimina anche i movimenti\n` +
-            `ANNULLA = Sposta i movimenti su un altro conto`
-        );
-
-        if (choice) {
-            // 🔴 ELIMINA MOVIMENTI
-            transactions = transactions.filter(t => t.accountId !== id);
-        } else {
-            // 🔁 SPOSTA MOVIMENTI
-            const target = prompt(
-                "Inserisci l'ID del conto di destinazione:\n" +
-                accounts.filter(a => a.id !== id).map(a => `${a.id} → ${a.name}`).join('\n')
-            );
-
-            if (!target || !accounts.find(a => a.id === target)) {
-                alert("Operazione annullata");
+            if (accounts.length === 1) {
+                alert("Non puoi eliminare l'ultimo conto.\nCrea prima un nuovo conto.");
                 return;
             }
 
-            transactions.forEach(t => {
-                if (t.accountId === id) t.accountId = target;
-            });
+            const txCount = transactions.filter(t => t.accountId === id).length;
+
+            if (txCount > 0) {
+
+                const choice = confirm(
+                    `Questo conto ha ${txCount} movimenti.\n\n` +
+                    `OK = Elimina anche i movimenti\n` +
+                    `ANNULLA = Sposta i movimenti su un altro conto`
+                );
+
+                if (choice) {
+                    // 🔴 ELIMINA MOVIMENTI
+                    transactions = transactions.filter(t => t.accountId !== id);
+                } else {
+                    // 🔁 SPOSTA MOVIMENTI
+                    const target = prompt(
+                        "Inserisci l'ID del conto di destinazione:\n" +
+                        accounts.filter(a => a.id !== id).map(a => `${a.id} → ${a.name}`).join('\n')
+                    );
+
+                    if (!target || !accounts.find(a => a.id === target)) {
+                        alert("Operazione annullata");
+                        return;
+                    }
+
+                    transactions.forEach(t => {
+                        if (t.accountId === id) t.accountId = target;
+                    });
+                }
+            }
+
+            // 🧹 ELIMINA CONTO
+            accounts = accounts.filter(a => a.id !== id);
+
+            // 🔄 riallinea sempre il conto attivo
+            if (activeAccountId === id || !accounts.find(a => a.id === activeAccountId)) {
+                activeAccountId = accounts[0].id;
+
+                renderSettingsAccounts();
+                updateUI();
+            }
+
+            // 💾 SALVA
+            localStorage.setItem(STORAGE_ACC, JSON.stringify(accounts));
+            localStorage.setItem(STORAGE_TX, JSON.stringify(transactions));
+
+            renderSettingsAccounts();
+            updateUI();
         }
-    }
-
-    // 🧹 ELIMINA CONTO
-    accounts = accounts.filter(a => a.id !== id);
-
-    // 🔄 riallinea sempre il conto attivo
-    if (activeAccountId === id || !accounts.find(a => a.id === activeAccountId)) {
-    activeAccountId = accounts[0].id;
-
-    renderSettingsAccounts();
-    updateUI();
-}
-
-    // 💾 SALVA
-    localStorage.setItem(STORAGE_ACC, JSON.stringify(accounts));
-    localStorage.setItem(STORAGE_TX, JSON.stringify(transactions));
-
-    renderSettingsAccounts();
-    updateUI();
-}
 
         function navigateAccount(dir) {
             const idx = accounts.findIndex(a => a.id === activeAccountId);
@@ -527,33 +561,33 @@ function deleteAccount(id) {
         function renderSettingsAccounts() {
             const list = document.getElementById('account-list-settings');
             list.innerHTML = accounts.map(a => `
-                <div class="flex items-center justify-between p-3 bg-gray-50 rounded-xl mb-2 border border-gray-100">
-                    <div class="flex flex-col overflow-hidden mr-2">
-                        <span class="font-bold text-sm truncate ${a.id === activeAccountId ? 'text-indigo-600' : 'text-gray-800'}">${a.name}</span>
-                        <span class="text-[10px] text-gray-500 font-medium">Budget: € ${(a.budget || 0).toLocaleString('it-IT')}</span>
-                        <span class="text-[10px] text-green-500 font-medium"> Saldo iniziale: € ${(a.initialBalance || 0).toLocaleString('it-IT')}</span>
-                    </div>
-                    <div class="flex space-x-1 shrink-0">
-                        <button onclick="setInitialBalance('${a.id}')" class="p-2 bg-green-50 text-green-600 rounded-lg hover:bg-green-100 transition-colors" title="Saldo iniziale">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2 m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6 a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
-                            </svg>
-                        </button>
-                        <button onclick="setBudget('${a.id}')" class="p-2 bg-indigo-50 text-indigo-600 rounded-lg hover:bg-indigo-100 transition-colors" title="Imposta Budget">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
-                        </button>
-                        <button onclick="renameAccount('${a.id}')" class="p-2 bg-gray-100 text-gray-500 rounded-lg hover:bg-gray-200 transition-colors" title="Rinomina Conto">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
-                        </button>
-                        <button onclick="deleteAccount('${a.id}')" class="p-2 bg-red-50 text-red-500 rounded-lg hover:bg-red-100 transition-colors" title="Elimina Conto">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
-                        </button>
-                    </div>
-                </div>`).join('');
+                    <div class="flex items-center justify-between p-3 bg-gray-50 rounded-xl mb-2 border border-gray-100">
+                        <div class="flex flex-col overflow-hidden mr-2">
+                            <span class="font-bold text-sm truncate ${a.id === activeAccountId ? 'text-indigo-600' : 'text-gray-800'}">${a.name}</span>
+                            <span class="text-[10px] text-gray-500 font-medium">Budget: € ${(a.budget || 0).toLocaleString('it-IT')}</span>
+                            <span class="text-[10px] text-green-500 font-medium"> Saldo iniziale: € ${(a.initialBalance || 0).toLocaleString('it-IT')}</span>
+                        </div>
+                        <div class="flex space-x-1 shrink-0">
+                            <button onclick="setInitialBalance('${a.id}')" class="p-2 bg-green-50 text-green-600 rounded-lg hover:bg-green-100 transition-colors" title="Saldo iniziale">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2 m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6 a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
+                                </svg>
+                            </button>
+                            <button onclick="setBudget('${a.id}')" class="p-2 bg-indigo-50 text-indigo-600 rounded-lg hover:bg-indigo-100 transition-colors" title="Imposta Budget">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
+                            </button>
+                            <button onclick="renameAccount('${a.id}')" class="p-2 bg-gray-100 text-gray-500 rounded-lg hover:bg-gray-200 transition-colors" title="Rinomina Conto">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
+                            </button>
+                            <button onclick="deleteAccount('${a.id}')" class="p-2 bg-red-50 text-red-500 rounded-lg hover:bg-red-100 transition-colors" title="Elimina Conto">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                            </button>
+                        </div>
+                    </div>`).join('');
         }
-        
+
         function toggleSettings(show) {
             const view = document.getElementById('settings-view');
-            if(show) { renderSettingsAccounts(); view.classList.remove('hidden'); }
+            if (show) { renderSettingsAccounts(); view.classList.remove('hidden'); }
             else { view.classList.add('hidden'); }
         }
 
@@ -562,12 +596,12 @@ function deleteAccount(id) {
             const y = viewDate.getFullYear();
             let currentAcc = accounts.find(a => a.id === activeAccountId);
 
-if (!currentAcc && accounts.length) {
-    activeAccountId = accounts[0].id;
-    currentAcc = accounts[0];
-}
+            if (!currentAcc && accounts.length) {
+                activeAccountId = accounts[0].id;
+                currentAcc = accounts[0];
+            }
 
-            
+
             document.getElementById('current-month-display').textContent = viewDate.toLocaleDateString('it-IT', { month: 'long', year: 'numeric' });
             document.getElementById('account-name-display').textContent = currentAcc.name;
 
@@ -596,18 +630,18 @@ if (!currentAcc && accounts.length) {
             // GESTIONE BUDGET DISPLAY
             const budgetContainer = document.getElementById('budget-container');
             const budget = currentAcc.budget || 0;
-            
+
             if (budget > 0) {
                 budgetContainer.classList.remove('hidden');
                 document.getElementById('budget-total').textContent = '€ ' + budget.toLocaleString('it-IT');
                 document.getElementById('budget-spent').textContent = '€ ' + exp.toLocaleString('it-IT');
-                
+
                 let perc = (exp / budget) * 100;
                 let displayPerc = perc > 100 ? 100 : perc;
-                
+
                 const bar = document.getElementById('budget-bar');
                 bar.style.width = displayPerc + '%';
-                
+
                 if (exp > budget) {
                     bar.classList.remove('bg-white');
                     bar.classList.add('bg-red-400');
@@ -627,21 +661,21 @@ if (!currentAcc && accounts.length) {
             if (filtered.length === 0) {
                 listEl.innerHTML = `<div class="text-center py-10 text-gray-300 italic font-bold">Nessun movimento</div>`;
             } else {
-                listEl.innerHTML = filtered.sort((a,b) => b.id - a.id).map(t => {
+                listEl.innerHTML = filtered.sort((a, b) => b.id - a.id).map(t => {
                     const cat = [...categories.expense, ...categories.income].find(c => c.id === t.category);
                     return `
-                    <div onclick="editTransaction(${t.id})" class="transaction-card flex items-center justify-between p-4 bg-gray-50 rounded-2xl border-l-4 cursor-pointer transition-all" style="border-color: ${cat?.color}">
-                        <div class="flex items-center space-x-3 truncate mr-2">
-                            <span class="text-2xl">${cat?.icon}</span>
-                            <div class="truncate">
-                                <div class="font-bold text-gray-800 truncate text-sm">${t.description || cat?.label}</div>
-                                <div class="text-[9px] text-gray-400 font-bold">${new Date(t.date).toLocaleDateString()}</div>
+                        <div onclick="editTransaction(${t.id})" class="transaction-card flex items-center justify-between p-4 bg-gray-50 rounded-2xl border-l-4 cursor-pointer transition-all" style="border-color: ${cat?.color}">
+                            <div class="flex items-center space-x-3 truncate mr-2">
+                                <span class="text-2xl">${cat?.icon}</span>
+                                <div class="truncate">
+                                    <div class="font-bold text-gray-800 truncate text-sm">${t.description || cat?.label}</div>
+                                    <div class="text-[9px] text-gray-400 font-bold">${new Date(t.date).toLocaleDateString()}</div>
+                                </div>
                             </div>
-                        </div>
-                        <span class="font-black whitespace-nowrap text-sm ${t.type === 'income' ? 'text-green-600' : 'text-red-600'}">
-                            ${t.type === 'income' ? '+' : '-'} €${t.amount.toFixed(2)}
-                        </span>
-                    </div>`;
+                            <span class="font-black whitespace-nowrap text-sm ${t.type === 'income' ? 'text-green-600' : 'text-red-600'}">
+                                ${t.type === 'income' ? '+' : '-'} €${t.amount.toFixed(2)}
+                            </span>
+                        </div>`;
                 }).join('');
             }
             renderChart(filtered.filter(t => t.type === 'expense'));
@@ -682,7 +716,7 @@ if (!currentAcc && accounts.length) {
         }
 
         function triggerCamera() {
-            if(!apiKey) { promptApiKey(); return; }
+            if (!apiKey) { promptApiKey(); return; }
             document.getElementById('camera-input').click();
         }
 
@@ -691,14 +725,14 @@ if (!currentAcc && accounts.length) {
             currentMode = mode;
             editingTxId = tx ? tx.id : null;
             selectedCategory = tx ? tx.category : categories[mode][0].id;
-            
+
             document.getElementById('modal').classList.remove('hidden');
             document.getElementById('modal-title').textContent = editingTxId ? 'Modifica' : (mode === 'income' ? 'Entrata' : 'Uscita');
             document.getElementById('delete-btn').classList.toggle('hidden', !editingTxId);
 
             // Dinamicamente aggiorna il colore del tasto Salva
             const saveBtn = document.getElementById('save-btn');
-            if(mode === 'income') {
+            if (mode === 'income') {
                 saveBtn.classList.remove('bg-red-500');
                 saveBtn.classList.add('bg-green-500');
             } else {
@@ -711,21 +745,21 @@ if (!currentAcc && accounts.length) {
 
             const grid = document.getElementById('category-grid');
             grid.innerHTML = categories[mode].map(c => `
-                <button onclick="selectCategory('${c.id}')" id="cat-${c.id}" class="cat-btn p-2 rounded-xl border-2 flex flex-col items-center transition-all ${c.id === selectedCategory ? 'border-indigo-500 bg-indigo-50' : 'border-transparent bg-gray-50'}">
-                    <span class="text-xl">${c.icon}</span>
-                    <span class="text-[9px] font-bold text-gray-500 mt-1 uppercase">${c.label}</span>
-                </button>`).join('');
+                    <button onclick="selectCategory('${c.id}')" id="cat-${c.id}" class="cat-btn p-2 rounded-xl border-2 flex flex-col items-center transition-all ${c.id === selectedCategory ? 'border-indigo-500 bg-indigo-50' : 'border-transparent bg-gray-50'}">
+                        <span class="text-xl">${c.icon}</span>
+                        <span class="text-[9px] font-bold text-gray-500 mt-1 uppercase">${c.label}</span>
+                    </button>`).join('');
 
             document.getElementById('amount-input').value = tx ? tx.amount : '';
             document.getElementById('desc-input').value = tx ? tx.description : '';
             setTimeout(() => document.getElementById('modal-content').classList.remove('translate-y-full'), 10);
-const dateInput = document.getElementById('date-input');
+            const dateInput = document.getElementById('date-input');
 
-if (tx && tx.date) {
-    dateInput.value = tx.date.split('T')[0];
-} else {
-    dateInput.value = new Date().toISOString().split('T')[0];
-}
+            if (tx && tx.date) {
+                dateInput.value = tx.date.split('T')[0];
+            } else {
+                dateInput.value = new Date().toISOString().split('T')[0];
+            }
         }
 
         function editTransaction(id) { const tx = transactions.find(t => t.id === id); if (tx) openModal(tx.type, tx); }
@@ -742,32 +776,32 @@ if (tx && tx.date) {
             const desc = document.getElementById('desc-input').value.trim();
             const targetAccId = document.getElementById('modal-account-select').value;
 
-const selectedDate = document.getElementById('date-input').value;
+            const selectedDate = document.getElementById('date-input').value;
 
-const isoDate = selectedDate
-    ? new Date(selectedDate + 'T12:00:00').toISOString()
-    : new Date().toISOString();
-            
+            const isoDate = selectedDate
+                ? new Date(selectedDate + 'T12:00:00').toISOString()
+                : new Date().toISOString();
+
             if (editingTxId) {
                 const idx = transactions.findIndex(t => t.id === editingTxId);
                 transactions[idx] = {
-    ...transactions[idx],
-    amount: amt,
-    description: desc,
-    category: selectedCategory,
-    accountId: targetAccId,
-    date: isoDate
-};
+                    ...transactions[idx],
+                    amount: amt,
+                    description: desc,
+                    category: selectedCategory,
+                    accountId: targetAccId,
+                    date: isoDate
+                };
             } else {
                 transactions.push({ id: Date.now(), amount: amt, description: desc, category: selectedCategory, type: currentMode, accountId: targetAccId, date: isoDate });
             }
             localStorage.setItem(STORAGE_TX, JSON.stringify(transactions));
             activeAccountId = targetAccId;
-            updateUI(); 
+            updateUI();
             closeModal();
         }
 
-        function deleteTx(id) { if(confirm("Eliminare?")) { transactions = transactions.filter(t => t.id !== id); localStorage.setItem(STORAGE_TX, JSON.stringify(transactions)); updateUI(); closeModal(); } }
+        function deleteTx(id) { if (confirm("Eliminare?")) { transactions = transactions.filter(t => t.id !== id); localStorage.setItem(STORAGE_TX, JSON.stringify(transactions)); updateUI(); closeModal(); } }
         function changeMonth(d) { viewDate.setMonth(viewDate.getMonth() + d); updateUI(); }
         function closeModal() { document.getElementById('modal-content').classList.add('translate-y-full'); setTimeout(() => document.getElementById('modal').classList.add('hidden'), 300); }
 
@@ -797,8 +831,8 @@ const isoDate = selectedDate
                         borderWidth: 0
                     }]
                 },
-                options: { 
-                    plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 10 }, padding: 10 } } }, 
+                options: {
+                    plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 10 }, padding: 10 } } },
                     cutout: '70%', maintainAspectRatio: false
                 }
             });
@@ -809,14 +843,15 @@ const isoDate = selectedDate
             const rows = transactions.map(t => {
                 const acc = accounts.find(a => a.id === t.accountId);
                 return [
-                new Date(t.date).toLocaleDateString(),
-                t.description,
-                t.amount.toFixed(2),
-                t.category,
-                t.type,
-                acc?.name || "N/A",
-                acc?.budget || 0
-            ].join(';')});
+                    new Date(t.date).toLocaleDateString(),
+                    t.description,
+                    t.amount.toFixed(2),
+                    t.category,
+                    t.type,
+                    acc?.name || "N/A",
+                    acc?.budget || 0
+                ].join(';')
+            });
             const blob = new Blob(["\ufeff" + [headers.join(';'), ...rows].join('\n')], { type: 'text/csv' });
             downloadBackupManual(blob, `spese_export.csv`);
         }
@@ -840,10 +875,10 @@ const isoDate = selectedDate
             r.readAsText(file);
         }
 
-        function clearHistory() { if(confirm("Cancellare TUTTO?")) { localStorage.clear(); location.reload(); } }
+        function clearHistory() { if (confirm("Cancellare TUTTO?")) { localStorage.clear(); location.reload(); } }
 
         window.onload = updateUI;
-        document.getElementById('modal').onclick = (e) => { if (e.target === document.getElementById('modal')) closeModal(); 
+        document.getElementById('modal').onclick = (e) => { if (e.target === document.getElementById('modal')) closeModal(); };
 
         document.addEventListener('touchstart', e => {
             touchStartX = e.changedTouches[0].screenX;
