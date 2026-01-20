@@ -350,6 +350,40 @@
         let editingTxId = null;
         let chartInstance = null;
 
+        let numberCallback = null;
+
+        function openNumberModal(title, value, callback) {
+            document.getElementById('numberTitle').innerText = title;
+
+            const input = document.getElementById('numberInput');
+            input.value = value ?? '';
+
+            numberCallback = callback;
+            document.getElementById('numberModal').classList.remove('hidden');
+
+            setTimeout(() => input.focus(), 50);
+        }
+
+        function closeNumberModal() {
+            document.getElementById('numberModal').classList.add('hidden');
+            numberCallback = null;
+        }
+
+        function confirmNumberModal() {
+            if (!numberCallback) return;
+
+            const raw = document.getElementById('numberInput').value.replace(',', '.');
+            const val = parseFloat(raw);
+
+            if (isNaN(val)) {
+                alert("Inserisci un numero valido");
+                return;
+            }
+
+            numberCallback(val);
+            closeNumberModal();
+        }
+
         // UI TOAST
         function showToast(msg) {
             const t = document.getElementById('toast');
@@ -446,7 +480,12 @@
         function setBudget(id) {
             const acc = accounts.find(a => a.id === id);
             if (!acc) return;
-            const newBudget = prompt("Imposta budget mensile (€):", acc.budget || 0);
+            openNumberModal("Budget mensile (€)", acc.budget || 0, val => {
+                acc.budget = val;
+                localStorage.setItem(STORAGE_ACC, JSON.stringify(accounts));
+                renderSettingsAccounts();
+                updateUI();
+            });
             if (newBudget !== null) {
                 const parsed = parseFloat(newBudget);
                 if (!isNaN(parsed) && parsed >= 0) {
@@ -464,7 +503,13 @@
             const acc = accounts.find(a => a.id === id);
             if (!acc) return;
 
-            const val = prompt("Saldo iniziale del conto (€):", acc.initialBalance || 0);
+            openNumberModal("Saldo iniziale del conto (€)", acc.initialBalance || 0, val => {
+                acc.initialBalance = val;
+                localStorage.setItem(STORAGE_ACC, JSON.stringify(accounts));
+                renderSettingsAccounts();
+                updateUI();
+            });
+
             if (val === null) return;
 
             const parsed = parseFloat(val);
@@ -559,28 +604,28 @@
         function renderSettingsAccounts() {
             const list = document.getElementById('account-list-settings');
             list.innerHTML = accounts.map(a => `
-                    <div class="flex items-center justify-between p-3 bg-gray-50 rounded-xl mb-2 border border-gray-100">
-                        <div class="flex flex-col overflow-hidden mr-2">
-                            <span class="font-bold text-sm truncate ${a.id === activeAccountId ? 'text-indigo-600' : 'text-gray-800'}">${a.name}</span>
-                            <span class="text-[10px] text-gray-500 font-medium">Budget: € ${(a.budget || 0).toLocaleString('it-IT')}</span>
-                            <span class="text-[10px] text-green-500 font-medium"> Saldo iniziale: € ${(a.initialBalance || 0).toLocaleString('it-IT')}</span>
-                        </div>
-                        <div class="flex space-x-1 shrink-0">
-                            <button onclick="setInitialBalance('${a.id}')" class="p-2 bg-green-50 text-green-600 rounded-lg hover:bg-green-100 transition-colors" title="Saldo iniziale">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2 m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6 a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
-                                </svg>
-                            </button>
-                            <button onclick="setBudget('${a.id}')" class="p-2 bg-indigo-50 text-indigo-600 rounded-lg hover:bg-indigo-100 transition-colors" title="Imposta Budget">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
-                            </button>
-                            <button onclick="renameAccount('${a.id}')" class="p-2 bg-gray-100 text-gray-500 rounded-lg hover:bg-gray-200 transition-colors" title="Rinomina Conto">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
-                            </button>
-                            <button onclick="deleteAccount('${a.id}')" class="p-2 bg-red-50 text-red-500 rounded-lg hover:bg-red-100 transition-colors" title="Elimina Conto">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
-                            </button>
-                        </div>
-                    </div>`).join('');
+                        <div class="flex items-center justify-between p-3 bg-gray-50 rounded-xl mb-2 border border-gray-100">
+                            <div class="flex flex-col overflow-hidden mr-2">
+                                <span class="font-bold text-sm truncate ${a.id === activeAccountId ? 'text-indigo-600' : 'text-gray-800'}">${a.name}</span>
+                                <span class="text-[10px] text-gray-500 font-medium">Budget: € ${(a.budget || 0).toLocaleString('it-IT')}</span>
+                                <span class="text-[10px] text-green-500 font-medium"> Saldo iniziale: € ${(a.initialBalance || 0).toLocaleString('it-IT')}</span>
+                            </div>
+                            <div class="flex space-x-1 shrink-0">
+                                <button onclick="setInitialBalance('${a.id}')" class="p-2 bg-green-50 text-green-600 rounded-lg hover:bg-green-100 transition-colors" title="Saldo iniziale">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2 m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6 a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
+                                    </svg>
+                                </button>
+                                <button onclick="setBudget('${a.id}')" class="p-2 bg-indigo-50 text-indigo-600 rounded-lg hover:bg-indigo-100 transition-colors" title="Imposta Budget">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
+                                </button>
+                                <button onclick="renameAccount('${a.id}')" class="p-2 bg-gray-100 text-gray-500 rounded-lg hover:bg-gray-200 transition-colors" title="Rinomina Conto">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
+                                </button>
+                                <button onclick="deleteAccount('${a.id}')" class="p-2 bg-red-50 text-red-500 rounded-lg hover:bg-red-100 transition-colors" title="Elimina Conto">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                                </button>
+                            </div>
+                        </div>`).join('');
         }
 
         function toggleSettings(show) {
@@ -662,18 +707,18 @@
                 listEl.innerHTML = filtered.sort((a, b) => b.id - a.id).map(t => {
                     const cat = [...categories.expense, ...categories.income].find(c => c.id === t.category);
                     return `
-                        <div onclick="editTransaction(${t.id})" class="transaction-card flex items-center justify-between p-4 bg-gray-50 rounded-2xl border-l-4 cursor-pointer transition-all" style="border-color: ${cat?.color}">
-                            <div class="flex items-center space-x-3 truncate mr-2">
-                                <span class="text-2xl">${cat?.icon}</span>
-                                <div class="truncate">
-                                    <div class="font-bold text-gray-800 truncate text-sm">${t.description || cat?.label}</div>
-                                    <div class="text-[9px] text-gray-400 font-bold">${new Date(t.date).toLocaleDateString()}</div>
+                            <div onclick="editTransaction(${t.id})" class="transaction-card flex items-center justify-between p-4 bg-gray-50 rounded-2xl border-l-4 cursor-pointer transition-all" style="border-color: ${cat?.color}">
+                                <div class="flex items-center space-x-3 truncate mr-2">
+                                    <span class="text-2xl">${cat?.icon}</span>
+                                    <div class="truncate">
+                                        <div class="font-bold text-gray-800 truncate text-sm">${t.description || cat?.label}</div>
+                                        <div class="text-[9px] text-gray-400 font-bold">${new Date(t.date).toLocaleDateString()}</div>
+                                    </div>
                                 </div>
-                            </div>
-                            <span class="font-black whitespace-nowrap text-sm ${t.type === 'income' ? 'text-green-600' : 'text-red-600'}">
-                                ${t.type === 'income' ? '+' : '-'} €${t.amount.toFixed(2)}
-                            </span>
-                        </div>`;
+                                <span class="font-black whitespace-nowrap text-sm ${t.type === 'income' ? 'text-green-600' : 'text-red-600'}">
+                                    ${t.type === 'income' ? '+' : '-'} €${t.amount.toFixed(2)}
+                                </span>
+                            </div>`;
                 }).join('');
             }
             renderChart(filtered.filter(t => t.type === 'expense'));
@@ -743,10 +788,10 @@
 
             const grid = document.getElementById('category-grid');
             grid.innerHTML = categories[mode].map(c => `
-                    <button onclick="selectCategory('${c.id}')" id="cat-${c.id}" class="cat-btn p-2 rounded-xl border-2 flex flex-col items-center transition-all ${c.id === selectedCategory ? 'border-indigo-500 bg-indigo-50' : 'border-transparent bg-gray-50'}">
-                        <span class="text-xl">${c.icon}</span>
-                        <span class="text-[9px] font-bold text-gray-500 mt-1 uppercase">${c.label}</span>
-                    </button>`).join('');
+                        <button onclick="selectCategory('${c.id}')" id="cat-${c.id}" class="cat-btn p-2 rounded-xl border-2 flex flex-col items-center transition-all ${c.id === selectedCategory ? 'border-indigo-500 bg-indigo-50' : 'border-transparent bg-gray-50'}">
+                            <span class="text-xl">${c.icon}</span>
+                            <span class="text-[9px] font-bold text-gray-500 mt-1 uppercase">${c.label}</span>
+                        </button>`).join('');
 
             document.getElementById('amount-input').value = tx ? tx.amount : '';
             document.getElementById('desc-input').value = tx ? tx.description : '';
@@ -927,5 +972,28 @@
         });
 
     </script>
+        <div id="numberModal"
+             class="fixed inset-0 bg-black/40 hidden items-center justify-center z-50">
+            <div class="bg-white rounded-2xl p-5 w-72 shadow-xl">
+                <h3 id="numberTitle" class="font-bold mb-3 text-center"></h3>
+
+                <input id="numberInput"
+                       type="number"
+                       inputmode="decimal"
+                       class="w-full text-center text-xl border rounded-lg py-2 mb-4"
+                       placeholder="0">
+
+                <div class="flex justify-between gap-3">
+                    <button onclick="closeNumberModal()"
+                            class="flex-1 py-2 rounded-lg bg-gray-200">
+                        Annulla
+                    </button>
+                    <button onclick="confirmNumberModal()"
+                            class="flex-1 py-2 rounded-lg bg-indigo-600 text-white">
+                        OK
+                    </button>
+                </div>
+            </div>
+        </div>
 </body>
 </html>
