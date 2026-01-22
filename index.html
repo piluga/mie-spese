@@ -3,1005 +3,793 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-
-    <title>FinanzaPro Budget</title>
-
-    <!-- PWA Meta -->
+    <title>MedicinePro</title>
+    
+    <!-- Meta Tags per PWA -->
+    <meta name="theme-color" content="#2563eb">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="SpesePro">
-    <link rel="apple-touch-icon" href="https://i.ibb.co/vx96Xb8Q/budget.png">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="MedicinePro">
 
-    <!-- Manifest Base64 -->
-    <link rel="manifest" href="data:application/json;base64,ewogICJkZWZhdWx0X2xvY2FsZSI6ICJpdCIsCiAgIm5hbWUiOiAiR2VzdGlvbmUgU3Blc2UgUHJvIiwKICAic2hvcnRfbmFtZSI6ICJTcGVzZVBybyIsCiAgInN0YXJ0X3VybCI6ICIuIiwKICAiaWNvbnMiOiBbCiAgICB7CiAgICAgICJzcmMiOiAiaHR0cHM6Ly9pLmliYi5jby92eDk2WGI4US9idWRnZXQucG5nIiwKICAgICAgInNpemVzIjogIjUxMng1MTIiLAogICAgICAidHlwZSI6ICJpbWFnZS9wbmciCiAgICB9CiAgXSwKICAiZGlzcGxheSI6ICJzdGFuZGFsb25lIiwKICAiYmFja2dyb3VuZF9jb2xvciI6ICIjZjNmNGY2IiwKICAidGhlbWVfY29sb3IiOiAiIzI1NjNmMSIKfQ==">
-
-    <meta name="theme-color" content="#4f46e5">
-
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+    <!-- Manifest Inline -->
+    <link rel="manifest" id="my-manifest">
+
     <style>
         body {
+            font-family: 'Inter', sans-serif;
             background-color: #f3f4f6;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            touch-action: manipulation;
             -webkit-tap-highlight-color: transparent;
+            overscroll-behavior-y: none;
         }
 
-        .loader {
-            border: 2px solid #f3f3f3;
-            border-top: 2px solid #4f46e5;
+        .fade-in {
+            animation: fadeIn 0.3s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .med-checkbox {
+            appearance: none;
+            width: 2.5rem;
+            height: 2.5rem;
+            border: 3px solid #cbd5e1;
             border-radius: 50%;
-            width: 16px;
-            height: 16px;
-            animation: spin 1s linear infinite;
-            display: inline-block;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            background-color: white;
+            flex-shrink: 0;
+        }
+        
+        .med-checkbox:checked {
+            background-color: #22c55e;
+            border-color: #22c55e;
         }
 
-        @keyframes spin {
-            0% {
-                transform: rotate(0deg);
-            }
-
-            100% {
-                transform: rotate(360deg);
-            }
-        }
-
-        .modal-transition {
-            transition: transform 0.3s ease-out;
-        }
-
-        input::-webkit-outer-spin-button, input::-webkit-inner-spin-button {
-            -webkit-appearance: none;
-            margin: 0;
-        }
-
-        .transaction-card:active {
-            transform: scale(0.98);
-            background-color: #f9fafb;
-        }
-
-        .settings-card {
-            background: white;
-            border-radius: 1rem;
-            padding: 1rem;
-            margin-bottom: 1rem;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-        }
-
-        header {
-            padding-top: env(safe-area-inset-top, 2.5rem);
-        }
-
-        .pb-safe {
-            padding-bottom: env(safe-area-inset-bottom, 1rem);
-        }
-
-        .toast {
-            position: fixed;
-            bottom: 2rem;
-            left: 50%;
-            transform: translateX(-50%);
-            background: #333;
+        .med-checkbox:checked::after {
+            content: '\f00c';
+            font-family: 'Font Awesome 6 Free';
+            font-weight: 900;
             color: white;
-            padding: 0.75rem 1.5rem;
-            border-radius: 99px;
-            font-size: 0.875rem;
+            font-size: 1.2rem;
+        }
+
+        .card-shadow {
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+        }
+
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        
+        .modal-overlay {
+            background-color: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(2px);
+        }
+
+        .time-btn.selected {
+            background-color: #2563eb;
+            color: white;
+            border-color: #2563eb;
+        }
+        
+        /* Stili specifici per le categorie temporali */
+        .med-card-mattina { background-color: #fff7ed; border-color: #ffedd5; }
+        .med-card-pomeriggio { background-color: #fefce8; border-color: #fef9c3; }
+        .med-card-sera { background-color: #f5f3ff; border-color: #ede9fe; }
+        
+        .med-card-taken { background-color: #f0fdf4 !important; border-color: #dcfce7 !important; }
+
+        .xs\:inline { display: none; }
+        @media (min-width: 400px) { .xs\:inline { display: inline; } }
+
+        /* Camera Scanner UI */
+        #camera-container {
+            position: fixed;
+            inset: 0;
+            background: black;
             z-index: 100;
-            opacity: 0;
-            transition: opacity 0.3s;
+            display: none;
+            flex-direction: column;
+        }
+        #camera-feed {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .scanner-overlay {
+            position: absolute;
+            inset: 0;
+            border: 2px solid rgba(255,255,255,0.3);
             pointer-events: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .scanner-frame {
+            width: 80%;
+            height: 40%;
+            border: 2px solid #3b82f6;
+            border-radius: 1rem;
+            box-shadow: 0 0 0 4000px rgba(0,0,0,0.5);
+            position: relative;
+        }
+        .scanner-line {
+            position: absolute;
+            width: 100%;
+            height: 2px;
+            background: #3b82f6;
+            top: 0;
+            animation: scan 2s linear infinite;
+        }
+        @keyframes scan {
+            from { top: 0%; }
+            to { top: 100%; }
+        }
+        
+        /* Loading overlay */
+        #loading-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.7);
+            z-index: 200;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: white;
         }
     </style>
 </head>
-<body class="antialiased text-gray-900">
+<body class="text-slate-800 h-screen flex flex-col overflow-hidden">
 
-    <div id="toast" class="toast">Messaggio</div>
-
-    <div id="app" class="max-w-md mx-auto min-h-screen flex flex-col bg-white shadow-lg relative">
-
-        <!-- View Principale -->
-        <div id="main-view">
-            <header class="bg-indigo-600 text-white p-6 rounded-b-[2.5rem] shadow-xl">
-                <div class="flex justify-between items-center mb-4">
-                    <button onclick="changeMonth(-1)" class="p-2 hover:bg-indigo-500 rounded-full transition-colors active:bg-indigo-400">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" /></svg>
-                    </button>
-                    <h2 id="current-month-display" class="text-lg font-semibold uppercase tracking-wider">Mese</h2>
-                    <button onclick="changeMonth(1)" class="p-2 hover:bg-indigo-500 rounded-full transition-colors active:bg-indigo-400">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>
-                    </button>
-                </div>
-
-                <div class="text-center">
-                    <div class="flex items-center justify-center space-x-4 mb-1">
-                        <button onclick="navigateAccount(-1)" class="p-1 opacity-50 hover:opacity-100"><svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd" /></svg></button>
-                        <h1 id="account-name-display" class="text-xs uppercase font-medium tracking-widest text-indigo-100">Conto Corrente</h1>
-                        <button onclick="navigateAccount(1)" class="p-1 opacity-50 hover:opacity-100"><svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" /></svg></button>
-                    </div>
-                    <div id="balance" class="text-4xl font-bold">€ 0.00</div>
-                    <div id="initial-balance-display"
-                         class="text-[11px] mt-1 font-medium text-indigo-100 hidden">
-                    </div>
-                </div>
-
-                <!-- SEZIONE BUDGET NUOVA -->
-                <div id="budget-container" class="mt-4 px-4 hidden">
-                    <div class="flex justify-between text-[10px] text-indigo-200 mb-1 font-medium">
-                        <span class="flex items-center"><span class="w-1.5 h-1.5 bg-white rounded-full mr-1 opacity-50"></span>Speso: <span id="budget-spent" class="ml-1 text-white">€0</span></span>
-                        <span class="opacity-80">Budget: <span id="budget-total">€0</span></span>
-                    </div>
-                    <div class="w-full bg-indigo-900/30 rounded-full h-1.5 overflow-hidden backdrop-blur-sm border border-indigo-500/20">
-                        <div id="budget-bar" class="bg-white h-full rounded-full transition-all duration-700 ease-out shadow-[0_0_10px_rgba(255,255,255,0.3)]" style="width: 0%"></div>
-                    </div>
-                </div>
-
-                <div class="text-center mt-5">
-                    <button onclick="toggleSettings(true)" class="text-[10px] bg-indigo-500/50 px-3 py-1 rounded-full hover:bg-indigo-400 transition-colors inline-flex items-center space-x-1 backdrop-blur-sm border border-indigo-400/20">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
-                        <span>Impostazioni</span>
-                    </button>
-                </div>
-            </header>
-
-            <main class="flex-grow p-4">
-                <div class="grid grid-cols-2 gap-4 -mt-6 mb-8">
-                    <button onclick="openModal('income')" class="bg-green-500 text-white p-4 rounded-2xl shadow-lg flex items-center justify-center space-x-2 active:scale-95 transition-transform">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" /></svg>
-                        <span class="font-bold">Entrata</span>
-                    </button>
-                    <button onclick="openModal('expense')" class="bg-red-500 text-white p-4 rounded-2xl shadow-lg flex items-center justify-center space-x-2 active:scale-95 transition-transform">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4" /></svg>
-                        <span class="font-bold">Uscita</span>
-                    </button>
-                </div>
-
-                <div id="chart-container" class="mb-8 bg-gray-50 p-4 rounded-2xl hidden">
-                    <canvas id="expenseChart" width="200" height="200"></canvas>
-                </div>
-
-                <div class="flex justify-between items-center mb-4">
-                    <h2 class="text-xl font-bold text-gray-800 italic">Movimenti</h2>
-                </div>
-
-                <div id="transaction-list" class="space-y-3 pb-24"></div>
-            </main>
+    <!-- HEADER -->
+    <header class="bg-blue-600 text-white p-4 shadow-md z-20 flex justify-between items-center shrink-0 h-16">
+        <div class="flex items-center gap-3">
+            <button id="btn-back" class="hidden text-xl p-1 active:scale-95 transition-transform" aria-label="Indietro">
+                <i class="fa-solid fa-arrow-left"></i>
+            </button>
+            <h1 class="text-xl font-bold tracking-wide flex items-center gap-2">
+                <i class="fa-solid fa-pills"></i> MedicinePro
+            </h1>
         </div>
+        
+        <div class="flex gap-2">
+            <button onclick="app.triggerImport()" class="text-sm bg-blue-500 hover:bg-blue-700 px-3 py-1.5 rounded-lg transition-colors border border-blue-400 shadow-sm">
+                <i class="fa-solid fa-file-import"></i> <span class="hidden sm:inline ml-1">Carica</span>
+            </button>
+            <button onclick="app.exportData()" class="text-sm bg-blue-700 hover:bg-blue-800 px-3 py-1.5 rounded-lg transition-colors border border-blue-500 shadow-sm">
+                <i class="fa-solid fa-download"></i> <span class="hidden sm:inline ml-1">Salva</span>
+            </button>
+        </div>
+    </header>
 
-        <!-- View Impostazioni -->
-        <div id="settings-view" class="hidden absolute inset-0 bg-gray-50 z-40 overflow-y-auto pb-10">
-            <header class="bg-white p-6 border-b sticky top-0 flex items-center justify-between z-10">
-                <button onclick="toggleSettings(false)" class="p-2 text-indigo-600">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7 7-7" /></svg>
+    <input type="file" id="import-file" accept=".json" class="hidden" onchange="app.handleImport(this)">
+
+    <!-- MAIN -->
+    <main id="app-container" class="flex-1 overflow-y-auto no-scrollbar relative p-4 max-w-lg mx-auto w-full">
+        
+        <!-- VISTA LISTA PROFILI -->
+        <section id="view-profiles" class="fade-in space-y-4">
+            <div class="bg-white p-6 rounded-2xl card-shadow text-center mb-6">
+                <h2 class="text-2xl font-bold text-slate-800 mb-2">I tuoi Profili</h2>
+                <p class="text-slate-500 text-sm">Monitora le assunzioni quotidiane.</p>
+            </div>
+            <div id="profiles-list" class="space-y-3"></div>
+            <button onclick="app.showModal('modal-add-profile')" class="w-full mt-6 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-4 rounded-xl shadow-lg active:scale-95 transition-all flex items-center justify-center gap-2">
+                <i class="fa-solid fa-user-plus"></i> Aggiungi Profilo
+            </button>
+        </section>
+
+        <!-- VISTA DETTAGLIO PROFILO -->
+        <section id="view-medications" class="hidden fade-in pb-24">
+            <div class="flex justify-between items-start mb-4">
+                <div class="flex-1">
+                    <div class="flex items-center gap-2">
+                        <h2 id="current-profile-name" class="text-2xl font-bold text-slate-800 truncate max-w-[180px]">Profilo</h2>
+                        <button onclick="app.openEditProfileModal()" class="text-slate-400 hover:text-blue-600 p-1.5 transition-colors">
+                            <i class="fa-solid fa-pencil text-sm"></i>
+                        </button>
+                    </div>
+                    <div class="flex items-center gap-3 mt-1">
+                        <p id="current-date-display" class="text-[10px] text-slate-500 uppercase font-bold tracking-wider"></p>
+                        <button id="btn-uncheck-all" onclick="app.uncheckAllMeds()" class="hidden text-[10px] text-red-500 uppercase font-bold tracking-wider hover:underline">
+                            Deseleziona tutto
+                        </button>
+                    </div>
+                </div>
+                <div class="flex flex-col gap-2 items-end">
+                    <button onclick="app.exportProfileTxt()" class="text-blue-600 text-xs px-3 py-1.5 border border-blue-200 rounded-lg hover:bg-blue-50 flex items-center gap-1 transition-all">
+                        <i class="fa-solid fa-file-lines"></i> <span class="xs:inline">Esporta TXT</span>
+                    </button>
+                    <button onclick="app.deleteCurrentProfile()" class="text-red-500 text-xs px-3 py-1.5 border border-red-200 rounded-lg hover:bg-red-50 flex items-center gap-1 transition-all">
+                        <i class="fa-solid fa-trash"></i> <span class="xs:inline">Elimina Profilo</span>
+                    </button>
+                </div>
+            </div>
+
+            <div id="med-list-mattina" class="mb-6"></div>
+            <div id="med-list-pomeriggio" class="mb-6"></div>
+            <div id="med-list-sera" class="mb-6"></div>
+
+            <div id="med-empty-state" class="hidden flex flex-col items-center justify-center py-12 text-slate-400">
+                <i class="fa-solid fa-prescription-bottle-medical text-5xl mb-4 text-slate-200"></i>
+                <p>Nessun farmaco aggiunto.</p>
+            </div>
+
+            <button onclick="app.showModal('modal-med')" class="fixed bottom-6 right-6 w-14 h-14 bg-blue-600 text-white rounded-full shadow-xl flex items-center justify-center text-2xl active:scale-90 transition-transform z-30">
+                <i class="fa-solid fa-plus"></i>
+            </button>
+        </section>
+    </main>
+
+    <!-- MODALI -->
+    
+    <!-- MODALE AGGIUNGI PROFILO -->
+    <div id="modal-add-profile" class="hidden fixed inset-0 modal-overlay z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6">
+            <h3 class="text-xl font-bold mb-4">Nuovo Profilo</h3>
+            <input type="text" id="input-profile-name" class="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" placeholder="Es. Mario Rossi">
+            <div class="flex justify-end gap-3 mt-6">
+                <button onclick="app.closeModal('modal-add-profile')" class="px-4 py-2 text-slate-500">Annulla</button>
+                <button onclick="app.createProfile()" class="px-6 py-2 bg-blue-600 text-white rounded-lg font-medium">Crea</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODALE MODIFICA NOME PROFILO -->
+    <div id="modal-edit-profile" class="hidden fixed inset-0 modal-overlay z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6">
+            <h3 class="text-xl font-bold mb-4">Rinomina Profilo</h3>
+            <input type="text" id="input-edit-profile-name" class="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
+            <div class="flex justify-end gap-3 mt-6">
+                <button onclick="app.closeModal('modal-edit-profile')" class="px-4 py-2 text-slate-500">Annulla</button>
+                <button onclick="app.saveProfileName()" class="px-6 py-2 bg-blue-600 text-white rounded-lg font-medium">Salva</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODALE FARMACO (Aggiunta/Modifica) -->
+    <div id="modal-med" class="hidden fixed inset-0 modal-overlay z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6">
+            <div class="flex justify-between items-center mb-4">
+                <h3 id="med-modal-title" class="text-xl font-bold text-slate-800">Farmaco</h3>
+                <button onclick="app.startScanner()" id="btn-scan" class="bg-blue-50 text-blue-600 p-2 rounded-lg hover:bg-blue-100 transition-colors flex items-center gap-2 text-xs font-bold">
+                    <i class="fa-solid fa-camera"></i> SCANNER
                 </button>
-                <h2 class="text-lg font-bold">Impostazioni</h2>
-                <div class="w-10"></div>
-            </header>
-
-            <div class="p-6 space-y-6">
-                <!-- Sezione Conti -->
-                <div class="settings-card">
-                    <h3 class="text-xs font-bold text-gray-400 uppercase mb-3">I Tuoi Conti & Budget</h3>
-                    <div id="account-list-settings" class="space-y-2 mb-4"></div>
-
-                    <div class="bg-gray-50 p-3 rounded-xl border border-dashed border-gray-300">
-                        <div class="text-[10px] font-bold text-gray-400 uppercase mb-2">Aggiungi nuovo conto</div>
-                        <div class="flex flex-col gap-2">
-                            <div class="flex gap-2">
-                                <input type="text" id="new-account-name" placeholder="Nome (es. Hype)"
-                                       class="flex-1 min-w-0 p-2 bg-white rounded-lg text-sm border outline-none shadow-sm">
-
-                                <input type="number" id="new-account-budget" placeholder="Budget €"
-                                       class="w-20 p-2 bg-white rounded-lg text-sm border outline-none shadow-sm text-center">
-                            </div>
-                            <button onclick="addAccount()"
-                                    class="w-full py-2 bg-indigo-600 text-white rounded-lg text-sm font-bold active:bg-indigo-700 transition-colors">
-                                Aggiungi Conto
-                            </button>
-                        </div>
+            </div>
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Nome</label>
+                    <input type="text" id="input-med-name" class="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" placeholder="Es. Paracetamolo">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Dose</label>
+                    <input type="text" id="input-med-dose" class="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" placeholder="Es. 1 compressa">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-400 uppercase mb-2">Orari Assunzione</label>
+                    <div class="grid grid-cols-3 gap-2">
+                        <button onclick="app.toggleTimeSelection('Mattina', this)" class="time-btn p-2 border rounded-lg text-sm transition-all" data-val="Mattina">Mattina</button>
+                        <button onclick="app.toggleTimeSelection('Pomeriggio', this)" class="time-btn p-2 border rounded-lg text-sm transition-all" data-val="Pomeriggio">Pom.</button>
+                        <button onclick="app.toggleTimeSelection('Sera', this)" class="time-btn p-2 border rounded-lg text-sm transition-all" data-val="Sera">Sera</button>
                     </div>
-                </div>
-
-                <!-- Sezione Backup Avanzato -->
-                <div class="settings-card">
-                    <h3 class="text-xs font-bold text-gray-400 uppercase mb-3">Salvataggio & Cloud</h3>
-                    <p class="text-[11px] text-gray-500 mb-4 leading-tight">Puoi salvare il backup su Google Drive, iCloud o nel tuo File System per non perdere mai i dati.</p>
-
-                    <div class="space-y-3">
-                        <button onclick="shareBackup()" class="w-full flex items-center justify-between p-4 bg-indigo-600 text-white rounded-xl shadow-sm active:bg-indigo-700 transition-colors">
-                            <div class="flex items-center space-x-3 text-left">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 100-3.316 3 3 0 000 3.316m0 0a3 3 0 100 3.316 3 3 0 000-3.316" /></svg>
-                                <div>
-                                    <div class="font-bold text-sm">Invia a Cloud / Drive</div>
-                                    <div class="text-[10px] opacity-80 uppercase font-medium">Usa menu di sistema</div>
-                                </div>
-                            </div>
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>
-                        </button>
-
-                        <button onclick="saveToFileSystem()" class="w-full flex items-center justify-between p-4 bg-white border border-gray-200 text-gray-700 rounded-xl shadow-sm active:bg-gray-50 transition-colors">
-                            <div class="flex items-center space-x-3 text-left">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 19a2 2 0 01-2-2V7a2 2 0 012-2h4l2 2h4a2 2 0 012 2v1m-6 9l3-3m0 0l3 3m-3-3V10" /></svg>
-                                <div>
-                                    <div class="font-bold text-sm text-gray-800">Salva in locale</div>
-                                    <div class="text-[10px] text-gray-400 uppercase font-medium">Scegli cartella o Drive</div>
-                                </div>
-                            </div>
-                        </button>
-
-                        <div class="grid grid-cols-2 gap-3">
-                            <label class="flex flex-col items-center justify-center p-3 bg-gray-50 border-2 border-dashed border-gray-300 rounded-xl cursor-pointer hover:border-indigo-400 transition-colors">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" /></svg>
-                                <span class="text-[10px] font-bold text-gray-500 mt-1 uppercase">Importa</span>
-                                <input type="file" id="import-json" class="hidden" accept=".json" onchange="importJSON(event)">
-                            </label>
-
-                            <button onclick="exportCSV()" class="flex flex-col items-center justify-center p-3 bg-green-50 border border-green-200 rounded-xl">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
-                                <span class="text-[10px] font-bold text-green-700 mt-1 uppercase">Export CSV</span>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="settings-card">
-                    <h3 class="text-xs font-bold text-gray-400 uppercase mb-3">AI Engine</h3>
-                    <button onclick="promptApiKey()" class="w-full py-2 bg-indigo-50 text-indigo-700 rounded-lg text-xs font-bold">Aggiorna API Key Gemini</button>
-                </div>
-
-                <div class="settings-card border-red-100 bg-red-50">
-                    <button onclick="clearHistory()" class="w-full p-2 text-red-600 text-[10px] font-bold uppercase tracking-widest">
-                        Resetta tutti i dati
-                    </button>
                 </div>
             </div>
-        </div>
-
-        <!-- Modal Inserimento -->
-        <div id="modal" class="hidden fixed inset-0 bg-black/60 z-50 flex items-end justify-center backdrop-blur-sm">
-            <div id="modal-content" class="bg-white w-full max-w-md p-6 rounded-t-3xl modal-transition transform translate-y-full pb-safe">
-                <div class="flex justify-between items-center mb-4">
-                    <h3 id="modal-title" class="text-2xl font-bold text-gray-800 italic">Movimento</h3>
-                    <button onclick="closeModal()" class="text-gray-400 p-2"><svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg></button>
-                </div>
-
-                <div class="space-y-4">
-                    <div>
-                        <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1 ml-1">Conto</label>
-                        <select id="modal-account-select" class="w-full p-3 bg-gray-100 rounded-xl font-bold outline-none"></select>
-                    </div>
-
-                    <div class="relative">
-                        <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1 ml-1">Importo (€)</label>
-                        <input type="number" id="amount-input" step="0.01" inputmode="decimal" placeholder="0.00" class="w-full p-4 bg-gray-100 rounded-2xl text-3xl font-bold text-center focus:ring-2 focus:ring-indigo-500 outline-none">
-
-                        <button id="camera-btn" onclick="triggerCamera()" class="absolute right-3 bottom-3 p-3 bg-white shadow-md rounded-full text-indigo-600 active:scale-90 transition-transform">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
-                        </button>
-                        <input type="file" id="camera-input" accept="image/*" capture="environment" class="hidden" onchange="handleImage(event)">
-
-                        <div id="camera-loader" class="absolute inset-0 bg-white/80 rounded-2xl flex items-center justify-center hidden">
-                            <div class="loader mr-2"></div>
-                            <span class="text-xs font-bold text-indigo-600 uppercase tracking-tighter">Analisi Scontrino...</span>
-                        </div>
-                    </div>
-
-                    <div>
-                        <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1 ml-1">Data operazione</label>
-                        <input type="date" id="date-input"
-                               class="w-full p-3 bg-gray-100 rounded-xl font-bold outline-none">
-                    </div>
-
-                    <div>
-                        <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1 ml-1">Descrizione</label>
-                        <input type="text" id="desc-input" placeholder="Esempio: Spesa" class="w-full p-4 bg-gray-100 rounded-2xl outline-none">
-                    </div>
-
-                    <div>
-                        <label class="block text-[10px] font-bold text-gray-400 uppercase mb-2 ml-1">Categoria</label>
-                        <div id="category-grid" class="grid grid-cols-4 gap-2"></div>
-                    </div>
-
-                    <div class="flex gap-3">
-                        <button id="delete-btn" onclick="deleteTx(editingTxId)" class="hidden flex-1 py-4 bg-red-100 text-red-600 rounded-2xl font-bold text-xl active:scale-95 transition-transform">Elimina</button>
-                        <button onclick="saveTransaction()" id="save-btn" class="flex-[2] py-4 rounded-2xl text-white font-bold text-xl shadow-lg active:scale-95 transition-transform">Salva</button>
-                    </div>
-                </div>
-                <div class="h-6"></div>
+            <input type="hidden" id="input-med-edit-id">
+            <div class="flex justify-end gap-3 mt-8">
+                <button onclick="app.closeModal('modal-med')" class="px-4 py-2 text-slate-500">Chiudi</button>
+                <button onclick="app.handleMedicationSubmit()" class="px-6 py-2 bg-blue-600 text-white rounded-lg font-medium">Salva</button>
             </div>
         </div>
+    </div>
+
+    <!-- UI SCANNER -->
+    <div id="camera-container">
+        <video id="camera-feed" autoplay playsinline></video>
+        <canvas id="camera-canvas" class="hidden"></canvas>
+        <div class="scanner-overlay">
+            <div class="scanner-frame">
+                <div class="scanner-line"></div>
+            </div>
+        </div>
+        <div class="absolute bottom-10 left-0 right-0 flex justify-center items-center gap-10">
+            <button onclick="app.stopScanner()" class="w-12 h-12 rounded-full bg-white/20 text-white text-xl flex items-center justify-center">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+            <button onclick="app.captureImage()" class="w-20 h-20 rounded-full border-4 border-white bg-blue-600 flex items-center justify-center shadow-lg active:scale-90 transition-transform">
+                <i class="fa-solid fa-camera text-3xl text-white"></i>
+            </button>
+            <div class="w-12"></div> <!-- Spacer -->
+        </div>
+    </div>
+
+    <!-- LOADING OVERLAY -->
+    <div id="loading-overlay">
+        <div class="animate-spin rounded-full h-12 w-12 border-4 border-blue-500 border-t-transparent mb-4"></div>
+        <p id="loading-text" class="font-bold">Analisi in corso...</p>
     </div>
 
     <script>
-        const STORAGE_TX = 'spese_v3_data';
-        const STORAGE_ACC = 'spese_v3_accounts';
-        let apiKey = localStorage.getItem('gemini_api_key') || "";
+        const apiKey = ""; // Gestito dall'ambiente
 
-        const categories = {
-            expense: [
-                { id: 'cibo', label: 'Cibo', icon: '🍎', color: '#f87171' },
-                { id: 'casa', label: 'Casa', icon: '🏠', color: '#60a5fa' },
-                { id: 'trasporti', label: 'Auto', icon: '🚗', color: '#fbbf24' },
-                { id: 'svago', label: 'Svago', icon: '🎮', color: '#a78bfa' },
-                { id: 'salute', label: 'Salute', icon: '💊', color: '#34d399' },
-                { id: 'shopping', label: 'Shopping', icon: '🛍️', color: '#f472b6' },
-                { id: 'altro', label: 'Altro', icon: '📦', color: '#9ca3af' }
-            ],
-            income: [
-                { id: 'stipendio', label: 'Stipendio', icon: '💰', color: '#10b981' },
-                { id: 'regalo', label: 'Regalo', icon: '🎁', color: '#f59e0b' },
-                { id: 'altro_in', label: 'Altro', icon: '📈', color: '#6b7280' }
-            ]
+        const app = {
+            data: { lastOpened: null, profiles: [] },
+            currentProfileId: null,
+            selectedTimes: [],
+            touchStartX: 0,
+            touchStartY: 0,
+            stream: null,
+
+            init() {
+                this.loadData();
+                this.checkDailyReset();
+                this.renderProfiles();
+                this.setupManifest();
+                const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+                document.getElementById('current-date-display').textContent = new Date().toLocaleDateString('it-IT', options);
+                
+                document.getElementById('btn-back').addEventListener('click', () => this.goHome());
+
+                document.addEventListener('touchstart', e => {
+                    this.touchStartX = e.changedTouches[0].screenX;
+                    this.touchStartY = e.changedTouches[0].screenY;
+                }, {passive: true});
+
+                document.addEventListener('touchend', e => {
+                    const touchEndX = e.changedTouches[0].screenX;
+                    const touchEndY = e.changedTouches[0].screenY;
+                    this.handleSwipe(touchEndX, touchEndY);
+                }, {passive: true});
+            },
+
+            // --- CAMERA SCANNER LOGIC ---
+
+            async startScanner() {
+                const container = document.getElementById('camera-container');
+                const video = document.getElementById('camera-feed');
+                
+                try {
+                    this.stream = await navigator.mediaDevices.getUserMedia({ 
+                        video: { facingMode: 'environment' } 
+                    });
+                    video.srcObject = this.stream;
+                    container.style.display = 'flex';
+                } catch (err) {
+                    alert("Impossibile accedere alla fotocamera. Verifica i permessi.");
+                }
+            },
+
+            stopScanner() {
+                const container = document.getElementById('camera-container');
+                if (this.stream) {
+                    this.stream.getTracks().forEach(track => track.stop());
+                }
+                container.style.display = 'none';
+            },
+
+            async captureImage() {
+                const video = document.getElementById('camera-feed');
+                const canvas = document.getElementById('camera-canvas');
+                const ctx = canvas.getContext('2d');
+
+                canvas.width = video.videoWidth;
+                canvas.height = video.videoHeight;
+                ctx.drawImage(video, 0, 0);
+
+                const base64Data = canvas.toDataURL('image/png').split(',')[1];
+                this.stopScanner();
+                await this.analyzeImage(base64Data);
+            },
+
+            async analyzeImage(base64Image) {
+                this.toggleLoading(true, "Analisi farmaco...");
+                
+                const prompt = "Analizza questa immagine di un farmaco. Restituisci un oggetto JSON con due chiavi: 'name' (il nome del farmaco) e 'dose' (la concentrazione o il formato, es. 500mg, 1 compressa). Se non riesci a identificare nulla, restituisci stringhe vuote. Rispondi solo con il JSON.";
+                
+                const payload = {
+                    contents: [{
+                        role: "user",
+                        parts: [
+                            { text: prompt },
+                            { inlineData: { mimeType: "image/png", data: base64Image } }
+                        ]
+                    }],
+                    generationConfig: {
+                        responseMimeType: "application/json",
+                        responseSchema: {
+                            type: "OBJECT",
+                            properties: {
+                                name: { type: "STRING" },
+                                dose: { type: "STRING" }
+                            }
+                        }
+                    }
+                };
+
+                try {
+                    const result = await this.fetchWithRetry(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`, payload);
+                    const data = JSON.parse(result.candidates[0].content.parts[0].text);
+                    
+                    if (data.name) {
+                        document.getElementById('input-med-name').value = data.name;
+                        document.getElementById('input-med-dose').value = data.dose || "";
+                    } else {
+                        alert("Non ho riconosciuto il farmaco. Prova a inserirlo manualmente o scatta una foto più chiara.");
+                    }
+                } catch (err) {
+                    alert("Errore durante l'analisi dell'immagine. Riprova.");
+                } finally {
+                    this.toggleLoading(false);
+                }
+            },
+
+            async fetchWithRetry(url, payload, retries = 5) {
+                for (let i = 0; i < retries; i++) {
+                    try {
+                        const response = await fetch(url, {
+                            method: 'POST',
+                            body: JSON.stringify(payload)
+                        });
+                        if (response.ok) return await response.json();
+                    } catch (e) {}
+                    await new Promise(r => setTimeout(r, Math.pow(2, i) * 1000));
+                }
+                throw new Error("API fallita dopo diversi tentativi");
+            },
+
+            toggleLoading(show, text = "") {
+                const overlay = document.getElementById('loading-overlay');
+                const loadingText = document.getElementById('loading-text');
+                loadingText.textContent = text;
+                overlay.style.display = show ? 'flex' : 'none';
+            },
+
+            // --- EXISTING APP LOGIC ---
+
+            handleSwipe(endX, endY) {
+                if (!this.currentProfileId || document.querySelector('.modal-overlay:not(.hidden)')) return;
+                const diffX = endX - this.touchStartX;
+                const diffY = endY - this.touchStartY;
+                if (Math.abs(diffX) < 70 || Math.abs(diffX) < Math.abs(diffY)) return;
+                const currentIndex = this.data.profiles.findIndex(p => p.id === this.currentProfileId);
+                if (diffX > 0) {
+                    if (currentIndex > 0) this.openProfile(this.data.profiles[currentIndex - 1].id);
+                    else this.goHome();
+                } else {
+                    if (currentIndex < this.data.profiles.length - 1) this.openProfile(this.data.profiles[currentIndex + 1].id);
+                }
+            },
+
+            loadData() {
+                const stored = localStorage.getItem('MedicineProData');
+                if (stored) { try { this.data = JSON.parse(stored); } catch(e) { this.resetData(); } }
+                else { this.resetData(); }
+            },
+
+            resetData() { this.data = { lastOpened: new Date().toDateString(), profiles: [] }; this.saveData(); },
+            saveData() { localStorage.setItem('MedicineProData', JSON.stringify(this.data)); },
+
+            exportData() {
+                const blob = new Blob([JSON.stringify(this.data, null, 2)], { type: "application/json" });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `MedicinePro_Backup_${new Date().toISOString().slice(0,10)}.json`;
+                a.click();
+            },
+
+            exportProfileTxt() {
+                const profile = this.data.profiles.find(x => x.id === this.currentProfileId);
+                if (!profile) return;
+                let content = `TERAPIA FARMACOLOGICA: ${profile.name.toUpperCase()}\n`;
+                content += `Esportata il: ${new Date().toLocaleDateString('it-IT')}\n`;
+                content += `--------------------------------------------------\n\n`;
+                const times = ['Mattina', 'Pomeriggio', 'Sera'];
+                let hasMeds = false;
+                times.forEach(time => {
+                    const meds = profile.meds.filter(m => m.time === time);
+                    if (meds.length > 0) {
+                        hasMeds = true;
+                        content += `[${time.toUpperCase()}]\n`;
+                        meds.forEach(m => { content += `- ${m.name}: ${m.dose}\n`; });
+                        content += `\n`;
+                    }
+                });
+                if (!hasMeds) content += `Nessun farmaco inserito in questo profilo.\n`;
+                content += `--------------------------------------------------\nGenerato con MedicinePro.`;
+                const blob = new Blob([content], { type: "text/plain" });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `Terapia_${profile.name.replace(/\s+/g, '_')}_${new Date().toISOString().slice(0,10)}.txt`;
+                a.click();
+                URL.revokeObjectURL(url);
+            },
+
+            triggerImport() { document.getElementById('import-file').click(); },
+            handleImport(input) {
+                const file = input.files[0];
+                if (!file) return;
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    try {
+                        const json = JSON.parse(e.target.result);
+                        if (json && Array.isArray(json.profiles)) {
+                            if(confirm("Caricare questo backup? I dati attuali saranno sovrascritti.")) {
+                                this.data = json; this.saveData(); this.goHome();
+                            }
+                        }
+                    } catch(err) { alert("File non valido."); }
+                    input.value = '';
+                };
+                reader.readAsText(file);
+            },
+
+            checkDailyReset() {
+                const today = new Date().toDateString();
+                if (this.data.lastOpened !== today) {
+                    this.data.profiles.forEach(p => p.meds.forEach(m => m.taken = false));
+                    this.data.lastOpened = today; this.saveData();
+                }
+            },
+
+            generateId() { return Date.now().toString(36) + Math.random().toString(36).substr(2); },
+
+            goHome() {
+                this.currentProfileId = null;
+                document.getElementById('view-profiles').classList.remove('hidden');
+                document.getElementById('view-medications').classList.add('hidden');
+                document.getElementById('btn-back').classList.add('hidden');
+                this.renderProfiles();
+            },
+
+            openProfile(id) {
+                this.currentProfileId = id;
+                const view = document.getElementById('view-medications');
+                const list = document.getElementById('view-profiles');
+                view.classList.remove('fade-in');
+                void view.offsetWidth; 
+                view.classList.add('fade-in');
+                list.classList.add('hidden');
+                view.classList.remove('hidden');
+                document.getElementById('btn-back').classList.remove('hidden');
+                this.renderMedications();
+            },
+
+            createProfile() {
+                const name = document.getElementById('input-profile-name').value.trim();
+                if (!name) return;
+                this.data.profiles.push({ id: this.generateId(), name, meds: [] });
+                this.saveData();
+                document.getElementById('input-profile-name').value = '';
+                this.closeModal('modal-add-profile');
+                this.renderProfiles();
+            },
+
+            openEditProfileModal() {
+                const p = this.data.profiles.find(x => x.id === this.currentProfileId);
+                if (p) {
+                    document.getElementById('input-edit-profile-name').value = p.name;
+                    this.showModal('modal-edit-profile');
+                }
+            },
+
+            saveProfileName() {
+                const newName = document.getElementById('input-edit-profile-name').value.trim();
+                const p = this.data.profiles.find(x => x.id === this.currentProfileId);
+                if (p && newName) { p.name = newName; this.saveData(); this.renderMedications(); this.closeModal('modal-edit-profile'); }
+            },
+
+            deleteCurrentProfile() {
+                if(confirm("Eliminare definitivamente questo profilo?")) {
+                    this.data.profiles = this.data.profiles.filter(x => x.id !== this.currentProfileId);
+                    this.saveData(); this.goHome();
+                }
+            },
+
+            renderProfiles() {
+                const container = document.getElementById('profiles-list');
+                container.innerHTML = '';
+                if (this.data.profiles.length === 0) {
+                    container.innerHTML = `<p class="text-center text-slate-400 py-6 text-sm italic">Nessun profilo presente.</p>`;
+                    return;
+                }
+                this.data.profiles.forEach(p => {
+                    const total = p.meds.length;
+                    const taken = p.meds.filter(m => m.taken).length;
+                    const perc = total === 0 ? 0 : Math.round((taken/total)*100);
+                    const div = document.createElement('div');
+                    div.className = "bg-white p-4 rounded-xl card-shadow flex justify-between items-center cursor-pointer border border-transparent hover:border-blue-200 transition-all";
+                    div.onclick = () => this.openProfile(p.id);
+                    div.innerHTML = `
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold">${p.name.charAt(0).toUpperCase()}</div>
+                            <div>
+                                <h3 class="font-bold text-slate-800">${p.name}</h3>
+                                <p class="text-xs text-slate-500">${total} farmaci</p>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                             <span class="text-sm font-bold ${perc === 100 ? 'text-green-500' : 'text-blue-500'}">${perc}%</span>
+                        </div>`;
+                    container.appendChild(div);
+                });
+            },
+
+            showModal(id) {
+                if (id === 'modal-med') { 
+                    const editId = document.getElementById('input-med-edit-id').value;
+                    if (!editId) this.resetMedModal(); 
+                }
+                document.getElementById(id).classList.remove('hidden');
+            },
+
+            resetMedModal() {
+                document.getElementById('med-modal-title').textContent = "Nuovo Farmaco";
+                document.getElementById('input-med-name').value = '';
+                document.getElementById('input-med-dose').value = '';
+                document.getElementById('input-med-edit-id').value = '';
+                document.getElementById('btn-scan').classList.remove('hidden');
+                this.selectedTimes = [];
+                this.updateTimeUI();
+            },
+
+            openEditMedModal(medId) {
+                const profile = this.data.profiles.find(x => x.id === this.currentProfileId);
+                const med = profile.meds.find(m => m.id === medId);
+                if (med) {
+                    document.getElementById('input-med-edit-id').value = med.id;
+                    document.getElementById('input-med-name').value = med.name;
+                    document.getElementById('input-med-dose').value = med.dose;
+                    document.getElementById('med-modal-title').textContent = "Modifica Farmaco";
+                    document.getElementById('btn-scan').classList.add('hidden'); // Nascondi scanner in modifica
+                    this.selectedTimes = [med.time];
+                    this.updateTimeUI();
+                    this.showModal('modal-med');
+                }
+            },
+
+            handleMedicationSubmit() {
+                const name = document.getElementById('input-med-name').value.trim();
+                const dose = document.getElementById('input-med-dose').value.trim();
+                const editId = document.getElementById('input-med-edit-id').value;
+                if (!name || !dose || this.selectedTimes.length === 0) return alert("Compila tutti i campi.");
+                const profile = this.data.profiles.find(x => x.id === this.currentProfileId);
+                if (editId) {
+                    const med = profile.meds.find(m => m.id === editId);
+                    if (med) { med.name = name; med.dose = dose; med.time = this.selectedTimes[0]; }
+                } else {
+                    this.selectedTimes.forEach(t => {
+                        profile.meds.push({ id: this.generateId(), name, dose, time: t, taken: false });
+                    });
+                }
+                this.saveData(); this.closeModal('modal-med'); this.resetMedModal(); this.renderMedications();
+            },
+
+            toggleMedication(id) {
+                const profile = this.data.profiles.find(x => x.id === this.currentProfileId);
+                const med = profile.meds.find(m => m.id === id);
+                if (med) { med.taken = !med.taken; this.saveData(); this.renderMedications(); }
+            },
+
+            uncheckAllMeds() {
+                const profile = this.data.profiles.find(x => x.id === this.currentProfileId);
+                if (profile && confirm("Vuoi deselezionare tutti i farmaci presi oggi?")) {
+                    profile.meds.forEach(m => m.taken = false);
+                    this.saveData(); this.renderMedications();
+                }
+            },
+
+            deleteMedication(id) {
+                if(confirm("Eliminare questa assunzione?")) {
+                    const profile = this.data.profiles.find(x => x.id === this.currentProfileId);
+                    profile.meds = profile.meds.filter(m => m.id !== id);
+                    this.saveData(); this.renderMedications();
+                }
+            },
+
+            renderMedications() {
+                const profile = this.data.profiles.find(x => x.id === this.currentProfileId);
+                if (!profile) return;
+                document.getElementById('current-profile-name').textContent = profile.name;
+                const times = ['Mattina', 'Pomeriggio', 'Sera'];
+                let hasMeds = false;
+                let anyTaken = false;
+                times.forEach(time => {
+                    const container = document.getElementById(`med-list-${time.toLowerCase()}`);
+                    container.innerHTML = '';
+                    const meds = profile.meds.filter(m => m.time === time);
+                    if (meds.length > 0) {
+                        hasMeds = true;
+                        const header = document.createElement('div');
+                        header.className = "text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 pl-1 flex items-center gap-2";
+                        let icon = time === 'Mattina' ? 'fa-sun text-orange-400' : (time === 'Pomeriggio' ? 'fa-cloud-sun text-yellow-500' : 'fa-moon text-indigo-400');
+                        header.innerHTML = `<i class="fa-solid ${icon}"></i> ${time} <span class="bg-slate-200 text-slate-600 px-2 py-0.5 rounded-full text-[9px]">${meds.length}</span>`;
+                        container.appendChild(header);
+                        meds.forEach(med => {
+                            if (med.taken) anyTaken = true;
+                            const card = document.createElement('div');
+                            const categoryClass = `med-card-${time.toLowerCase()}`;
+                            const takenClass = med.taken ? 'med-card-taken' : '';
+                            card.className = `p-4 rounded-xl card-shadow border mb-3 flex items-center justify-between transition-all ${categoryClass} ${takenClass}`;
+                            card.innerHTML = `
+                                <div class="flex items-center gap-4 flex-1 overflow-hidden">
+                                    <input type="checkbox" class="med-checkbox" ${med.taken ? 'checked' : ''} onchange="app.toggleMedication('${med.id}')">
+                                    <div class="overflow-hidden cursor-pointer ${med.taken ? 'opacity-40' : ''}" onclick="app.openEditMedModal('${med.id}')">
+                                        <h4 class="font-bold text-slate-800 leading-tight truncate">${med.name}</h4>
+                                        <p class="text-xs text-slate-500 truncate">${med.dose}</p>
+                                    </div>
+                                </div>
+                                <div class="flex items-center gap-1">
+                                    <button onclick="app.openEditMedModal('${med.id}')" class="w-8 h-8 text-slate-400 hover:text-blue-500 transition-colors">
+                                        <i class="fa-solid fa-pencil text-sm"></i>
+                                    </button>
+                                    <button onclick="app.deleteMedication('${med.id}')" class="w-8 h-8 text-slate-400 hover:text-red-500 transition-colors">
+                                        <i class="fa-solid fa-trash-can text-sm"></i>
+                                    </button>
+                                </div>`;
+                            container.appendChild(card);
+                        });
+                    }
+                });
+                document.getElementById('btn-uncheck-all').classList.toggle('hidden', !anyTaken);
+                document.getElementById('med-empty-state').classList.toggle('hidden', hasMeds);
+            },
+
+            closeModal(id) { 
+                document.getElementById(id).classList.add('hidden');
+                if (id === 'modal-med') this.resetMedModal();
+            },
+            toggleTimeSelection(time, btn) {
+                const editId = document.getElementById('input-med-edit-id').value;
+                if (editId) this.selectedTimes = [time]; 
+                else {
+                    const idx = this.selectedTimes.indexOf(time);
+                    idx > -1 ? this.selectedTimes.splice(idx, 1) : this.selectedTimes.push(time);
+                }
+                this.updateTimeUI();
+            },
+            updateTimeUI() {
+                document.querySelectorAll('.time-btn').forEach(b => {
+                    const val = b.dataset.val;
+                    if (this.selectedTimes.includes(val)) b.classList.add('selected'); 
+                    else b.classList.remove('selected'); 
+                });
+            },
+
+            setupManifest() {
+                const manifest = {
+                    "name": "MedicinePro",
+                    "short_name": "MedPro",
+                    "start_url": ".",
+                    "display": "standalone",
+                    "background_color": "#f3f4f6",
+                    "theme_color": "#2563eb",
+                    "icons": [
+                        { "src": "https://img.icons8.com/color/192/pills-bottle.png", "sizes": "192x192", "type": "image/png" },
+                        { "src": "https://img.icons8.com/color/512/pills-bottle.png", "sizes": "512x512", "type": "image/png" }
+                    ]
+                };
+                const blob = new Blob([JSON.stringify(manifest)], {type: 'application/json'});
+                document.getElementById('my-manifest').setAttribute('href', URL.createObjectURL(blob));
+            }
         };
 
-        let transactions = JSON.parse(localStorage.getItem(STORAGE_TX)) || [];
-        // Accounts migration: ensure existing accounts have budget set to 0 if not present
-        let rawAccounts = JSON.parse(localStorage.getItem(STORAGE_ACC)) || [{ id: 'acc_01', name: 'Conto Corrente', budget: 0 }];
-        let accounts = rawAccounts.map(a => ({
-            ...a,
-            budget: a.budget || 0,
-            initialBalance: a.initialBalance || 0
-        }));
-
-        let activeAccountId = accounts[0].id;
-        let viewDate = new Date();
-        let currentMode = 'expense';
-        let selectedCategory = 'altro';
-        let editingTxId = null;
-        let chartInstance = null;
-
-        let numberCallback = null;
-
-        function openNumberModal(title, value, callback) {
-            document.getElementById('numberTitle').innerText = title;
-
-            const input = document.getElementById('numberInput');
-            input.value = value ?? '';
-
-            numberCallback = callback;
-            document.getElementById('numberModal').classList.remove('hidden');
-
-            setTimeout(() => input.focus(), 50);
-        }
-
-        function closeNumberModal() {
-            document.getElementById('numberModal').classList.add('hidden');
-            numberCallback = null;
-        }
-
-        function confirmNumberModal() {
-            if (!numberCallback) return;
-
-            const raw = document.getElementById('numberInput').value.replace(',', '.');
-            const val = parseFloat(raw);
-
-            if (isNaN(val)) {
-                alert("Inserisci un numero valido");
-                return;
-            }
-
-            numberCallback(val);
-            closeNumberModal();
-        }
-
-        // UI TOAST
-        function showToast(msg) {
-            const t = document.getElementById('toast');
-            t.textContent = msg;
-            t.style.opacity = '1';
-            setTimeout(() => t.style.opacity = '0', 2500);
-        }
-
-        // BACKUP AVANZATO
-        async function shareBackup() {
-            const data = { app: "SpesePro", version: "3.1", transactions, accounts };
-            const json = JSON.stringify(data, null, 2);
-            const filename = `backup_spesepro_${new Date().toISOString().split('T')[0]}.json`;
-
-            if (navigator.share) {
-                const file = new File([json], filename, { type: 'application/json' });
-                try {
-                    await navigator.share({
-                        title: 'Backup SpesePro',
-                        text: 'File di backup della mia app di gestione spese.',
-                        files: [file]
-                    });
-                    showToast("Menu condivisione aperto!");
-                } catch (err) {
-                    if (err.name !== 'AbortError') showToast("Errore condivisione");
-                    downloadBackupManual(json, filename);
-                }
-            } else {
-                downloadBackupManual(json, filename);
-            }
-        }
-
-        async function saveToFileSystem() {
-            const data = { app: "SpesePro", transactions, accounts };
-            const json = JSON.stringify(data, null, 2);
-            if ('showSaveFilePicker' in window) {
-                try {
-                    const handle = await window.showSaveFilePicker({
-                        suggestedName: `backup_spese_${new Date().toISOString().split('T')[0]}.json`,
-                        types: [{ description: 'JSON File', accept: { 'application/json': ['.json'] } }],
-                    });
-                    const writable = await handle.createWritable();
-                    await writable.write(json);
-                    await writable.close();
-                    showToast("Salvato con successo!");
-                } catch (err) {
-                    if (err.name !== 'AbortError') showToast("Impossibile salvare");
-                }
-            } else {
-                downloadBackupManual(json, `backup_spese_${new Date().toISOString().split('T')[0]}.json`);
-            }
-        }
-
-        function downloadBackupManual(json, filename) {
-            const blob = new Blob([json], { type: 'application/json' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = filename;
-            a.click();
-            URL.revokeObjectURL(url);
-            showToast("Backup scaricato!");
-        }
-
-        // LOGICA CONTI E BUDGET
-        function addAccount() {
-            const nameInput = document.getElementById('new-account-name');
-            const budgetInput = document.getElementById('new-account-budget');
-            const name = nameInput.value.trim();
-            const budget = parseFloat(budgetInput.value) || 0;
-            const initialBalance = parseFloat(prompt("Saldo iniziale del conto (€):", "0")) || 0;
-
-            if (!name) return;
-            accounts.push({ id: 'acc_' + Date.now(), name, budget, initialBalance });
-            localStorage.setItem(STORAGE_ACC, JSON.stringify(accounts));
-            nameInput.value = '';
-            budgetInput.value = '';
-            renderSettingsAccounts();
-            updateUI();
-        }
-
-        function renameAccount(id) {
-            const acc = accounts.find(a => a.id === id);
-            if (!acc) return;
-            const newName = prompt("Rinomina conto:", acc.name);
-            if (newName) {
-                acc.name = newName;
-                localStorage.setItem(STORAGE_ACC, JSON.stringify(accounts));
-                renderSettingsAccounts();
-                updateUI();
-            }
-        }
-
-        function setBudget(id) {
-            const acc = accounts.find(a => a.id === id);
-            if (!acc) return;
-            openNumberModal("Budget mensile (€)", acc.budget || 0, val => {
-                acc.budget = val;
-                localStorage.setItem(STORAGE_ACC, JSON.stringify(accounts));
-                renderSettingsAccounts();
-                updateUI();
-            });
-            if (newBudget !== null) {
-                const parsed = parseFloat(newBudget);
-                if (!isNaN(parsed) && parsed >= 0) {
-                    acc.budget = parsed;
-                    localStorage.setItem(STORAGE_ACC, JSON.stringify(accounts));
-                    renderSettingsAccounts();
-                    updateUI();
-                } else {
-                    alert("Inserisci un numero valido.");
-                }
-            }
-        }
-
-        function setInitialBalance(id) {
-            const acc = accounts.find(a => a.id === id);
-            if (!acc) return;
-
-            openNumberModal("Saldo iniziale del conto (€)", acc.initialBalance || 0, val => {
-                acc.initialBalance = val;
-                localStorage.setItem(STORAGE_ACC, JSON.stringify(accounts));
-                renderSettingsAccounts();
-                updateUI();
-            });
-
-            if (val === null) return;
-
-            const parsed = parseFloat(val);
-            if (isNaN(parsed)) {
-                alert("Inserisci un numero valido");
-                return;
-            }
-            acc.initialBalance = parsed;
-            localStorage.setItem(STORAGE_ACC, JSON.stringify(accounts));
-            renderSettingsAccounts();
-            updateUI();
-        }
-
-        function deleteAccount(id) {
-
-            if (accounts.length === 1) {
-                alert("Non puoi eliminare l'ultimo conto.\nCrea prima un nuovo conto.");
-                return;
-            }
-
-            const txCount = transactions.filter(t => t.accountId === id).length;
-
-            if (txCount > 0) {
-
-                const choice = confirm(
-                    `Questo conto ha ${txCount} movimenti.\n\n` +
-                    `OK = Elimina anche i movimenti\n` +
-                    `ANNULLA = Sposta i movimenti su un altro conto`
-                );
-
-                if (choice) {
-                    // 🔴 ELIMINA MOVIMENTI
-                    transactions = transactions.filter(t => t.accountId !== id);
-                } else {
-                    // 🔁 SPOSTA MOVIMENTI
-                    const target = prompt(
-                        "Inserisci l'ID del conto di destinazione:\n" +
-                        accounts.filter(a => a.id !== id).map(a => `${a.id} → ${a.name}`).join('\n')
-                    );
-
-                    if (!target || !accounts.find(a => a.id === target)) {
-                        alert("Operazione annullata");
-                        return;
-                    }
-
-                    transactions.forEach(t => {
-                        if (t.accountId === id) t.accountId = target;
-                    });
-                }
-            }
-
-            // 🧹 ELIMINA CONTO
-            accounts = accounts.filter(a => a.id !== id);
-
-            // 🔄 riallinea sempre il conto attivo
-            if (activeAccountId === id || !accounts.find(a => a.id === activeAccountId)) {
-                activeAccountId = accounts[0].id;
-
-                renderSettingsAccounts();
-                updateUI();
-            }
-
-            // 💾 SALVA
-            localStorage.setItem(STORAGE_ACC, JSON.stringify(accounts));
-            localStorage.setItem(STORAGE_TX, JSON.stringify(transactions));
-
-            renderSettingsAccounts();
-            updateUI();
-        }
-
-        function navigateAccount(dir) {
-            const idx = accounts.findIndex(a => a.id === activeAccountId);
-            let nextIdx = (idx + dir + accounts.length) % accounts.length;
-            activeAccountId = accounts[nextIdx].id;
-            updateUI();
-        }
-
-        function handleSwipe() {
-            const swipeDistance = touchEndX - touchStartX;
-
-            // evita swipe accidentali
-            if (Math.abs(swipeDistance) < 80) return;
-
-            // verifica se le impostazioni sono aperte
-            const settingsEl = document.getElementById('settings');
-            if (!settingsEl || settingsEl.classList.contains('hidden')) return;
-
-            // swipe orizzontale → torna alla home
-            closeSettings();
-        }
-
-        function renderSettingsAccounts() {
-            const list = document.getElementById('account-list-settings');
-            list.innerHTML = accounts.map(a => `
-                            <div class="flex items-center justify-between p-3 bg-gray-50 rounded-xl mb-2 border border-gray-100">
-                                <div class="flex flex-col overflow-hidden mr-2">
-                                    <span class="font-bold text-sm truncate ${a.id === activeAccountId ? 'text-indigo-600' : 'text-gray-800'}">${a.name}</span>
-                                    <span class="text-[10px] text-gray-500 font-medium">Budget: € ${(a.budget || 0).toLocaleString('it-IT')}</span>
-                                    <span class="text-[10px] text-green-500 font-medium"> Saldo iniziale: € ${(a.initialBalance || 0).toLocaleString('it-IT')}</span>
-                                </div>
-                                <div class="flex space-x-1 shrink-0">
-                                    <button onclick="setInitialBalance('${a.id}')" class="p-2 bg-green-50 text-green-600 rounded-lg hover:bg-green-100 transition-colors" title="Saldo iniziale">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2 m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6 a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
-                                        </svg>
-                                    </button>
-                                    <button onclick="setBudget('${a.id}')" class="p-2 bg-indigo-50 text-indigo-600 rounded-lg hover:bg-indigo-100 transition-colors" title="Imposta Budget">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
-                                    </button>
-                                    <button onclick="renameAccount('${a.id}')" class="p-2 bg-gray-100 text-gray-500 rounded-lg hover:bg-gray-200 transition-colors" title="Rinomina Conto">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
-                                    </button>
-                                    <button onclick="deleteAccount('${a.id}')" class="p-2 bg-red-50 text-red-500 rounded-lg hover:bg-red-100 transition-colors" title="Elimina Conto">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
-                                    </button>
-                                </div>
-                            </div>`).join('');
-        }
-
-        function toggleSettings(show) {
-            const view = document.getElementById('settings-view');
-            if (show) { renderSettingsAccounts(); view.classList.remove('hidden'); }
-            else { view.classList.add('hidden'); }
-        }
-
-        function updateUI() {
-            const m = viewDate.getMonth();
-            const y = viewDate.getFullYear();
-            let currentAcc = accounts.find(a => a.id === activeAccountId);
-
-            if (!currentAcc && accounts.length) {
-                activeAccountId = accounts[0].id;
-                currentAcc = accounts[0];
-            }
-
-
-            document.getElementById('current-month-display').textContent = viewDate.toLocaleDateString('it-IT', { month: 'long', year: 'numeric' });
-            document.getElementById('account-name-display').textContent = currentAcc.name;
-
-            const filtered = transactions.filter(t => {
-                const d = new Date(t.date);
-                return d.getMonth() === m && d.getFullYear() === y && t.accountId === activeAccountId;
-            });
-
-            const inc = filtered.filter(t => t.type === 'income').reduce((s, t) => s + t.amount, 0);
-            const exp = filtered.filter(t => t.type === 'expense').reduce((s, t) => s + t.amount, 0);
-            const bal = (currentAcc.initialBalance || 0) + inc - exp;
-
-            const balEl = document.getElementById('balance');
-            balEl.textContent = `€ ${bal.toLocaleString('it-IT', { minimumFractionDigits: 2 })}`;
-            const initEl = document.getElementById('initial-balance-display');
-
-            if ((currentAcc.initialBalance || 0) !== 0) {
-                initEl.textContent =
-                    `Saldo iniziale: € ${currentAcc.initialBalance.toLocaleString('it-IT', { minimumFractionDigits: 2 })}`;
-                initEl.classList.remove('hidden');
-            } else {
-                initEl.classList.add('hidden');
-            }
-            balEl.className = bal >= 0 ? 'text-4xl font-bold text-white' : 'text-4xl font-bold text-red-200';
-
-            // GESTIONE BUDGET DISPLAY
-            const budgetContainer = document.getElementById('budget-container');
-            const budget = currentAcc.budget || 0;
-
-            if (budget > 0) {
-                budgetContainer.classList.remove('hidden');
-                document.getElementById('budget-total').textContent = '€ ' + budget.toLocaleString('it-IT');
-                document.getElementById('budget-spent').textContent = '€ ' + exp.toLocaleString('it-IT');
-
-                let perc = (exp / budget) * 100;
-                let displayPerc = perc > 100 ? 100 : perc;
-
-                const bar = document.getElementById('budget-bar');
-                bar.style.width = displayPerc + '%';
-
-                if (exp > budget) {
-                    bar.classList.remove('bg-white');
-                    bar.classList.add('bg-red-400');
-                    document.getElementById('budget-spent').classList.add('text-red-200');
-                    document.getElementById('budget-spent').classList.remove('text-white');
-                } else {
-                    bar.classList.add('bg-white');
-                    bar.classList.remove('bg-red-400');
-                    document.getElementById('budget-spent').classList.add('text-white');
-                    document.getElementById('budget-spent').classList.remove('text-red-200');
-                }
-            } else {
-                budgetContainer.classList.add('hidden');
-            }
-
-            const listEl = document.getElementById('transaction-list');
-            if (filtered.length === 0) {
-                listEl.innerHTML = `<div class="text-center py-10 text-gray-300 italic font-bold">Nessun movimento</div>`;
-            } else {
-                listEl.innerHTML = filtered.sort((a, b) => b.id - a.id).map(t => {
-                    const cat = [...categories.expense, ...categories.income].find(c => c.id === t.category);
-                    return `
-                                <div onclick="editTransaction(${t.id})" class="transaction-card flex items-center justify-between p-4 bg-gray-50 rounded-2xl border-l-4 cursor-pointer transition-all" style="border-color: ${cat?.color}">
-                                    <div class="flex items-center space-x-3 truncate mr-2">
-                                        <span class="text-2xl">${cat?.icon}</span>
-                                        <div class="truncate">
-                                            <div class="font-bold text-gray-800 truncate text-sm">${t.description || cat?.label}</div>
-                                            <div class="text-[9px] text-gray-400 font-bold">${new Date(t.date).toLocaleDateString()}</div>
-                                        </div>
-                                    </div>
-                                    <span class="font-black whitespace-nowrap text-sm ${t.type === 'income' ? 'text-green-600' : 'text-red-600'}">
-                                        ${t.type === 'income' ? '+' : '-'} €${t.amount.toFixed(2)}
-                                    </span>
-                                </div>`;
-                }).join('');
-            }
-            renderChart(filtered.filter(t => t.type === 'expense'));
-        }
-
-        // AI CAMERA LOGIC
-        async function handleImage(event) {
-            const file = event.target.files[0];
-            if (!file || !apiKey) return;
-            const loader = document.getElementById('camera-loader');
-            loader.classList.remove('hidden');
-            try {
-                const reader = new FileReader();
-                reader.readAsDataURL(file);
-                reader.onload = async () => {
-                    const b64 = reader.result.split(',')[1];
-                    const result = await analyzeReceipt(b64);
-                    if (result.amount) document.getElementById('amount-input').value = result.amount;
-                    if (result.description) document.getElementById('desc-input').value = result.description;
-                    loader.classList.add('hidden');
-                };
-            } catch (err) { alert(err.message); loader.classList.add('hidden'); }
-        }
-
-        async function analyzeReceipt(base64) {
-            const prompt = "JSON: { 'amount': float, 'description': 'store_name' }. Only JSON.";
-            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
-            const response = await fetch(url, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    contents: [{ parts: [{ text: prompt }, { inlineData: { mimeType: "image/jpeg", data: base64 } }] }],
-                    generationConfig: { responseMimeType: "application/json" }
-                })
-            });
-            const data = await response.json();
-            return JSON.parse(data.candidates[0].content.parts[0].text);
-        }
-
-        function triggerCamera() {
-            if (!apiKey) { promptApiKey(); return; }
-            document.getElementById('camera-input').click();
-        }
-
-        // GESTIONE MODAL
-        function openModal(mode, tx = null) {
-            currentMode = mode;
-            editingTxId = tx ? tx.id : null;
-            selectedCategory = tx ? tx.category : categories[mode][0].id;
-
-            document.getElementById('modal').classList.remove('hidden');
-            document.getElementById('modal-title').textContent = editingTxId ? 'Modifica' : (mode === 'income' ? 'Entrata' : 'Uscita');
-            document.getElementById('delete-btn').classList.toggle('hidden', !editingTxId);
-
-            // Dinamicamente aggiorna il colore del tasto Salva
-            const saveBtn = document.getElementById('save-btn');
-            if (mode === 'income') {
-                saveBtn.classList.remove('bg-red-500');
-                saveBtn.classList.add('bg-green-500');
-            } else {
-                saveBtn.classList.remove('bg-green-500');
-                saveBtn.classList.add('bg-red-500');
-            }
-
-            const accSelect = document.getElementById('modal-account-select');
-            accSelect.innerHTML = accounts.map(a => `<option value="${a.id}" ${a.id === (tx ? tx.accountId : activeAccountId) ? 'selected' : ''}>${a.name}</option>`).join('');
-
-            const grid = document.getElementById('category-grid');
-            grid.innerHTML = categories[mode].map(c => `
-                            <button onclick="selectCategory('${c.id}')" id="cat-${c.id}" class="cat-btn p-2 rounded-xl border-2 flex flex-col items-center transition-all ${c.id === selectedCategory ? 'border-indigo-500 bg-indigo-50' : 'border-transparent bg-gray-50'}">
-                                <span class="text-xl">${c.icon}</span>
-                                <span class="text-[9px] font-bold text-gray-500 mt-1 uppercase">${c.label}</span>
-                            </button>`).join('');
-
-            document.getElementById('amount-input').value = tx ? tx.amount : '';
-            document.getElementById('desc-input').value = tx ? tx.description : '';
-            setTimeout(() => document.getElementById('modal-content').classList.remove('translate-y-full'), 10);
-            const dateInput = document.getElementById('date-input');
-
-            if (tx && tx.date) {
-                dateInput.value = tx.date.split('T')[0];
-            } else {
-                dateInput.value = new Date().toISOString().split('T')[0];
-            }
-        }
-
-        function editTransaction(id) { const tx = transactions.find(t => t.id === id); if (tx) openModal(tx.type, tx); }
-
-        function selectCategory(id) {
-            selectedCategory = id;
-            document.querySelectorAll('.cat-btn').forEach(b => { b.classList.remove('border-indigo-500', 'bg-indigo-50'); b.classList.add('border-transparent', 'bg-gray-50'); });
-            document.getElementById('cat-' + id).classList.add('border-indigo-500', 'bg-indigo-50');
-        }
-
-        function saveTransaction() {
-            const amt = parseFloat(document.getElementById('amount-input').value);
-            if (isNaN(amt) || amt <= 0) return;
-            const desc = document.getElementById('desc-input').value.trim();
-            const targetAccId = document.getElementById('modal-account-select').value;
-
-            const selectedDate = document.getElementById('date-input').value;
-
-            const isoDate = selectedDate
-                ? new Date(selectedDate + 'T12:00:00').toISOString()
-                : new Date().toISOString();
-
-            if (editingTxId) {
-                const idx = transactions.findIndex(t => t.id === editingTxId);
-                transactions[idx] = {
-                    ...transactions[idx],
-                    amount: amt,
-                    description: desc,
-                    category: selectedCategory,
-                    accountId: targetAccId,
-                    date: isoDate
-                };
-            } else {
-                transactions.push({ id: Date.now(), amount: amt, description: desc, category: selectedCategory, type: currentMode, accountId: targetAccId, date: isoDate });
-            }
-            localStorage.setItem(STORAGE_TX, JSON.stringify(transactions));
-            activeAccountId = targetAccId;
-            updateUI();
-            closeModal();
-        }
-
-        function deleteTx(id) { if (confirm("Eliminare?")) { transactions = transactions.filter(t => t.id !== id); localStorage.setItem(STORAGE_TX, JSON.stringify(transactions)); updateUI(); closeModal(); } }
-        function changeMonth(d) { viewDate.setMonth(viewDate.getMonth() + d); updateUI(); }
-        function closeModal() { document.getElementById('modal-content').classList.add('translate-y-full'); setTimeout(() => document.getElementById('modal').classList.add('hidden'), 300); }
-
-        function promptApiKey() {
-            const key = prompt("Inserisci API Key Gemini:", apiKey);
-            if (key !== null) { apiKey = key; localStorage.setItem('gemini_api_key', key); }
-        }
-
-        function renderChart(exps) {
-            const ctx = document.getElementById('expenseChart');
-            const container = document.getElementById('chart-container');
-            if (exps.length === 0) { container.classList.add('hidden'); return; }
-            container.classList.remove('hidden');
-            const dataMap = {};
-            exps.forEach(e => {
-                const label = categories.expense.find(c => c.id === e.category)?.label || 'Altro';
-                dataMap[label] = (dataMap[label] || 0) + e.amount;
-            });
-            if (chartInstance) chartInstance.destroy();
-            chartInstance = new Chart(ctx, {
-                type: 'doughnut',
-                data: {
-                    labels: Object.keys(dataMap),
-                    datasets: [{
-                        data: Object.values(dataMap),
-                        backgroundColor: Object.keys(dataMap).map(l => categories.expense.find(c => c.label === l)?.color),
-                        borderWidth: 0
-                    }]
-                },
-                options: {
-                    plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 10 }, padding: 10 } } },
-                    cutout: '70%', maintainAspectRatio: false
-                }
-            });
-        }
-
-        function exportCSV() {
-            const headers = ["Data", "Descrizione", "Importo", "Categoria", "Tipo", "Conto", "Budget Conto"];
-            const rows = transactions.map(t => {
-                const acc = accounts.find(a => a.id === t.accountId);
-                return [
-                    new Date(t.date).toLocaleDateString(),
-                    t.description,
-                    t.amount.toFixed(2),
-                    t.category,
-                    t.type,
-                    acc?.name || "N/A",
-                    acc?.budget || 0
-                ].join(';')
-            });
-            const blob = new Blob(["\ufeff" + [headers.join(';'), ...rows].join('\n')], { type: 'text/csv' });
-            downloadBackupManual(blob, `spese_export.csv`);
-        }
-
-        function importJSON(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-            const r = new FileReader();
-            r.onload = (e) => {
-                try {
-                    const d = JSON.parse(e.target.result);
-                    if (confirm("Ripristinare backup?")) {
-                        transactions = d.transactions || [];
-                        accounts = d.accounts || accounts;
-                        localStorage.setItem(STORAGE_TX, JSON.stringify(transactions));
-                        localStorage.setItem(STORAGE_ACC, JSON.stringify(accounts));
-                        location.reload();
-                    }
-                } catch { showToast("File non valido"); }
-            };
-            r.readAsText(file);
-        }
-
-        function clearHistory() { if (confirm("Cancellare TUTTO?")) { localStorage.clear(); location.reload(); } }
-
-        window.onload = updateUI;
-        document.getElementById('modal').onclick = (e) => { if (e.target === document.getElementById('modal')) closeModal(); };
-
-        let touchStartX = 0;
-        let touchStartY = 0;
-        let isHorizontalSwipe = false;
-
-        document.addEventListener('touchstart', e => {
-            touchStartX = e.touches[0].clientX;
-            touchStartY = e.touches[0].clientY;
-            isHorizontalSwipe = false;
-        }, { passive: true });
-
-        document.addEventListener('touchmove', e => {
-            const dx = e.touches[0].clientX - touchStartX;
-            const dy = e.touches[0].clientY - touchStartY;
-
-            // riconosce swipe orizzontale (ovunque)
-            if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 30) {
-                isHorizontalSwipe = true;
-
-                // 🔒 blocca gesture di sistema SOLO nelle impostazioni
-                const settingsEl = document.getElementById('settings-view');
-                if (settingsEl && !settingsEl.classList.contains('hidden')) {
-                    e.preventDefault();
-                }
-            }
-        }, { passive: false });
-
-        document.addEventListener('touchend', e => {
-
-            // 🔒 se il modal è aperto → chiudi e basta
-            if (!isHorizontalSwipe) return;
-
-            const dx = e.changedTouches[0].clientX - touchStartX;
-            if (Math.abs(dx) < 80) return;
-
-            const settingsEl = document.getElementById('settings-view');
-
-            // 📌 IMPOSTAZIONI → TORNA HOME
-            if (settingsEl && !settingsEl.classList.contains('hidden')) {
-                toggleSettings(false);
-                return;
-            }
-
-            // 📌 HOME → CAMBIO CONTO
-            if (dx < 0) {
-                navigateAccount(1);   // swipe sinistra
-            } else {
-                navigateAccount(-1);  // swipe destra
-            }
-        });
-
+        window.onload = () => app.init();
     </script>
-    <!-- Modal numerico -->
-    <div id="numberModal"
-         class="fixed inset-0 bg-black/40 hidden flex items-center justify-center z-50">
-
-        <!-- BOX (NON FLEX!) -->
-        <div class="bg-white rounded-2xl p-5 w-72 shadow-xl">
-
-            <h3 id="numberTitle"
-                class="font-bold mb-3 text-center"></h3>
-
-            <input id="numberInput"
-                   type="number"
-                   inputmode="decimal"
-                   class="w-full text-center text-xl border rounded-lg py-2 mb-4"
-                   placeholder="0">
-
-            <div class="flex justify-between gap-3">
-                <button onclick="closeNumberModal()"
-                        class="flex-1 py-2 rounded-lg bg-gray-200">
-                    Annulla
-                </button>
-
-                <button onclick="confirmNumberModal()"
-                        class="flex-1 py-2 rounded-lg bg-indigo-600 text-white">
-                    OK
-                </button>
-            </div>
-        </div>
-    </div>
 </body>
 </html>
