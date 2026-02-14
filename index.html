@@ -318,9 +318,17 @@
                                 <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Data</label>
                                 <input type="date" id="date-input" class="w-full bg-transparent font-semibold text-gray-700 text-sm outline-none">
                             </div>
-                            <div class="bg-gray-50 rounded-2xl p-3 border border-gray-100">
-                                <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Conto</label>
-                                <select id="modal-account-select" class="w-full bg-transparent font-semibold text-gray-700 text-sm outline-none appearance-none"></select>
+                            <div class="bg-gray-50 rounded-2xl p-3 border border-gray-100 cursor-pointer active:bg-gray-100 transition-colors" onclick="openAccountPicker()">
+                                <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1 pointer-events-none">Conto</label>
+
+                                <div class="flex items-center justify-between pointer-events-none">
+                                    <span id="selected-account-display" class="font-semibold text-gray-700 text-sm truncate">Seleziona...</span>
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                                    </svg>
+                                </div>
+
+                                <input type="hidden" id="modal-account-select">
                             </div>
                         </div>
 
@@ -497,6 +505,44 @@
                 <button onclick="confirmResetData()" class="flex-1 py-3 bg-red-600 text-white font-semibold rounded-xl shadow-lg shadow-red-200 active:scale-95 transition-all">
                     Elimina Tutto
                 </button>
+            </div>
+        </div>
+    </div>
+
+    <div id="delete-tx-modal" class="fixed inset-0 z-[80] hidden flex items-center justify-center p-4">
+        <div class="absolute inset-0 bg-black/50 backdrop-blur-sm transition-opacity" onclick="closeDeleteTxModal()"></div>
+
+        <div class="bg-white w-full max-w-xs rounded-3xl p-6 shadow-2xl relative z-10 text-center transform scale-100 transition-all">
+            <div class="w-14 h-14 bg-red-100 text-red-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+            </div>
+
+            <h3 class="text-lg font-heading font-bold text-gray-800 mb-2">Elimina Movimento?</h3>
+            <p class="text-sm text-gray-500 mb-6">Questa azione non può essere annullata.</p>
+
+            <div class="flex gap-3">
+                <button onclick="closeDeleteTxModal()" class="flex-1 py-3 bg-gray-100 text-gray-700 font-semibold rounded-xl hover:bg-gray-200 transition-colors">
+                    No
+                </button>
+                <button onclick="confirmDeleteTx()" class="flex-1 py-3 bg-red-500 text-white font-semibold rounded-xl shadow-lg shadow-red-200 active:scale-95 transition-all">
+                    Elimina
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div id="account-picker-modal" class="fixed inset-0 z-[70] hidden flex items-end sm:items-center justify-center pointer-events-none">
+        <div class="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity pointer-events-auto" onclick="closeAccountPicker()"></div>
+
+        <div class="bg-white w-full max-w-sm rounded-t-3xl sm:rounded-3xl p-6 shadow-2xl relative z-10 transform transition-transform translate-y-full sm:translate-y-0 pointer-events-auto" id="account-picker-content">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-lg font-heading font-bold text-gray-800">Scegli Conto</h3>
+                <button onclick="closeAccountPicker()" class="p-2 bg-gray-50 rounded-full text-gray-400 hover:bg-gray-100">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" /></svg>
+                </button>
+            </div>
+
+            <div id="account-picker-list" class="space-y-3 max-h-[60vh] overflow-y-auto no-scrollbar pb-safe">
             </div>
         </div>
     </div>
@@ -903,34 +949,64 @@
         function renderSettingsAccounts() {
             const list = document.getElementById('account-list-settings');
             list.innerHTML = accounts.map(a => `
-                                                <div class="flex items-center justify-between p-3 bg-gray-50 rounded-xl mb-2 border border-gray-100">
-                                                    <div class="flex flex-col overflow-hidden mr-2">
-                                                        <span class="font-bold text-sm truncate ${a.id === activeAccountId ? 'text-indigo-600' : 'text-gray-800'}">${a.name}</span>
-                                                        <span class="text-[10px] text-gray-500 font-medium">Budget: € ${(a.budget || 0).toLocaleString('it-IT')}</span>
-                                                        <span class="text-[10px] text-green-500 font-medium"> Saldo iniziale: € ${(a.initialBalance || 0).toLocaleString('it-IT')}</span>
-                                                    </div>
-                                                    <div class="flex space-x-1 shrink-0">
-                                                        <button onclick="setInitialBalance('${a.id}')" class="p-2 bg-green-50 text-green-600 rounded-lg hover:bg-green-100 transition-colors" title="Saldo iniziale">
-                                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2 m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6 a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
-                                                            </svg>
-                                                        </button>
-                                                        <button onclick="setBudget('${a.id}')" class="p-2 bg-indigo-50 text-indigo-600 rounded-lg hover:bg-indigo-100 transition-colors" title="Imposta Budget">
-                                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
-                                                        </button>
-                                                        <button onclick="renameAccount('${a.id}')" class="p-2 bg-gray-100 text-gray-500 rounded-lg hover:bg-gray-200 transition-colors" title="Rinomina Conto">
-                                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
-                                                        </button>
-                                                        <button onclick="deleteAccount('${a.id}')" class="p-2 bg-red-50 text-red-500 rounded-lg hover:bg-red-100 transition-colors" title="Elimina Conto">
-                                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
-                                                        </button>
-                                                    </div>
-                                                </div>`).join('');
+                                                        <div class="flex items-center justify-between p-3 bg-gray-50 rounded-xl mb-2 border border-gray-100">
+                                                            <div class="flex flex-col overflow-hidden mr-2">
+                                                                <span class="font-bold text-sm truncate ${a.id === activeAccountId ? 'text-indigo-600' : 'text-gray-800'}">${a.name}</span>
+                                                                <span class="text-[10px] text-gray-500 font-medium">Budget: € ${(a.budget || 0).toLocaleString('it-IT')}</span>
+                                                                <span class="text-[10px] text-green-500 font-medium"> Saldo iniziale: € ${(a.initialBalance || 0).toLocaleString('it-IT')}</span>
+                                                            </div>
+                                                            <div class="flex space-x-1 shrink-0">
+                                                                <button onclick="setInitialBalance('${a.id}')" class="p-2 bg-green-50 text-green-600 rounded-lg hover:bg-green-100 transition-colors" title="Saldo iniziale">
+                                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2 m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6 a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
+                                                                    </svg>
+                                                                </button>
+                                                                <button onclick="setBudget('${a.id}')" class="p-2 bg-indigo-50 text-indigo-600 rounded-lg hover:bg-indigo-100 transition-colors" title="Imposta Budget">
+                                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
+                                                                </button>
+                                                                <button onclick="renameAccount('${a.id}')" class="p-2 bg-gray-100 text-gray-500 rounded-lg hover:bg-gray-200 transition-colors" title="Rinomina Conto">
+                                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
+                                                                </button>
+                                                                <button onclick="deleteAccount('${a.id}')" class="p-2 bg-red-50 text-red-500 rounded-lg hover:bg-red-100 transition-colors" title="Elimina Conto">
+                                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                                                                </button>
+                                                            </div>
+                                                        </div>`).join('');
         }
 
         function toggleSettings(show) {
             const view = document.getElementById('settings-view');
             if (show) { renderSettingsAccounts(); view.classList.remove('hidden'); }
             else { view.classList.add('hidden'); }
+        }
+
+        // --- FUNZIONI PER GRUPPI MOVIMENTI ---
+
+        // Formatta la data in modo amichevole (Oggi, Ieri, Lun 14 Ott...)
+        function getFriendlyDate(dateStr) {
+            const d = new Date(dateStr);
+            const today = new Date().toISOString().split('T')[0];
+            const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0];
+
+            if (dateStr === today) return 'Oggi';
+            if (dateStr === yesterday) return 'Ieri';
+
+            // Es: "Lun 14 Ottobre"
+            const options = { weekday: 'short', day: 'numeric', month: 'long' };
+            return d.toLocaleDateString('it-IT', options);
+        }
+
+        // Gestisce il click sull'header della data
+        function toggleGroup(dateKey) {
+            const list = document.getElementById(`group-list-${dateKey}`);
+            const icon = document.getElementById(`group-icon-${dateKey}`);
+
+            if (list.classList.contains('hidden')) {
+                list.classList.remove('hidden');
+                icon.classList.add('rotate-180');
+            } else {
+                list.classList.add('hidden');
+                icon.classList.remove('rotate-180');
+            }
         }
 
         function updateUI() {
@@ -999,27 +1075,82 @@
                 budgetContainer.classList.add('hidden');
             }
 
+            // --- INIZIO NUOVA LOGICA LISTA (Raggruppata) ---
             const listEl = document.getElementById('transaction-list');
+
             if (filtered.length === 0) {
-                listEl.innerHTML = `<div class="text-center py-10 text-gray-300 italic font-bold">Nessun movimento</div>`;
+                listEl.innerHTML = `
+                            <div class="flex flex-col items-center justify-center py-12 text-gray-300">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 mb-4 opacity-50" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" /></svg>
+                                <span class="font-medium italic">Nessun movimento</span>
+                            </div>`;
             } else {
-                listEl.innerHTML = filtered.sort((a, b) => b.id - a.id).map(t => {
-                    const cat = [...categories.expense, ...categories.income].find(c => c.id === t.category);
+                // 1. Ordina per data decrescente
+                filtered.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+                // 2. Raggruppa per Giorno
+                const groups = {};
+                filtered.forEach(t => {
+                    const dateKey = t.date.split('T')[0]; // "2023-10-27"
+                    if (!groups[dateKey]) groups[dateKey] = [];
+                    groups[dateKey].push(t);
+                });
+
+                // 3. Genera HTML per ogni gruppo
+                listEl.innerHTML = Object.keys(groups).map(dateKey => {
+                    const dailyTx = groups[dateKey];
+                    // Calcola somma giornaliera
+                    const dailySum = dailyTx.reduce((acc, t) => t.type === 'income' ? acc + t.amount : acc - t.amount, 0);
+                    const sumColor = dailySum >= 0 ? 'text-green-500' : 'text-gray-400';
+                    const sumSign = dailySum > 0 ? '+' : '';
+
+                    // Genera card per i movimenti del giorno
+                    const txHtml = dailyTx.map(t => {
+                        const cat = [...categories.expense, ...categories.income].find(c => c.id === t.category);
+                        return `
+                                <div onclick="editTransaction(${t.id})" class="transaction-card flex items-center justify-between p-3 mb-2 bg-white rounded-2xl border border-gray-100 shadow-sm active:scale-98 cursor-pointer relative overflow-hidden">
+                                    <div class="absolute left-0 top-0 bottom-0 w-1" style="background-color: ${cat?.color || '#ccc'}"></div>
+
+                                    <div class="flex items-center space-x-3 pl-3 overflow-hidden">
+                                        <div class="w-10 h-10 rounded-full bg-gray-50 flex items-center justify-center text-xl shrink-0">
+                                            ${cat?.icon || '📦'}
+                                        </div>
+                                        <div class="flex flex-col truncate">
+                                            <span class="font-bold text-gray-800 text-sm truncate leading-tight">${t.description || cat?.label}</span>
+                                            <span class="text-[10px] text-gray-400 font-medium uppercase tracking-wide">${cat?.label}</span>
+                                        </div>
+                                    </div>
+                                    <span class="font-heading font-bold whitespace-nowrap text-sm ${t.type === 'income' ? 'text-green-600' : 'text-gray-800'}">
+                                        ${t.type === 'income' ? '+' : '-'} €${t.amount.toFixed(2)}
+                                    </span>
+                                </div>`;
+                    }).join('');
+
+                    // Ritorna il blocco intero (Header + Lista)
+                    // Nota: "rotate-180" nell'icona perché la lista parte aperta (senza 'hidden')
                     return `
-                                                    <div onclick="editTransaction(${t.id})" class="transaction-card flex items-center justify-between p-4 bg-gray-50 rounded-2xl border-l-4 cursor-pointer transition-all" style="border-color: ${cat?.color}">
-                                                        <div class="flex items-center space-x-3 truncate mr-2">
-                                                            <span class="text-2xl">${cat?.icon}</span>
-                                                            <div class="truncate">
-                                                                <div class="font-bold text-gray-800 truncate text-sm">${t.description || cat?.label}</div>
-                                                                <div class="text-[9px] text-gray-400 font-bold">${new Date(t.date).toLocaleDateString()}</div>
-                                                            </div>
-                                                        </div>
-                                                        <span class="font-black whitespace-nowrap text-sm ${t.type === 'income' ? 'text-green-600' : 'text-red-600'}">
-                                                            ${t.type === 'income' ? '+' : '-'} €${t.amount.toFixed(2)}
-                                                        </span>
-                                                    </div>`;
+                                <div class="mb-4">
+                                    <div onclick="toggleGroup('${dateKey}')" class="flex justify-between items-end px-2 mb-2 cursor-pointer select-none group">
+                                        <div>
+                                            <div class="text-xs font-bold text-gray-400 uppercase tracking-widest">${getFriendlyDate(dateKey)}</div>
+                                        </div>
+                                        <div class="flex items-center space-x-2">
+                                            <span class="text-xs font-bold ${sumColor}">${sumSign}€${dailySum.toFixed(2)}</span>
+                                            <svg id="group-icon-${dateKey}" xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-400 transform rotate-180 transition-transform duration-200 group-hover:text-brand-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                                            </svg>
+                                        </div>
+                                    </div>
+
+                                    <div id="group-list-${dateKey}" class="transition-all">
+                                        ${txHtml}
+                                    </div>
+                                </div>
+                            `;
                 }).join('');
             }
+            // --- FINE NUOVA LOGICA ---
+
             renderChart(filtered.filter(t => t.type === 'expense'));
         }
 
@@ -1101,17 +1232,27 @@
             }
 
             // Popola Select Account
-            const accSelect = document.getElementById('modal-account-select');
-            accSelect.innerHTML = accounts.map(a => `<option value="${a.id}" ${a.id === (tx ? tx.accountId : activeAccountId) ? 'selected' : ''}>${a.name}</option>`).join('');
+            // --- MODIFICA QUESTA PARTE IN openModal ---
+
+            // Imposta il conto iniziale
+            const targetAccountId = tx ? tx.accountId : activeAccountId;
+            const targetAccount = accounts.find(a => a.id === targetAccountId) || accounts[0];
+
+            // Aggiorna l'input nascosto e il testo visibile
+            document.getElementById('modal-account-select').value = targetAccount.id;
+            document.getElementById('selected-account-display').textContent = targetAccount.name;
+
+            // (Nota: Non serve più generare l'innerHTML della select qui, lo fa openAccountPicker al volo)
+            // ------------------------------------------
 
             // Renderizza Griglia Categorie con i colori corretti
             const grid = document.getElementById('category-grid');
             grid.innerHTML = categories[mode].map(c => `
-            <button onclick="selectCategory('${c.id}')" id="cat-${c.id}"
-                class="cat-btn p-3 rounded-2xl border flex flex-col items-center justify-center gap-2 transition-all duration-200 ${c.id === selectedCategory ? activeStyle : inactiveStyle}">
-                <span class="text-2xl filter drop-shadow-sm">${c.icon}</span>
-                <span class="text-[10px] font-bold uppercase tracking-tight">${c.label}</span>
-            </button>`).join('');
+                    <button onclick="selectCategory('${c.id}')" id="cat-${c.id}"
+                        class="cat-btn p-3 rounded-2xl border flex flex-col items-center justify-center gap-2 transition-all duration-200 ${c.id === selectedCategory ? activeStyle : inactiveStyle}">
+                        <span class="text-2xl filter drop-shadow-sm">${c.icon}</span>
+                        <span class="text-[10px] font-bold uppercase tracking-tight">${c.label}</span>
+                    </button>`).join('');
 
             // Setta Valori Input
             document.getElementById('amount-input').value = tx ? tx.amount : '';
@@ -1179,7 +1320,40 @@
             closeModal();
         }
 
-        function deleteTx(id) { if (confirm("Eliminare?")) { transactions = transactions.filter(t => t.id !== id); localStorage.setItem(STORAGE_TX, JSON.stringify(transactions)); updateUI(); closeModal(); } }
+        // --- GESTIONE ELIMINAZIONE TRANSAZIONE ---
+        let txToDeleteId = null;
+
+        // Questa funzione viene chiamata quando premi il cestino nel modale di modifica
+        function deleteTx(id) {
+            txToDeleteId = id;
+            document.getElementById('delete-tx-modal').classList.remove('hidden');
+        }
+
+        function closeDeleteTxModal() {
+            document.getElementById('delete-tx-modal').classList.add('hidden');
+            txToDeleteId = null;
+        }
+
+        // Questa funzione esegue l'eliminazione vera e propria
+        function confirmDeleteTx() {
+            if (!txToDeleteId) return;
+
+            // Filtra via la transazione
+            transactions = transactions.filter(t => t.id !== txToDeleteId);
+
+            // Salva
+            localStorage.setItem(STORAGE_TX, JSON.stringify(transactions));
+
+            // Aggiorna Interfaccia
+            updateUI();
+
+            // Chiudi i modali
+            closeDeleteTxModal(); // Chiude la conferma
+            closeModal();         // Chiude il modale di modifica/inserimento
+
+            showToast("Movimento eliminato");
+        }
+
         function changeMonth(d) { viewDate.setMonth(viewDate.getMonth() + d); updateUI(); }
         function closeModal() { document.getElementById('modal-content').classList.add('translate-y-full'); setTimeout(() => document.getElementById('modal').classList.add('hidden'), 300); }
 
@@ -1295,6 +1469,62 @@
                 } catch { showToast("File non valido"); }
             };
             r.readAsText(file);
+        }
+
+        // --- GESTIONE PICKER CONTO ---
+        function openAccountPicker() {
+            const list = document.getElementById('account-picker-list');
+            const currentId = document.getElementById('modal-account-select').value;
+
+            // Genera la lista dei conti
+            list.innerHTML = accounts.map(a => {
+                const isSelected = a.id === currentId;
+                // Stile diverso se selezionato
+                const activeClass = isSelected
+                    ? 'bg-brand-50 border-brand-500 ring-1 ring-brand-200'
+                    : 'bg-white border-gray-200 hover:border-brand-200';
+
+                return `
+            <button onclick="pickAccount('${a.id}', '${a.name}')" class="w-full flex items-center justify-between p-4 rounded-xl border ${activeClass} transition-all active:scale-98 text-left shadow-sm">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-full bg-brand-100 text-brand-600 flex items-center justify-center font-bold text-lg">
+                        ${a.name.charAt(0).toUpperCase()}
+                    </div>
+                    <div>
+                        <div class="font-bold text-gray-800 text-sm">${a.name}</div>
+                        <div class="text-[10px] text-gray-400">Saldo Iniziale: € ${a.initialBalance}</div>
+                    </div>
+                </div>
+                ${isSelected ? '<div class="text-brand-600"><svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg></div>' : ''}
+            </button>
+            `;
+            }).join('');
+
+            // Mostra il modale con animazione dal basso
+            const modal = document.getElementById('account-picker-modal');
+            const content = document.getElementById('account-picker-content');
+            modal.classList.remove('hidden');
+            // Piccolo ritardo per permettere la transizione CSS
+            setTimeout(() => {
+                content.classList.remove('translate-y-full');
+            }, 10);
+        }
+
+        function closeAccountPicker() {
+            const modal = document.getElementById('account-picker-modal');
+            const content = document.getElementById('account-picker-content');
+
+            content.classList.add('translate-y-full');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+            }, 300);
+        }
+
+        function pickAccount(id, name) {
+            // Aggiorna i valori nel form principale
+            document.getElementById('modal-account-select').value = id;
+            document.getElementById('selected-account-display').textContent = name;
+            closeAccountPicker();
         }
 
         window.onload = updateUI;
