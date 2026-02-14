@@ -214,17 +214,15 @@
                     <div class="bg-gray-50 p-3 rounded-xl border border-dashed border-gray-300">
                         <div class="text-[10px] font-bold text-gray-400 uppercase mb-2">Aggiungi nuovo conto</div>
                         <div class="flex flex-col gap-2">
-                            <div class="flex gap-2">
-                                <input type="text" id="new-account-name" placeholder="Nome (es. Hype)"
-                                       class="flex-1 min-w-0 p-2 bg-white rounded-lg text-sm border outline-none shadow-sm">
+                            <div class="settings-card">
+                                <h3 class="text-xs font-bold text-gray-400 uppercase mb-3">I Tuoi Conti & Budget</h3>
+                                <div id="account-list-settings" class="space-y-2 mb-4"></div>
 
-                                <input type="number" id="new-account-budget" placeholder="Budget €"
-                                       class="w-20 p-2 bg-white rounded-lg text-sm border outline-none shadow-sm text-center">
+                                <button onclick="openAddAccountModal()" class="w-full py-3 bg-brand-50 text-brand-600 font-bold rounded-xl border-2 border-brand-100 border-dashed hover:bg-brand-100 transition-colors flex items-center justify-center gap-2 active:scale-95">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V7z" clip-rule="evenodd" /></svg>
+                                    Aggiungi Nuovo Conto
+                                </button>
                             </div>
-                            <button onclick="addAccount()"
-                                    class="w-full py-2 bg-indigo-600 text-white rounded-lg text-sm font-bold active:bg-indigo-700 transition-colors">
-                                Aggiungi Conto
-                            </button>
                         </div>
                     </div>
                 </div>
@@ -273,11 +271,15 @@
 
                 <div class="settings-card">
                     <h3 class="text-xs font-bold text-gray-400 uppercase mb-3">AI Engine</h3>
-                    <button onclick="promptApiKey()" class="w-full py-2 bg-indigo-50 text-indigo-700 rounded-lg text-xs font-bold">Aggiorna API Key Gemini</button>
+                    <button onclick="openApiKeyModal()" class="w-full py-3 bg-brand-50 text-brand-700 rounded-xl text-xs font-bold flex items-center justify-center gap-2 active:scale-95 transition-transform border border-brand-100">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+                        Configura API Key Gemini
+                    </button>
                 </div>
 
-                <div class="settings-card border-red-100 bg-red-50">
-                    <button onclick="clearHistory()" class="w-full p-2 text-red-600 text-[10px] font-bold uppercase tracking-widest">
+                <div class="settings-card border border-red-100 bg-red-50/50">
+                    <button onclick="openResetModal()" class="w-full p-2 text-red-600 text-[10px] font-bold uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-red-50 rounded-lg transition-colors">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
                         Resetta tutti i dati
                     </button>
                 </div>
@@ -405,6 +407,104 @@
             </div>
         </div>
     </div>
+
+    <div id="simple-alert-modal" class="fixed inset-0 z-[70] hidden flex items-center justify-center p-6">
+        <div class="absolute inset-0 bg-black/40 backdrop-blur-sm transition-opacity" onclick="closeSimpleAlert()"></div>
+
+        <div class="bg-white w-full max-w-xs rounded-3xl p-6 shadow-2xl relative z-10 text-center transform scale-100 transition-all">
+            <div class="w-14 h-14 bg-orange-100 text-orange-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+            </div>
+
+            <h3 id="alert-title" class="text-xl font-heading font-bold text-gray-800 mb-2">Attenzione</h3>
+            <p id="alert-message" class="text-gray-500 text-sm leading-relaxed mb-6">Messaggio di avviso...</p>
+
+            <button onclick="closeSimpleAlert()" class="w-full py-3.5 bg-gray-900 text-white font-semibold rounded-2xl shadow-lg active:scale-95 transition-transform">
+                Ho capito
+            </button>
+        </div>
+    </div>
+
+    <div id="new-account-modal" class="fixed inset-0 z-[60] hidden flex items-center justify-center p-4">
+        <div class="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity" onclick="closeAddAccountModal()"></div>
+
+        <div class="bg-white w-full max-w-sm rounded-3xl p-6 shadow-2xl relative z-10">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-lg font-heading font-bold text-gray-800">Nuovo Conto</h3>
+                <button onclick="closeAddAccountModal()" class="p-2 bg-gray-50 rounded-full text-gray-400 hover:bg-gray-100">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" /></svg>
+                </button>
+            </div>
+
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-xs font-bold text-gray-400 uppercase mb-1 ml-1">Nome Conto</label>
+                    <input type="text" id="modal-new-name" placeholder="Es. Hype, Wallet..." class="w-full bg-gray-50 border border-gray-200 text-gray-800 font-medium rounded-xl p-3 focus:border-brand-500 focus:ring-2 focus:ring-brand-200 outline-none">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-gray-400 uppercase mb-1 ml-1">Saldo Iniziale (€)</label>
+                    <input type="number" id="modal-new-balance" placeholder="0.00" inputmode="decimal" step="0.01" class="w-full bg-gray-50 border border-gray-200 text-gray-800 font-bold text-lg rounded-xl p-3 focus:border-brand-500 focus:ring-2 focus:ring-brand-200 outline-none">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-gray-400 uppercase mb-1 ml-1">Budget Mensile (€)</label>
+                    <input type="number" id="modal-new-budget" placeholder="Opzionale" inputmode="decimal" class="w-full bg-gray-50 border border-gray-200 text-gray-800 font-medium rounded-xl p-3 focus:border-brand-500 focus:ring-2 focus:ring-brand-200 outline-none">
+                </div>
+            </div>
+
+            <button onclick="confirmAddAccount()" class="w-full mt-6 py-3.5 bg-brand-600 text-white font-semibold rounded-xl shadow-lg shadow-brand-200 active:scale-95 transition-all">
+                Crea Conto
+            </button>
+        </div>
+    </div>
+
+    <div id="api-key-modal" class="fixed inset-0 z-[60] hidden flex items-center justify-center p-4">
+        <div class="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity" onclick="closeApiKeyModal()"></div>
+        <div class="bg-white w-full max-w-sm rounded-3xl p-6 shadow-2xl relative z-10">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-heading font-bold text-gray-800">Gemini AI Key</h3>
+                <button onclick="closeApiKeyModal()" class="p-2 bg-gray-50 rounded-full text-gray-400 hover:bg-gray-100">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" /></svg>
+                </button>
+            </div>
+
+            <p class="text-xs text-gray-500 mb-4 leading-relaxed">
+                Incolla qui la tua API Key di Google Gemini per abilitare la scansione intelligente degli scontrini.
+            </p>
+
+            <input type="text" id="modal-api-key" placeholder="Incolla la chiave qui..." class="w-full bg-gray-50 border border-gray-200 text-gray-800 text-sm font-medium rounded-xl p-3 mb-6 focus:border-brand-500 focus:ring-2 focus:ring-brand-200 outline-none">
+
+            <button onclick="saveApiKey()" class="w-full py-3 bg-brand-600 text-white font-semibold rounded-xl shadow-lg shadow-brand-200 active:scale-95 transition-all">
+                Salva Chiave
+            </button>
+        </div>
+    </div>
+
+    <div id="reset-data-modal" class="fixed inset-0 z-[70] hidden flex items-center justify-center p-4">
+        <div class="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity" onclick="closeResetModal()"></div>
+        <div class="bg-white w-full max-w-sm rounded-3xl p-6 shadow-2xl relative z-10 text-center">
+            <div class="w-16 h-16 bg-red-100 text-red-500 rounded-full flex items-center justify-center mx-auto mb-4 animate-pulse">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
+            </div>
+
+            <h3 class="text-xl font-heading font-bold text-gray-900 mb-2">Sei sicuro?</h3>
+            <p class="text-sm text-gray-500 mb-6 leading-relaxed">
+                Stai per cancellare <b>tutti i conti, i movimenti e le impostazioni</b>. Questa azione non può essere annullata.
+            </p>
+
+            <div class="flex gap-3">
+                <button onclick="closeResetModal()" class="flex-1 py-3 bg-gray-100 text-gray-700 font-semibold rounded-xl hover:bg-gray-200 transition-colors">
+                    Annulla
+                </button>
+                <button onclick="confirmResetData()" class="flex-1 py-3 bg-red-600 text-white font-semibold rounded-xl shadow-lg shadow-red-200 active:scale-95 transition-all">
+                    Elimina Tutto
+                </button>
+            </div>
+        </div>
+    </div>
     <script>
         const STORAGE_TX = 'spese_v3_data';
         const STORAGE_ACC = 'spese_v3_accounts';
@@ -485,77 +585,149 @@
             setTimeout(() => t.style.opacity = '0', 2500);
         }
 
-        // BACKUP AVANZATO
-        async function shareBackup() {
-            const data = { app: "SpesePro", version: "3.1", transactions, accounts };
-            const json = JSON.stringify(data, null, 2);
-            const filename = `backup_spesepro_${new Date().toISOString().split('T')[0]}.json`;
+        // --- FUNZIONI DI BACKUP OTTIMIZZATE ---
 
-            if (navigator.share) {
-                const file = new File([json], filename, { type: 'application/json' });
+        // 1. Helper per generare i dati (evita codice duplicato)
+        function getBackupData() {
+            const timestamp = new Date().toISOString().split('T')[0];
+            const filename = `backup_spesepro_${timestamp}.json`;
+            const data = {
+                app: "SpesePro",
+                version: "3.1",
+                exportedAt: new Date().toISOString(),
+                transactions: transactions,
+                accounts: accounts
+            };
+            return { json: JSON.stringify(data, null, 2), filename };
+        }
+
+        // 2. Condivisione Avanzata (Per Mobile: Drive, WhatsApp, File System)
+        async function shareBackup() {
+            const { json, filename } = getBackupData();
+            const file = new File([json], filename, { type: 'application/json' });
+
+            // Verifica se il browser supporta la condivisione
+            if (navigator.canShare && navigator.canShare({ files: [file] })) {
                 try {
                     await navigator.share({
                         title: 'Backup SpesePro',
-                        text: 'File di backup della mia app di gestione spese.',
+                        text: `Backup del ${new Date().toLocaleDateString()}`,
                         files: [file]
                     });
-                    showToast("Menu condivisione aperto!");
+                    showToast("Backup condiviso!");
                 } catch (err) {
-                    if (err.name !== 'AbortError') showToast("Errore condivisione");
-                    downloadBackupManual(json, filename);
+                    if (err.name !== 'AbortError') {
+                        console.error(err);
+                        showToast("Errore condivisione. Scarico il file...");
+                        downloadBackupManual(json, filename); // Fallback automatico
+                    }
                 }
             } else {
+                // Se non supporta la condivisione file (es. PC vecchi o alcuni Android)
                 downloadBackupManual(json, filename);
             }
         }
 
+        // 3. Salvataggio Locale (Supporto PC Desktop + Download Mobile classico)
         async function saveToFileSystem() {
-            const data = { app: "SpesePro", transactions, accounts };
-            const json = JSON.stringify(data, null, 2);
+            const { json, filename } = getBackupData();
+
+            // Tenta API Desktop moderna (Chrome/Edge PC)
             if ('showSaveFilePicker' in window) {
                 try {
                     const handle = await window.showSaveFilePicker({
-                        suggestedName: `backup_spese_${new Date().toISOString().split('T')[0]}.json`,
+                        suggestedName: filename,
                         types: [{ description: 'JSON File', accept: { 'application/json': ['.json'] } }],
                     });
                     const writable = await handle.createWritable();
                     await writable.write(json);
                     await writable.close();
-                    showToast("Salvato con successo!");
+                    showToast("Salvato su disco!");
                 } catch (err) {
-                    if (err.name !== 'AbortError') showToast("Impossibile salvare");
+                    if (err.name !== 'AbortError') showToast("Salvataggio annullato");
                 }
             } else {
-                downloadBackupManual(json, `backup_spese_${new Date().toISOString().split('T')[0]}.json`);
+                // Fallback per Mobile (iOS/Android) -> Download classico
+                downloadBackupManual(json, filename);
             }
         }
 
+        // 4. Funzione di Download "Manuale" (Fallback universale)
         function downloadBackupManual(json, filename) {
             const blob = new Blob([json], { type: 'application/json' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
+            a.style.display = 'none';
             a.href = url;
             a.download = filename;
+            document.body.appendChild(a);
             a.click();
-            URL.revokeObjectURL(url);
-            showToast("Backup scaricato!");
+
+            setTimeout(() => {
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                showToast("Backup scaricato!");
+            }, 100);
         }
 
-        // LOGICA CONTI E BUDGET
-        function addAccount() {
-            const nameInput = document.getElementById('new-account-name');
-            const budgetInput = document.getElementById('new-account-budget');
-            const name = nameInput.value.trim();
-            const budget = parseFloat(budgetInput.value) || 0;
-            const initialBalance = parseFloat(prompt("Saldo iniziale del conto (€):", "0")) || 0;
+        // --- GESTIONE NUOVO CONTO ---
+        function openAddAccountModal() {
+            // Resetta i campi
+            document.getElementById('modal-new-name').value = '';
+            document.getElementById('modal-new-balance').value = '';
+            document.getElementById('modal-new-budget').value = '';
 
-            if (!name) return;
-            accounts.push({ id: 'acc_' + Date.now(), name, budget, initialBalance });
+            document.getElementById('new-account-modal').classList.remove('hidden');
+            setTimeout(() => document.getElementById('modal-new-name').focus(), 50);
+        }
+
+        function closeAddAccountModal() {
+            document.getElementById('new-account-modal').classList.add('hidden');
+        }
+
+        function confirmAddAccount() {
+            const nameInput = document.getElementById('modal-new-name');
+            const balanceInput = document.getElementById('modal-new-balance');
+            const budgetInput = document.getElementById('modal-new-budget');
+
+            const name = nameInput.value.trim();
+            // Sostituisce la virgola con punto per i decimali
+            const initialBalance = parseFloat(balanceInput.value.replace(',', '.')) || 0;
+            const budget = parseFloat(budgetInput.value.replace(',', '.')) || 0;
+
+            // --- MODIFICA QUI: Usa il modale invece dell'alert ---
+            if (!name) {
+                showSimpleAlert(
+                    "Nome Mancante",
+                    "Per favore, inserisci un nome per il nuovo conto."
+                );
+                return;
+            }
+            // ----------------------------------------------------
+
+            // Crea il nuovo conto
+            const newAccount = {
+                id: 'acc_' + Date.now(),
+                name: name,
+                budget: budget,
+                initialBalance: initialBalance
+            };
+
+            accounts.push(newAccount);
+
+            // Se è il primo conto, attivalo subito
+            if (accounts.length === 1) {
+                activeAccountId = newAccount.id;
+            }
+
             localStorage.setItem(STORAGE_ACC, JSON.stringify(accounts));
-            nameInput.value = '';
-            budgetInput.value = '';
+
             renderSettingsAccounts();
             updateUI();
+            closeAddAccountModal();
+
+            // Feedback utente elegante
+            showToast("Conto creato con successo!");
         }
 
         // --- GESTIONE RINOMINA ---
@@ -597,7 +769,11 @@
 
         function deleteAccount(id) {
             if (accounts.length === 1) {
-                alert("Impossibile eliminare l'unico conto rimasto. Creane prima un altro.");
+                // Invece di alert("..."), usiamo il nuovo modale bello
+                showSimpleAlert(
+                    "Impossibile Eliminare",
+                    "Non puoi eliminare l'unico conto rimasto. Per favore, crea prima un nuovo conto e poi riprova."
+                );
                 return;
             }
 
@@ -678,6 +854,17 @@
             closeDeleteModal();
         }
 
+        // --- GESTIONE AVVISI SEMPLICI ---
+        function showSimpleAlert(title, message) {
+            document.getElementById('alert-title').textContent = title;
+            document.getElementById('alert-message').textContent = message;
+            document.getElementById('simple-alert-modal').classList.remove('hidden');
+        }
+
+        function closeSimpleAlert() {
+            document.getElementById('simple-alert-modal').classList.add('hidden');
+        }
+
         function setBudget(id) {
             const acc = accounts.find(a => a.id === id);
             if (!acc) return;
@@ -748,28 +935,28 @@
         function renderSettingsAccounts() {
             const list = document.getElementById('account-list-settings');
             list.innerHTML = accounts.map(a => `
-                                <div class="flex items-center justify-between p-3 bg-gray-50 rounded-xl mb-2 border border-gray-100">
-                                    <div class="flex flex-col overflow-hidden mr-2">
-                                        <span class="font-bold text-sm truncate ${a.id === activeAccountId ? 'text-indigo-600' : 'text-gray-800'}">${a.name}</span>
-                                        <span class="text-[10px] text-gray-500 font-medium">Budget: € ${(a.budget || 0).toLocaleString('it-IT')}</span>
-                                        <span class="text-[10px] text-green-500 font-medium"> Saldo iniziale: € ${(a.initialBalance || 0).toLocaleString('it-IT')}</span>
-                                    </div>
-                                    <div class="flex space-x-1 shrink-0">
-                                        <button onclick="setInitialBalance('${a.id}')" class="p-2 bg-green-50 text-green-600 rounded-lg hover:bg-green-100 transition-colors" title="Saldo iniziale">
-                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2 m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6 a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
-                                            </svg>
-                                        </button>
-                                        <button onclick="setBudget('${a.id}')" class="p-2 bg-indigo-50 text-indigo-600 rounded-lg hover:bg-indigo-100 transition-colors" title="Imposta Budget">
-                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
-                                        </button>
-                                        <button onclick="renameAccount('${a.id}')" class="p-2 bg-gray-100 text-gray-500 rounded-lg hover:bg-gray-200 transition-colors" title="Rinomina Conto">
-                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
-                                        </button>
-                                        <button onclick="deleteAccount('${a.id}')" class="p-2 bg-red-50 text-red-500 rounded-lg hover:bg-red-100 transition-colors" title="Elimina Conto">
-                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
-                                        </button>
-                                    </div>
-                                </div>`).join('');
+                                            <div class="flex items-center justify-between p-3 bg-gray-50 rounded-xl mb-2 border border-gray-100">
+                                                <div class="flex flex-col overflow-hidden mr-2">
+                                                    <span class="font-bold text-sm truncate ${a.id === activeAccountId ? 'text-indigo-600' : 'text-gray-800'}">${a.name}</span>
+                                                    <span class="text-[10px] text-gray-500 font-medium">Budget: € ${(a.budget || 0).toLocaleString('it-IT')}</span>
+                                                    <span class="text-[10px] text-green-500 font-medium"> Saldo iniziale: € ${(a.initialBalance || 0).toLocaleString('it-IT')}</span>
+                                                </div>
+                                                <div class="flex space-x-1 shrink-0">
+                                                    <button onclick="setInitialBalance('${a.id}')" class="p-2 bg-green-50 text-green-600 rounded-lg hover:bg-green-100 transition-colors" title="Saldo iniziale">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2 m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6 a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
+                                                        </svg>
+                                                    </button>
+                                                    <button onclick="setBudget('${a.id}')" class="p-2 bg-indigo-50 text-indigo-600 rounded-lg hover:bg-indigo-100 transition-colors" title="Imposta Budget">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
+                                                    </button>
+                                                    <button onclick="renameAccount('${a.id}')" class="p-2 bg-gray-100 text-gray-500 rounded-lg hover:bg-gray-200 transition-colors" title="Rinomina Conto">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
+                                                    </button>
+                                                    <button onclick="deleteAccount('${a.id}')" class="p-2 bg-red-50 text-red-500 rounded-lg hover:bg-red-100 transition-colors" title="Elimina Conto">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                                                    </button>
+                                                </div>
+                                            </div>`).join('');
         }
 
         function toggleSettings(show) {
@@ -851,18 +1038,18 @@
                 listEl.innerHTML = filtered.sort((a, b) => b.id - a.id).map(t => {
                     const cat = [...categories.expense, ...categories.income].find(c => c.id === t.category);
                     return `
-                                    <div onclick="editTransaction(${t.id})" class="transaction-card flex items-center justify-between p-4 bg-gray-50 rounded-2xl border-l-4 cursor-pointer transition-all" style="border-color: ${cat?.color}">
-                                        <div class="flex items-center space-x-3 truncate mr-2">
-                                            <span class="text-2xl">${cat?.icon}</span>
-                                            <div class="truncate">
-                                                <div class="font-bold text-gray-800 truncate text-sm">${t.description || cat?.label}</div>
-                                                <div class="text-[9px] text-gray-400 font-bold">${new Date(t.date).toLocaleDateString()}</div>
-                                            </div>
-                                        </div>
-                                        <span class="font-black whitespace-nowrap text-sm ${t.type === 'income' ? 'text-green-600' : 'text-red-600'}">
-                                            ${t.type === 'income' ? '+' : '-'} €${t.amount.toFixed(2)}
-                                        </span>
-                                    </div>`;
+                                                <div onclick="editTransaction(${t.id})" class="transaction-card flex items-center justify-between p-4 bg-gray-50 rounded-2xl border-l-4 cursor-pointer transition-all" style="border-color: ${cat?.color}">
+                                                    <div class="flex items-center space-x-3 truncate mr-2">
+                                                        <span class="text-2xl">${cat?.icon}</span>
+                                                        <div class="truncate">
+                                                            <div class="font-bold text-gray-800 truncate text-sm">${t.description || cat?.label}</div>
+                                                            <div class="text-[9px] text-gray-400 font-bold">${new Date(t.date).toLocaleDateString()}</div>
+                                                        </div>
+                                                    </div>
+                                                    <span class="font-black whitespace-nowrap text-sm ${t.type === 'income' ? 'text-green-600' : 'text-red-600'}">
+                                                        ${t.type === 'income' ? '+' : '-'} €${t.amount.toFixed(2)}
+                                                    </span>
+                                                </div>`;
                 }).join('');
             }
             renderChart(filtered.filter(t => t.type === 'expense'));
@@ -924,7 +1111,15 @@
             modal.classList.remove('hidden');
             document.getElementById('delete-btn').classList.toggle('hidden', !editingTxId);
 
-            // Configurazione Colori in base al tipo (Entrata/Uscita)
+            // --- CORREZIONE COLORI ---
+            // Definiamo lo stile "Attivo" in base alla modalità (Verde o Viola)
+            const activeStyle = mode === 'income'
+                ? 'bg-green-500 border-green-500 ring-2 ring-green-200 text-white transform scale-105 shadow-md'
+                : 'bg-brand-600 border-brand-600 ring-2 ring-brand-200 text-white transform scale-105 shadow-md';
+
+            const inactiveStyle = 'bg-gray-50 border-gray-100 text-gray-500 hover:bg-gray-100 hover:border-gray-200';
+
+            // Configurazione UI Testi e Bottoni
             if (mode === 'income') {
                 title.textContent = editingTxId ? 'Modifica Entrata' : 'Nuova Entrata';
                 title.className = "text-lg font-heading font-semibold text-green-600 uppercase tracking-wider";
@@ -932,8 +1127,8 @@
                 amountInput.className = "w-full text-5xl font-heading font-bold text-green-600 text-center bg-transparent border-none focus:ring-0 p-0 placeholder-gray-200";
             } else {
                 title.textContent = editingTxId ? 'Modifica Uscita' : 'Nuova Uscita';
-                title.className = "text-lg font-heading font-semibold text-red-500 uppercase tracking-wider";
-                saveBtn.className = "flex-1 py-4 rounded-2xl text-white font-heading font-semibold text-lg shadow-lg active:scale-95 transition-all bg-brand-600 shadow-brand-200"; // Uso il Brand (Viola) per salvare le uscite, o red-500 se preferisci
+                title.className = "text-lg font-heading font-semibold text-brand-600 uppercase tracking-wider";
+                saveBtn.className = "flex-1 py-4 rounded-2xl text-white font-heading font-semibold text-lg shadow-lg active:scale-95 transition-all bg-brand-600 shadow-brand-200";
                 amountInput.className = "w-full text-5xl font-heading font-bold text-gray-800 text-center bg-transparent border-none focus:ring-0 p-0 placeholder-gray-200";
             }
 
@@ -941,14 +1136,14 @@
             const accSelect = document.getElementById('modal-account-select');
             accSelect.innerHTML = accounts.map(a => `<option value="${a.id}" ${a.id === (tx ? tx.accountId : activeAccountId) ? 'selected' : ''}>${a.name}</option>`).join('');
 
-            // Renderizza Griglia Categorie
+            // Renderizza Griglia Categorie con i colori corretti
             const grid = document.getElementById('category-grid');
             grid.innerHTML = categories[mode].map(c => `
-                    <button onclick="selectCategory('${c.id}')" id="cat-${c.id}"
-                        class="cat-btn p-3 rounded-2xl border flex flex-col items-center justify-center gap-2 transition-all duration-200 ${c.id === selectedCategory ? 'bg-gray-900 text-white border-gray-900 ring-2 ring-offset-1 ring-gray-300 transform scale-105' : 'bg-gray-50 border-gray-100 text-gray-500 hover:bg-gray-100'}">
-                        <span class="text-2xl filter drop-shadow-sm">${c.icon}</span>
-                        <span class="text-[10px] font-bold uppercase tracking-tight">${c.label}</span>
-                    </button>`).join('');
+        <button onclick="selectCategory('${c.id}')" id="cat-${c.id}" 
+            class="cat-btn p-3 rounded-2xl border flex flex-col items-center justify-center gap-2 transition-all duration-200 ${c.id === selectedCategory ? activeStyle : inactiveStyle}">
+            <span class="text-2xl filter drop-shadow-sm">${c.icon}</span>
+            <span class="text-[10px] font-bold uppercase tracking-tight">${c.label}</span>
+        </button>`).join('');
 
             // Setta Valori Input
             document.getElementById('amount-input').value = tx ? tx.amount : '';
@@ -965,7 +1160,7 @@
             // Animazione Entrata
             setTimeout(() => {
                 content.classList.remove('translate-y-full');
-                document.getElementById('amount-input').focus(); // Focus automatico sull'importo
+                document.getElementById('amount-input').focus();
             }, 10);
         }
 
@@ -1020,9 +1215,53 @@
         function changeMonth(d) { viewDate.setMonth(viewDate.getMonth() + d); updateUI(); }
         function closeModal() { document.getElementById('modal-content').classList.add('translate-y-full'); setTimeout(() => document.getElementById('modal').classList.add('hidden'), 300); }
 
-        function promptApiKey() {
-            const key = prompt("Inserisci API Key Gemini:", apiKey);
-            if (key !== null) { apiKey = key; localStorage.setItem('gemini_api_key', key); }
+        // --- GESTIONE API KEY MODALE ---
+        function openApiKeyModal() {
+            // Carica la chiave esistente se c'è
+            const currentKey = localStorage.getItem('gemini_api_key') || "";
+            document.getElementById('modal-api-key').value = currentKey;
+
+            document.getElementById('api-key-modal').classList.remove('hidden');
+        }
+
+        function closeApiKeyModal() {
+            document.getElementById('api-key-modal').classList.add('hidden');
+        }
+
+        function saveApiKey() {
+            const input = document.getElementById('modal-api-key');
+            const key = input.value.trim();
+
+            if (key) {
+                apiKey = key;
+                localStorage.setItem('gemini_api_key', key);
+                showToast("API Key salvata!");
+                closeApiKeyModal();
+            } else {
+                // Se l'utente cancella tutto e salva, rimuoviamo la chiave
+                apiKey = "";
+                localStorage.removeItem('gemini_api_key');
+                showToast("API Key rimossa");
+                closeApiKeyModal();
+            }
+        }
+
+        // --- GESTIONE RESET DATI MODALE ---
+        function openResetModal() {
+            document.getElementById('reset-data-modal').classList.remove('hidden');
+        }
+
+        function closeResetModal() {
+            document.getElementById('reset-data-modal').classList.add('hidden');
+        }
+
+        function confirmResetData() {
+            localStorage.clear();
+            // Feedback visivo prima del reload
+            showToast("Reset completato. Riavvio...");
+            setTimeout(() => {
+                location.reload();
+            }, 1000);
         }
 
         function renderChart(exps) {
@@ -1089,8 +1328,6 @@
             };
             r.readAsText(file);
         }
-
-        function clearHistory() { if (confirm("Cancellare TUTTO?")) { localStorage.clear(); location.reload(); } }
 
         window.onload = updateUI;
         document.getElementById('modal').onclick = (e) => { if (e.target === document.getElementById('modal')) closeModal(); };
