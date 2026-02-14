@@ -331,7 +331,9 @@
                             <span class="text-gray-400 mr-3">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
                             </span>
-                            <input type="text" id="desc-input" placeholder="Aggiungi nota..." class="w-full bg-transparent font-medium text-gray-700 placeholder-gray-400 outline-none">
+                            <input type="text" id="desc-input" placeholder="Aggiungi nota..."
+                                   onkeydown="if(event.key === 'Enter') this.blur()"
+                                   class="w-full bg-transparent font-medium text-gray-700 placeholder-gray-400 outline-none">
                         </div>
 
                         <div>
@@ -354,6 +356,55 @@
         </div>
     </div>
 
+    <div id="rename-modal" class="fixed inset-0 z-[60] hidden flex items-center justify-center p-4">
+        <div class="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity" onclick="closeRenameModal()"></div>
+        <div class="bg-white w-full max-w-sm rounded-3xl p-6 shadow-2xl relative z-10 transform transition-all scale-100">
+            <h3 class="text-lg font-heading font-bold text-gray-800 mb-4">Rinomina Conto</h3>
+            <input type="text" id="rename-input" class="w-full bg-gray-50 border border-gray-200 text-gray-800 text-lg font-medium rounded-xl p-3 mb-6 focus:border-brand-500 focus:ring-2 focus:ring-brand-200 outline-none" placeholder="Nuovo nome">
+            <div class="flex gap-3">
+                <button onclick="closeRenameModal()" class="flex-1 py-3 bg-gray-100 text-gray-600 font-semibold rounded-xl hover:bg-gray-200 transition-colors">Annulla</button>
+                <button onclick="confirmRename()" class="flex-1 py-3 bg-brand-600 text-white font-semibold rounded-xl shadow-lg shadow-brand-200 active:scale-95 transition-all">Salva</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="delete-account-modal" class="fixed inset-0 z-[60] hidden flex items-center justify-center p-4">
+        <div class="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity" onclick="closeDeleteModal()"></div>
+        <div class="bg-white w-full max-w-sm rounded-3xl p-6 shadow-2xl relative z-10">
+            <div class="text-center mb-4">
+                <div class="w-12 h-12 bg-red-100 text-red-500 rounded-full flex items-center justify-center mx-auto mb-3">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                </div>
+                <h3 class="text-lg font-heading font-bold text-gray-800">Elimina Conto</h3>
+                <p class="text-sm text-gray-500 mt-1">Questa azione è irreversibile.</p>
+            </div>
+
+            <div id="delete-options" class="hidden mb-6 bg-orange-50 p-4 rounded-2xl border border-orange-100">
+                <p class="text-xs font-bold text-orange-700 uppercase mb-2">Attenzione</p>
+                <p class="text-sm text-orange-800 mb-3">Ci sono <span id="del-tx-count" class="font-bold">0</span> movimenti su questo conto.</p>
+
+                <div class="space-y-2">
+                    <label class="flex items-center space-x-2 p-2 rounded-lg border bg-white cursor-pointer hover:border-brand-400">
+                        <input type="radio" name="del-strategy" value="delete" checked class="text-brand-600 focus:ring-brand-500" onchange="toggleMoveSelect(false)">
+                        <span class="text-sm font-medium text-gray-700">Elimina anche i movimenti</span>
+                    </label>
+                    <label class="flex items-center space-x-2 p-2 rounded-lg border bg-white cursor-pointer hover:border-brand-400">
+                        <input type="radio" name="del-strategy" value="move" class="text-brand-600 focus:ring-brand-500" onchange="toggleMoveSelect(true)">
+                        <span class="text-sm font-medium text-gray-700">Sposta su altro conto</span>
+                    </label>
+                </div>
+
+                <div id="target-acc-container" class="hidden mt-2 ml-6">
+                    <select id="target-acc-select" class="w-full p-2 bg-white border border-gray-300 rounded-lg text-sm outline-none focus:border-brand-500"></select>
+                </div>
+            </div>
+
+            <div class="flex gap-3">
+                <button onclick="closeDeleteModal()" class="flex-1 py-3 bg-gray-100 text-gray-600 font-semibold rounded-xl hover:bg-gray-200">Annulla</button>
+                <button onclick="confirmDeleteAccount()" class="flex-1 py-3 bg-red-500 text-white font-semibold rounded-xl shadow-lg shadow-red-200 active:scale-95 transition-all">Elimina</button>
+            </div>
+        </div>
+    </div>
     <script>
         const STORAGE_TX = 'spese_v3_data';
         const STORAGE_ACC = 'spese_v3_accounts';
@@ -507,16 +558,124 @@
             updateUI();
         }
 
+        // --- GESTIONE RINOMINA ---
+        let accountToRenameId = null;
+
         function renameAccount(id) {
+            accountToRenameId = id;
             const acc = accounts.find(a => a.id === id);
             if (!acc) return;
-            const newName = prompt("Rinomina conto:", acc.name);
+
+            document.getElementById('rename-input').value = acc.name;
+            document.getElementById('rename-modal').classList.remove('hidden');
+            setTimeout(() => document.getElementById('rename-input').focus(), 50);
+        }
+
+        function closeRenameModal() {
+            document.getElementById('rename-modal').classList.add('hidden');
+            accountToRenameId = null;
+        }
+
+        function confirmRename() {
+            if (!accountToRenameId) return;
+            const newName = document.getElementById('rename-input').value.trim();
+
             if (newName) {
-                acc.name = newName;
-                localStorage.setItem(STORAGE_ACC, JSON.stringify(accounts));
-                renderSettingsAccounts();
-                updateUI();
+                const acc = accounts.find(a => a.id === accountToRenameId);
+                if (acc) {
+                    acc.name = newName;
+                    localStorage.setItem(STORAGE_ACC, JSON.stringify(accounts));
+                    renderSettingsAccounts();
+                    updateUI();
+                }
             }
+            closeRenameModal();
+        }
+
+        // --- GESTIONE ELIMINAZIONE CONTO ---
+        let accountToDeleteId = null;
+
+        function deleteAccount(id) {
+            if (accounts.length === 1) {
+                alert("Impossibile eliminare l'unico conto rimasto. Creane prima un altro.");
+                return;
+            }
+
+            accountToDeleteId = id;
+            const txCount = transactions.filter(t => t.accountId === id).length;
+            const optionsDiv = document.getElementById('delete-options');
+            const countSpan = document.getElementById('del-tx-count');
+
+            // Reset del form
+            document.querySelector('input[name="del-strategy"][value="delete"]').checked = true;
+            toggleMoveSelect(false);
+
+            // Se ci sono movimenti, mostra le opzioni complesse
+            if (txCount > 0) {
+                optionsDiv.classList.remove('hidden');
+                countSpan.textContent = txCount;
+
+                // Popola la select con gli altri conti
+                const targetSelect = document.getElementById('target-acc-select');
+                targetSelect.innerHTML = accounts
+                    .filter(a => a.id !== id)
+                    .map(a => `<option value="${a.id}">${a.name}</option>`)
+                    .join('');
+            } else {
+                optionsDiv.classList.add('hidden');
+            }
+
+            document.getElementById('delete-account-modal').classList.remove('hidden');
+        }
+
+        function toggleMoveSelect(show) {
+            const container = document.getElementById('target-acc-container');
+            if (show) container.classList.remove('hidden');
+            else container.classList.add('hidden');
+        }
+
+        function closeDeleteModal() {
+            document.getElementById('delete-account-modal').classList.add('hidden');
+            accountToDeleteId = null;
+        }
+
+        function confirmDeleteAccount() {
+            if (!accountToDeleteId) return;
+
+            const txCount = transactions.filter(t => t.accountId === accountToDeleteId).length;
+
+            if (txCount > 0) {
+                const strategy = document.querySelector('input[name="del-strategy"]:checked').value;
+
+                if (strategy === 'move') {
+                    // Logica SPOSTAMENTO
+                    const targetId = document.getElementById('target-acc-select').value;
+                    if (!targetId) return;
+
+                    transactions.forEach(t => {
+                        if (t.accountId === accountToDeleteId) t.accountId = targetId;
+                    });
+                } else {
+                    // Logica ELIMINAZIONE A CASCATA
+                    transactions = transactions.filter(t => t.accountId !== accountToDeleteId);
+                }
+            }
+
+            // Elimina il conto
+            accounts = accounts.filter(a => a.id !== accountToDeleteId);
+
+            // Se abbiamo eliminato il conto attivo, spostiamoci sul primo disponibile
+            if (activeAccountId === accountToDeleteId) {
+                activeAccountId = accounts[0].id;
+            }
+
+            // Salvataggio
+            localStorage.setItem(STORAGE_ACC, JSON.stringify(accounts));
+            localStorage.setItem(STORAGE_TX, JSON.stringify(transactions));
+
+            renderSettingsAccounts();
+            updateUI();
+            closeDeleteModal();
         }
 
         function setBudget(id) {
@@ -565,63 +724,6 @@
             updateUI();
         }
 
-        function deleteAccount(id) {
-
-            if (accounts.length === 1) {
-                alert("Non puoi eliminare l'ultimo conto.\nCrea prima un nuovo conto.");
-                return;
-            }
-
-            const txCount = transactions.filter(t => t.accountId === id).length;
-
-            if (txCount > 0) {
-
-                const choice = confirm(
-                    `Questo conto ha ${txCount} movimenti.\n\n` +
-                    `OK = Elimina anche i movimenti\n` +
-                    `ANNULLA = Sposta i movimenti su un altro conto`
-                );
-
-                if (choice) {
-                    // 🔴 ELIMINA MOVIMENTI
-                    transactions = transactions.filter(t => t.accountId !== id);
-                } else {
-                    // 🔁 SPOSTA MOVIMENTI
-                    const target = prompt(
-                        "Inserisci l'ID del conto di destinazione:\n" +
-                        accounts.filter(a => a.id !== id).map(a => `${a.id} → ${a.name}`).join('\n')
-                    );
-
-                    if (!target || !accounts.find(a => a.id === target)) {
-                        alert("Operazione annullata");
-                        return;
-                    }
-
-                    transactions.forEach(t => {
-                        if (t.accountId === id) t.accountId = target;
-                    });
-                }
-            }
-
-            // 🧹 ELIMINA CONTO
-            accounts = accounts.filter(a => a.id !== id);
-
-            // 🔄 riallinea sempre il conto attivo
-            if (activeAccountId === id || !accounts.find(a => a.id === activeAccountId)) {
-                activeAccountId = accounts[0].id;
-
-                renderSettingsAccounts();
-                updateUI();
-            }
-
-            // 💾 SALVA
-            localStorage.setItem(STORAGE_ACC, JSON.stringify(accounts));
-            localStorage.setItem(STORAGE_TX, JSON.stringify(transactions));
-
-            renderSettingsAccounts();
-            updateUI();
-        }
-
         function navigateAccount(dir) {
             const idx = accounts.findIndex(a => a.id === activeAccountId);
             let nextIdx = (idx + dir + accounts.length) % accounts.length;
@@ -646,28 +748,28 @@
         function renderSettingsAccounts() {
             const list = document.getElementById('account-list-settings');
             list.innerHTML = accounts.map(a => `
-                            <div class="flex items-center justify-between p-3 bg-gray-50 rounded-xl mb-2 border border-gray-100">
-                                <div class="flex flex-col overflow-hidden mr-2">
-                                    <span class="font-bold text-sm truncate ${a.id === activeAccountId ? 'text-indigo-600' : 'text-gray-800'}">${a.name}</span>
-                                    <span class="text-[10px] text-gray-500 font-medium">Budget: € ${(a.budget || 0).toLocaleString('it-IT')}</span>
-                                    <span class="text-[10px] text-green-500 font-medium"> Saldo iniziale: € ${(a.initialBalance || 0).toLocaleString('it-IT')}</span>
-                                </div>
-                                <div class="flex space-x-1 shrink-0">
-                                    <button onclick="setInitialBalance('${a.id}')" class="p-2 bg-green-50 text-green-600 rounded-lg hover:bg-green-100 transition-colors" title="Saldo iniziale">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2 m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6 a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
-                                        </svg>
-                                    </button>
-                                    <button onclick="setBudget('${a.id}')" class="p-2 bg-indigo-50 text-indigo-600 rounded-lg hover:bg-indigo-100 transition-colors" title="Imposta Budget">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
-                                    </button>
-                                    <button onclick="renameAccount('${a.id}')" class="p-2 bg-gray-100 text-gray-500 rounded-lg hover:bg-gray-200 transition-colors" title="Rinomina Conto">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
-                                    </button>
-                                    <button onclick="deleteAccount('${a.id}')" class="p-2 bg-red-50 text-red-500 rounded-lg hover:bg-red-100 transition-colors" title="Elimina Conto">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
-                                    </button>
-                                </div>
-                            </div>`).join('');
+                                <div class="flex items-center justify-between p-3 bg-gray-50 rounded-xl mb-2 border border-gray-100">
+                                    <div class="flex flex-col overflow-hidden mr-2">
+                                        <span class="font-bold text-sm truncate ${a.id === activeAccountId ? 'text-indigo-600' : 'text-gray-800'}">${a.name}</span>
+                                        <span class="text-[10px] text-gray-500 font-medium">Budget: € ${(a.budget || 0).toLocaleString('it-IT')}</span>
+                                        <span class="text-[10px] text-green-500 font-medium"> Saldo iniziale: € ${(a.initialBalance || 0).toLocaleString('it-IT')}</span>
+                                    </div>
+                                    <div class="flex space-x-1 shrink-0">
+                                        <button onclick="setInitialBalance('${a.id}')" class="p-2 bg-green-50 text-green-600 rounded-lg hover:bg-green-100 transition-colors" title="Saldo iniziale">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2 m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6 a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
+                                            </svg>
+                                        </button>
+                                        <button onclick="setBudget('${a.id}')" class="p-2 bg-indigo-50 text-indigo-600 rounded-lg hover:bg-indigo-100 transition-colors" title="Imposta Budget">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
+                                        </button>
+                                        <button onclick="renameAccount('${a.id}')" class="p-2 bg-gray-100 text-gray-500 rounded-lg hover:bg-gray-200 transition-colors" title="Rinomina Conto">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
+                                        </button>
+                                        <button onclick="deleteAccount('${a.id}')" class="p-2 bg-red-50 text-red-500 rounded-lg hover:bg-red-100 transition-colors" title="Elimina Conto">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                                        </button>
+                                    </div>
+                                </div>`).join('');
         }
 
         function toggleSettings(show) {
@@ -749,18 +851,18 @@
                 listEl.innerHTML = filtered.sort((a, b) => b.id - a.id).map(t => {
                     const cat = [...categories.expense, ...categories.income].find(c => c.id === t.category);
                     return `
-                                <div onclick="editTransaction(${t.id})" class="transaction-card flex items-center justify-between p-4 bg-gray-50 rounded-2xl border-l-4 cursor-pointer transition-all" style="border-color: ${cat?.color}">
-                                    <div class="flex items-center space-x-3 truncate mr-2">
-                                        <span class="text-2xl">${cat?.icon}</span>
-                                        <div class="truncate">
-                                            <div class="font-bold text-gray-800 truncate text-sm">${t.description || cat?.label}</div>
-                                            <div class="text-[9px] text-gray-400 font-bold">${new Date(t.date).toLocaleDateString()}</div>
+                                    <div onclick="editTransaction(${t.id})" class="transaction-card flex items-center justify-between p-4 bg-gray-50 rounded-2xl border-l-4 cursor-pointer transition-all" style="border-color: ${cat?.color}">
+                                        <div class="flex items-center space-x-3 truncate mr-2">
+                                            <span class="text-2xl">${cat?.icon}</span>
+                                            <div class="truncate">
+                                                <div class="font-bold text-gray-800 truncate text-sm">${t.description || cat?.label}</div>
+                                                <div class="text-[9px] text-gray-400 font-bold">${new Date(t.date).toLocaleDateString()}</div>
+                                            </div>
                                         </div>
-                                    </div>
-                                    <span class="font-black whitespace-nowrap text-sm ${t.type === 'income' ? 'text-green-600' : 'text-red-600'}">
-                                        ${t.type === 'income' ? '+' : '-'} €${t.amount.toFixed(2)}
-                                    </span>
-                                </div>`;
+                                        <span class="font-black whitespace-nowrap text-sm ${t.type === 'income' ? 'text-green-600' : 'text-red-600'}">
+                                            ${t.type === 'income' ? '+' : '-'} €${t.amount.toFixed(2)}
+                                        </span>
+                                    </div>`;
                 }).join('');
             }
             renderChart(filtered.filter(t => t.type === 'expense'));
@@ -842,11 +944,11 @@
             // Renderizza Griglia Categorie
             const grid = document.getElementById('category-grid');
             grid.innerHTML = categories[mode].map(c => `
-                <button onclick="selectCategory('${c.id}')" id="cat-${c.id}" 
-                    class="cat-btn p-3 rounded-2xl border flex flex-col items-center justify-center gap-2 transition-all duration-200 ${c.id === selectedCategory ? 'bg-gray-900 text-white border-gray-900 ring-2 ring-offset-1 ring-gray-300 transform scale-105' : 'bg-gray-50 border-gray-100 text-gray-500 hover:bg-gray-100'}">
-                    <span class="text-2xl filter drop-shadow-sm">${c.icon}</span>
-                    <span class="text-[10px] font-bold uppercase tracking-tight">${c.label}</span>
-                </button>`).join('');
+                    <button onclick="selectCategory('${c.id}')" id="cat-${c.id}"
+                        class="cat-btn p-3 rounded-2xl border flex flex-col items-center justify-center gap-2 transition-all duration-200 ${c.id === selectedCategory ? 'bg-gray-900 text-white border-gray-900 ring-2 ring-offset-1 ring-gray-300 transform scale-105' : 'bg-gray-50 border-gray-100 text-gray-500 hover:bg-gray-100'}">
+                        <span class="text-2xl filter drop-shadow-sm">${c.icon}</span>
+                        <span class="text-[10px] font-bold uppercase tracking-tight">${c.label}</span>
+                    </button>`).join('');
 
             // Setta Valori Input
             document.getElementById('amount-input').value = tx ? tx.amount : '';
