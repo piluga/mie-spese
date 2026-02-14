@@ -229,43 +229,38 @@
 
                 <!-- Sezione Backup Avanzato -->
                 <div class="settings-card">
-                    <h3 class="text-xs font-bold text-gray-400 uppercase mb-3">Salvataggio & Cloud</h3>
-                    <p class="text-[11px] text-gray-500 mb-4 leading-tight">Puoi salvare il backup su Google Drive, iCloud o nel tuo File System per non perdere mai i dati.</p>
+                    <h3 class="text-xs font-bold text-gray-400 uppercase mb-4 tracking-wider">Salvataggio & Dati</h3>
 
-                    <div class="space-y-3">
-                        <button onclick="shareBackup()" class="w-full flex items-center justify-between p-4 bg-indigo-600 text-white rounded-xl shadow-sm active:bg-indigo-700 transition-colors">
-                            <div class="flex items-center space-x-3 text-left">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 100-3.316 3 3 0 000 3.316m0 0a3 3 0 100 3.316 3 3 0 000-3.316" /></svg>
-                                <div>
-                                    <div class="font-bold text-sm">Invia a Cloud / Drive</div>
-                                    <div class="text-[10px] opacity-80 uppercase font-medium">Usa menu di sistema</div>
-                                </div>
+                    <button onclick="saveToFileSystem()" class="w-full group relative overflow-hidden bg-brand-50 border border-brand-100 rounded-2xl p-5 mb-4 flex items-center justify-between transition-all hover:shadow-md hover:border-brand-200 active:scale-95">
+                        <div class="flex items-center gap-4 relative z-10">
+                            <div class="w-12 h-12 bg-white rounded-full shadow-sm flex items-center justify-center text-brand-600 group-hover:scale-110 transition-transform">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
                             </div>
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>
-                        </button>
-
-                        <button onclick="saveToFileSystem()" class="w-full flex items-center justify-between p-4 bg-white border border-gray-200 text-gray-700 rounded-xl shadow-sm active:bg-gray-50 transition-colors">
-                            <div class="flex items-center space-x-3 text-left">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 19a2 2 0 01-2-2V7a2 2 0 012-2h4l2 2h4a2 2 0 012 2v1m-6 9l3-3m0 0l3 3m-3-3V10" /></svg>
-                                <div>
-                                    <div class="font-bold text-sm text-gray-800">Salva in locale</div>
-                                    <div class="text-[10px] text-gray-400 uppercase font-medium">Scegli cartella o Drive</div>
-                                </div>
+                            <div class="text-left">
+                                <div class="font-heading font-bold text-brand-900 text-lg">Salva Backup</div>
+                                <div class="text-xs text-brand-500 font-medium">Scarica file .json sul dispositivo</div>
                             </div>
-                        </button>
-
-                        <div class="grid grid-cols-2 gap-3">
-                            <label class="flex flex-col items-center justify-center p-3 bg-gray-50 border-2 border-dashed border-gray-300 rounded-xl cursor-pointer hover:border-indigo-400 transition-colors">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" /></svg>
-                                <span class="text-[10px] font-bold text-gray-500 mt-1 uppercase">Importa</span>
-                                <input type="file" id="import-json" class="hidden" accept=".json" onchange="importJSON(event)">
-                            </label>
-
-                            <button onclick="exportCSV()" class="flex flex-col items-center justify-center p-3 bg-green-50 border border-green-200 rounded-xl">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
-                                <span class="text-[10px] font-bold text-green-700 mt-1 uppercase">Export CSV</span>
-                            </button>
                         </div>
+                        <div class="text-brand-300 group-hover:text-brand-500 transition-colors">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>
+                        </div>
+                    </button>
+
+                    <div class="grid grid-cols-2 gap-3">
+                        <label class="cursor-pointer group flex flex-col items-center justify-center p-4 bg-gray-50 border border-gray-100 rounded-2xl hover:bg-white hover:shadow-sm hover:border-gray-200 transition-all active:scale-95">
+                            <div class="mb-2 text-green-500 group-hover:text-green-600 transition-colors">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" /></svg>
+                            </div>
+                            <span class="text-xs font-bold text-gray-500 uppercase tracking-wide group-hover:text-brand-600">Importa Dati</span>
+                            <input type="file" id="import-json" class="hidden" accept=".json" onchange="importJSON(event)">
+                        </label>
+
+                        <button onclick="exportCSV()" class="group flex flex-col items-center justify-center p-4 bg-green-50 border border-green-100 rounded-2xl hover:bg-green-100 hover:shadow-sm hover:border-green-200 transition-all active:scale-95">
+                            <div class="mb-2 text-green-500 group-hover:text-green-600 transition-colors">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+                            </div>
+                            <span class="text-xs font-bold text-green-600 uppercase tracking-wide">Export CSV</span>
+                        </button>
                     </div>
                 </div>
 
@@ -601,39 +596,26 @@
             return { json: JSON.stringify(data, null, 2), filename };
         }
 
-        async function shareBackup() {
-            // 1. Genera i dati
+        // 3. Salvataggio Locale (Supporto PC Desktop + Download Mobile classico)
+        async function saveToFileSystem() {
             const { json, filename } = getBackupData();
 
-            // 2. Crea il file (come testo semplice per compatibilità Android)
-            const file = new File([json], filename, { type: 'text/plain' });
-
-            // 3. CONTROLLO SICUREZZA:
-            // Se siamo su protocollo "file:" (cioè hai aperto il file html direttamente),
-            // la condivisione NON può funzionare. Scarichiamo direttamente.
-            if (window.location.protocol === 'file:') {
-                alert("Nota: La condivisione diretta non funziona aprendo il file dal disco locale. Il file verrà scaricato.");
-                downloadBackupManual(json, filename);
-                return;
-            }
-
-            // 4. Prova a condividere
-            if (navigator.canShare && navigator.canShare({ files: [file] })) {
+            // Tenta API Desktop moderna (Chrome/Edge PC)
+            if ('showSaveFilePicker' in window) {
                 try {
-                    await navigator.share({
-                        title: 'Backup SpesePro',
-                        text: 'Ecco il file di backup.',
-                        files: [file]
+                    const handle = await window.showSaveFilePicker({
+                        suggestedName: filename,
+                        types: [{ description: 'JSON File', accept: { 'application/json': ['.json'] } }],
                     });
-                    // Se arriviamo qui, ha funzionato
+                    const writable = await handle.createWritable();
+                    await writable.write(json);
+                    await writable.close();
+                    showToast("Salvato su disco!");
                 } catch (err) {
-                    // Se l'utente annulla o c'è un errore, non facciamo nulla (o mostriamo un toast)
-                    console.log("Condivisione annullata o fallita:", err);
+                    if (err.name !== 'AbortError') showToast("Salvataggio annullato");
                 }
             } else {
-                // 5. Fallback: Se il browser è vecchio o non supporta la condivisione file
-                // Scarica il file "alla vecchia maniera"
-                showToast("Condivisione non supportata. Scarico il file...");
+                // Fallback per Mobile (iOS/Android) -> Download classico
                 downloadBackupManual(json, filename);
             }
         }
@@ -921,28 +903,28 @@
         function renderSettingsAccounts() {
             const list = document.getElementById('account-list-settings');
             list.innerHTML = accounts.map(a => `
-                                            <div class="flex items-center justify-between p-3 bg-gray-50 rounded-xl mb-2 border border-gray-100">
-                                                <div class="flex flex-col overflow-hidden mr-2">
-                                                    <span class="font-bold text-sm truncate ${a.id === activeAccountId ? 'text-indigo-600' : 'text-gray-800'}">${a.name}</span>
-                                                    <span class="text-[10px] text-gray-500 font-medium">Budget: € ${(a.budget || 0).toLocaleString('it-IT')}</span>
-                                                    <span class="text-[10px] text-green-500 font-medium"> Saldo iniziale: € ${(a.initialBalance || 0).toLocaleString('it-IT')}</span>
-                                                </div>
-                                                <div class="flex space-x-1 shrink-0">
-                                                    <button onclick="setInitialBalance('${a.id}')" class="p-2 bg-green-50 text-green-600 rounded-lg hover:bg-green-100 transition-colors" title="Saldo iniziale">
-                                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2 m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6 a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
-                                                        </svg>
-                                                    </button>
-                                                    <button onclick="setBudget('${a.id}')" class="p-2 bg-indigo-50 text-indigo-600 rounded-lg hover:bg-indigo-100 transition-colors" title="Imposta Budget">
-                                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
-                                                    </button>
-                                                    <button onclick="renameAccount('${a.id}')" class="p-2 bg-gray-100 text-gray-500 rounded-lg hover:bg-gray-200 transition-colors" title="Rinomina Conto">
-                                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
-                                                    </button>
-                                                    <button onclick="deleteAccount('${a.id}')" class="p-2 bg-red-50 text-red-500 rounded-lg hover:bg-red-100 transition-colors" title="Elimina Conto">
-                                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
-                                                    </button>
-                                                </div>
-                                            </div>`).join('');
+                                                <div class="flex items-center justify-between p-3 bg-gray-50 rounded-xl mb-2 border border-gray-100">
+                                                    <div class="flex flex-col overflow-hidden mr-2">
+                                                        <span class="font-bold text-sm truncate ${a.id === activeAccountId ? 'text-indigo-600' : 'text-gray-800'}">${a.name}</span>
+                                                        <span class="text-[10px] text-gray-500 font-medium">Budget: € ${(a.budget || 0).toLocaleString('it-IT')}</span>
+                                                        <span class="text-[10px] text-green-500 font-medium"> Saldo iniziale: € ${(a.initialBalance || 0).toLocaleString('it-IT')}</span>
+                                                    </div>
+                                                    <div class="flex space-x-1 shrink-0">
+                                                        <button onclick="setInitialBalance('${a.id}')" class="p-2 bg-green-50 text-green-600 rounded-lg hover:bg-green-100 transition-colors" title="Saldo iniziale">
+                                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2 m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6 a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
+                                                            </svg>
+                                                        </button>
+                                                        <button onclick="setBudget('${a.id}')" class="p-2 bg-indigo-50 text-indigo-600 rounded-lg hover:bg-indigo-100 transition-colors" title="Imposta Budget">
+                                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
+                                                        </button>
+                                                        <button onclick="renameAccount('${a.id}')" class="p-2 bg-gray-100 text-gray-500 rounded-lg hover:bg-gray-200 transition-colors" title="Rinomina Conto">
+                                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
+                                                        </button>
+                                                        <button onclick="deleteAccount('${a.id}')" class="p-2 bg-red-50 text-red-500 rounded-lg hover:bg-red-100 transition-colors" title="Elimina Conto">
+                                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                                                        </button>
+                                                    </div>
+                                                </div>`).join('');
         }
 
         function toggleSettings(show) {
@@ -1024,18 +1006,18 @@
                 listEl.innerHTML = filtered.sort((a, b) => b.id - a.id).map(t => {
                     const cat = [...categories.expense, ...categories.income].find(c => c.id === t.category);
                     return `
-                                                <div onclick="editTransaction(${t.id})" class="transaction-card flex items-center justify-between p-4 bg-gray-50 rounded-2xl border-l-4 cursor-pointer transition-all" style="border-color: ${cat?.color}">
-                                                    <div class="flex items-center space-x-3 truncate mr-2">
-                                                        <span class="text-2xl">${cat?.icon}</span>
-                                                        <div class="truncate">
-                                                            <div class="font-bold text-gray-800 truncate text-sm">${t.description || cat?.label}</div>
-                                                            <div class="text-[9px] text-gray-400 font-bold">${new Date(t.date).toLocaleDateString()}</div>
+                                                    <div onclick="editTransaction(${t.id})" class="transaction-card flex items-center justify-between p-4 bg-gray-50 rounded-2xl border-l-4 cursor-pointer transition-all" style="border-color: ${cat?.color}">
+                                                        <div class="flex items-center space-x-3 truncate mr-2">
+                                                            <span class="text-2xl">${cat?.icon}</span>
+                                                            <div class="truncate">
+                                                                <div class="font-bold text-gray-800 truncate text-sm">${t.description || cat?.label}</div>
+                                                                <div class="text-[9px] text-gray-400 font-bold">${new Date(t.date).toLocaleDateString()}</div>
+                                                            </div>
                                                         </div>
-                                                    </div>
-                                                    <span class="font-black whitespace-nowrap text-sm ${t.type === 'income' ? 'text-green-600' : 'text-red-600'}">
-                                                        ${t.type === 'income' ? '+' : '-'} €${t.amount.toFixed(2)}
-                                                    </span>
-                                                </div>`;
+                                                        <span class="font-black whitespace-nowrap text-sm ${t.type === 'income' ? 'text-green-600' : 'text-red-600'}">
+                                                            ${t.type === 'income' ? '+' : '-'} €${t.amount.toFixed(2)}
+                                                        </span>
+                                                    </div>`;
                 }).join('');
             }
             renderChart(filtered.filter(t => t.type === 'expense'));
@@ -1125,11 +1107,11 @@
             // Renderizza Griglia Categorie con i colori corretti
             const grid = document.getElementById('category-grid');
             grid.innerHTML = categories[mode].map(c => `
-        <button onclick="selectCategory('${c.id}')" id="cat-${c.id}" 
-            class="cat-btn p-3 rounded-2xl border flex flex-col items-center justify-center gap-2 transition-all duration-200 ${c.id === selectedCategory ? activeStyle : inactiveStyle}">
-            <span class="text-2xl filter drop-shadow-sm">${c.icon}</span>
-            <span class="text-[10px] font-bold uppercase tracking-tight">${c.label}</span>
-        </button>`).join('');
+            <button onclick="selectCategory('${c.id}')" id="cat-${c.id}"
+                class="cat-btn p-3 rounded-2xl border flex flex-col items-center justify-center gap-2 transition-all duration-200 ${c.id === selectedCategory ? activeStyle : inactiveStyle}">
+                <span class="text-2xl filter drop-shadow-sm">${c.icon}</span>
+                <span class="text-[10px] font-bold uppercase tracking-tight">${c.label}</span>
+            </button>`).join('');
 
             // Setta Valori Input
             document.getElementById('amount-input').value = tx ? tx.amount : '';
