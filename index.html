@@ -601,56 +601,39 @@
             return { json: JSON.stringify(data, null, 2), filename };
         }
 
-        // 2. Condivisione Avanzata (Fix per Android/Chrome)
         async function shareBackup() {
+            // 1. Genera i dati
             const { json, filename } = getBackupData();
 
-            // TRUCCO: Usiamo 'text/plain' invece di 'application/json'.
-            // Questo forza Android ad aprire il menu di condivisione perché "tutti sanno leggere il testo".
+            // 2. Crea il file (come testo semplice per compatibilità Android)
             const file = new File([json], filename, { type: 'text/plain' });
 
-            // Verifica se il browser supporta la condivisione
+            // 3. CONTROLLO SICUREZZA:
+            // Se siamo su protocollo "file:" (cioè hai aperto il file html direttamente),
+            // la condivisione NON può funzionare. Scarichiamo direttamente.
+            if (window.location.protocol === 'file:') {
+                alert("Nota: La condivisione diretta non funziona aprendo il file dal disco locale. Il file verrà scaricato.");
+                downloadBackupManual(json, filename);
+                return;
+            }
+
+            // 4. Prova a condividere
             if (navigator.canShare && navigator.canShare({ files: [file] })) {
                 try {
                     await navigator.share({
                         title: 'Backup SpesePro',
-                        text: `Backup dati SpesePro del ${new Date().toLocaleDateString()}`,
+                        text: 'Ecco il file di backup.',
                         files: [file]
                     });
-                    showToast("Menu condivisione aperto!");
+                    // Se arriviamo qui, ha funzionato
                 } catch (err) {
-                    if (err.name !== 'AbortError') {
-                        console.error(err);
-                        // Se fallisce (es. utente annulla), non fare nulla o mostra avviso
-                    }
+                    // Se l'utente annulla o c'è un errore, non facciamo nulla (o mostriamo un toast)
+                    console.log("Condivisione annullata o fallita:", err);
                 }
             } else {
-                // Se siamo su PC o un browser vecchio che non supporta la condivisione file
-                showToast("Condivisione non supportata, scarico il file...");
-                downloadBackupManual(json, filename);
-            }
-        }
-
-        // 3. Salvataggio Locale (Supporto PC Desktop + Download Mobile classico)
-        async function saveToFileSystem() {
-            const { json, filename } = getBackupData();
-
-            // Tenta API Desktop moderna (Chrome/Edge PC)
-            if ('showSaveFilePicker' in window) {
-                try {
-                    const handle = await window.showSaveFilePicker({
-                        suggestedName: filename,
-                        types: [{ description: 'JSON File', accept: { 'application/json': ['.json'] } }],
-                    });
-                    const writable = await handle.createWritable();
-                    await writable.write(json);
-                    await writable.close();
-                    showToast("Salvato su disco!");
-                } catch (err) {
-                    if (err.name !== 'AbortError') showToast("Salvataggio annullato");
-                }
-            } else {
-                // Fallback per Mobile (iOS/Android) -> Download classico
+                // 5. Fallback: Se il browser è vecchio o non supporta la condivisione file
+                // Scarica il file "alla vecchia maniera"
+                showToast("Condivisione non supportata. Scarico il file...");
                 downloadBackupManual(json, filename);
             }
         }
