@@ -601,29 +601,32 @@
             return { json: JSON.stringify(data, null, 2), filename };
         }
 
-        // 2. Condivisione Avanzata (Per Mobile: Drive, WhatsApp, File System)
+        // 2. Condivisione Avanzata (Fix per Android/Chrome)
         async function shareBackup() {
             const { json, filename } = getBackupData();
-            const file = new File([json], filename, { type: 'application/json' });
+
+            // TRUCCO: Usiamo 'text/plain' invece di 'application/json'.
+            // Questo forza Android ad aprire il menu di condivisione perché "tutti sanno leggere il testo".
+            const file = new File([json], filename, { type: 'text/plain' });
 
             // Verifica se il browser supporta la condivisione
             if (navigator.canShare && navigator.canShare({ files: [file] })) {
                 try {
                     await navigator.share({
                         title: 'Backup SpesePro',
-                        text: `Backup del ${new Date().toLocaleDateString()}`,
+                        text: `Backup dati SpesePro del ${new Date().toLocaleDateString()}`,
                         files: [file]
                     });
-                    showToast("Backup condiviso!");
+                    showToast("Menu condivisione aperto!");
                 } catch (err) {
                     if (err.name !== 'AbortError') {
                         console.error(err);
-                        showToast("Errore condivisione. Scarico il file...");
-                        downloadBackupManual(json, filename); // Fallback automatico
+                        // Se fallisce (es. utente annulla), non fare nulla o mostra avviso
                     }
                 }
             } else {
-                // Se non supporta la condivisione file (es. PC vecchi o alcuni Android)
+                // Se siamo su PC o un browser vecchio che non supporta la condivisione file
+                showToast("Condivisione non supportata, scarico il file...");
                 downloadBackupManual(json, filename);
             }
         }
