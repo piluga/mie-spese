@@ -1,4 +1,4 @@
-const CACHE_NAME = 'spesepro-cache-v2.1';
+const CACHE_NAME = 'spesepro-cache-v2.2';
 
 // Risorse fondamentali da salvare subito in memoria
 const urlsToCache = [
@@ -67,3 +67,4 @@ self.addEventListener('fetch', event => {
     );
 
 });
+
