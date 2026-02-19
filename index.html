@@ -133,6 +133,8 @@
                             </div>
                         </div>
                         <div class="relative">
+                            <input type="file" id="camera-input" accept="image/*" capture="environment" class="hidden" onchange="handleImage(event)">
+
                             <button onclick="triggerCamera()" class="p-2 bg-white text-brand-600 rounded-xl shadow-lg active:scale-95 transition-transform flex items-center justify-center">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
                             </button>
@@ -189,6 +191,15 @@
 
                 <div class="flex justify-between items-center mb-4">
                     <h2 class="text-xl font-bold text-gray-800 italic">Movimenti</h2>
+                </div>
+
+                <div class="relative mb-4">
+                    <input type="text" id="search-input" placeholder="Cerca spesa o categoria..."
+                           class="w-full bg-white border border-gray-100 text-gray-800 text-sm font-medium rounded-2xl py-3 pl-11 pr-4 focus:border-brand-500 focus:ring-2 focus:ring-brand-200 outline-none shadow-sm transition-all placeholder-gray-400"
+                           oninput="updateUI()">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400 absolute left-4 top-1/2 -translate-y-1/2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
                 </div>
 
                 <div id="transaction-list" class="space-y-3 pb-24"></div>
@@ -1075,23 +1086,36 @@
                 budgetContainer.classList.add('hidden');
             }
 
-            // --- INIZIO NUOVA LOGICA LISTA (Raggruppata) ---
+            // --- INIZIO NUOVA LOGICA LISTA (Raggruppata + Ricerca) ---
             const listEl = document.getElementById('transaction-list');
+            const searchInput = document.getElementById('search-input');
+            const searchTerm = searchInput ? searchInput.value.toLowerCase().trim() : '';
 
-            if (filtered.length === 0) {
+            // Applica il filtro di ricerca (se c'è testo)
+            let listTransactions = filtered;
+            if (searchTerm) {
+                listTransactions = filtered.filter(t => {
+                    const cat = [...categories.expense, ...categories.income].find(c => c.id === t.category);
+                    const catLabel = cat ? cat.label.toLowerCase() : '';
+                    const desc = (t.description || '').toLowerCase();
+                    return desc.includes(searchTerm) || catLabel.includes(searchTerm);
+                });
+            }
+
+            if (listTransactions.length === 0) {
                 listEl.innerHTML = `
-                            <div class="flex flex-col items-center justify-center py-12 text-gray-300">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 mb-4 opacity-50" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" /></svg>
-                                <span class="font-medium italic">Nessun movimento</span>
-                            </div>`;
+                    <div class="flex flex-col items-center justify-center py-12 text-gray-300">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 mb-4 opacity-50" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" /></svg>
+                        <span class="font-medium italic">${searchTerm ? 'Nessun risultato trovato' : 'Nessun movimento'}</span>
+                    </div>`;
             } else {
                 // 1. Ordina per data decrescente
-                filtered.sort((a, b) => new Date(b.date) - new Date(a.date));
+                listTransactions.sort((a, b) => new Date(b.date) - new Date(a.date));
 
                 // 2. Raggruppa per Giorno
                 const groups = {};
-                filtered.forEach(t => {
-                    const dateKey = t.date.split('T')[0]; // "2023-10-27"
+                listTransactions.forEach(t => {
+                    const dateKey = t.date.split('T')[0];
                     if (!groups[dateKey]) groups[dateKey] = [];
                     groups[dateKey].push(t);
                 });
@@ -1099,12 +1123,10 @@
                 // 3. Genera HTML per ogni gruppo
                 listEl.innerHTML = Object.keys(groups).map(dateKey => {
                     const dailyTx = groups[dateKey];
-                    // Calcola somma giornaliera
                     const dailySum = dailyTx.reduce((acc, t) => t.type === 'income' ? acc + t.amount : acc - t.amount, 0);
                     const sumColor = dailySum >= 0 ? 'text-green-500' : 'text-gray-400';
                     const sumSign = dailySum > 0 ? '+' : '';
 
-                    // Genera card per i movimenti del giorno
                     const txHtml = dailyTx.map(t => {
                         const cat = [...categories.expense, ...categories.income].find(c => c.id === t.category);
                         return `
@@ -1127,7 +1149,6 @@
                     }).join('');
 
                     // Ritorna il blocco intero (Header + Lista)
-                    // Nota: "rotate-180" nell'icona perché la lista parte aperta (senza 'hidden')
                     return `
                                 <div class="mb-4">
                                     <div onclick="toggleGroup('${dateKey}')" class="flex justify-between items-end px-2 mb-2 cursor-pointer select-none group">
@@ -1189,7 +1210,11 @@
         }
 
         function triggerCamera() {
-            if (!apiKey) { promptApiKey(); return; }
+            if (!apiKey) {
+                // Usa il nuovo modale invece della vecchia funzione inesistente
+                openApiKeyModal();
+                return;
+            }
             document.getElementById('camera-input').click();
         }
 
@@ -1579,6 +1604,96 @@
                 navigateAccount(-1);  // swipe destra
             }
         });
+
+        // ==========================================
+        // SERVICE WORKER (PWA & OFFLINE MODE)
+        // ==========================================
+        if ('serviceWorker' in navigator) {
+            // Definiamo il codice del Service Worker come stringa per tenerlo in un solo file
+            const swCode = `
+                const CACHE_NAME = 'spesepro-cache-v1';
+                
+                // Risorse fondamentali da salvare subito in memoria
+                const urlsToCache = [
+                    location.href.split('?')[0], // L'URL della pagina stessa
+                    'https://cdn.tailwindcss.com',
+                    'https://cdn.jsdelivr.net/npm/chart.js',
+                    'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Poppins:wght@500;600;700&display=swap'
+                ];
+
+                // FASE 1: Installazione e caching iniziale
+                self.addEventListener('install', event => {
+                    event.waitUntil(
+                        caches.open(CACHE_NAME)
+                            .then(cache => cache.addAll(urlsToCache))
+                            .then(() => self.skipWaiting())
+                    );
+                });
+
+                // FASE 2: Attivazione e pulizia vecchie cache
+                self.addEventListener('activate', event => {
+                    event.waitUntil(
+                        caches.keys().then(cacheNames => {
+                            return Promise.all(
+                                cacheNames.filter(name => name !== CACHE_NAME)
+                                          .map(name => caches.delete(name))
+                            );
+                        })
+                    );
+                    self.clients.claim();
+                });
+
+                // FASE 3: Intercettazione chiamate di rete (Offline Mode)
+                self.addEventListener('fetch', event => {
+                    // Ignora le chiamate API verso Gemini (quelle devono sempre richiedere internet)
+                    if (event.request.url.includes('generativelanguage.googleapis.com')) {
+                        return;
+                    }
+
+                    event.respondWith(
+                        caches.match(event.request).then(cachedResponse => {
+                            // Se c'è in cache, usa quello (velocissimo)
+                            if (cachedResponse) {
+                                return cachedResponse;
+                            }
+                            
+                            // Altrimenti scaricalo da internet e salvalo in cache per la prossima volta
+                            return fetch(event.request).then(networkResponse => {
+                                // Salva solo le risposte valide e sicure (http/https)
+                                if(!networkResponse || networkResponse.status !== 200 || networkResponse.type !== 'basic' && networkResponse.type !== 'cors') {
+                                    return networkResponse;
+                                }
+
+                                const responseToCache = networkResponse.clone();
+                                caches.open(CACHE_NAME).then(cache => {
+                                    if (event.request.url.startsWith('http')) {
+                                        cache.put(event.request, responseToCache);
+                                    }
+                                });
+
+                                return networkResponse;
+                            }).catch(() => {
+                                // Qui potresti restituire una pagina di "Errore Offline" generica se volessi
+                                console.log('Sei offline e la risorsa non è in cache:', event.request.url);
+                            });
+                        })
+                    );
+                });
+            `;
+
+            // Trasformiamo la stringa in un "file" virtuale (Blob) letto dal browser
+            const blob = new Blob([swCode], { type: 'application/javascript' });
+            const swUrl = URL.createObjectURL(blob);
+
+            // Registriamo il file virtuale come Service Worker
+            navigator.serviceWorker.register(swUrl)
+                .then(registration => {
+                    console.log('✅ ServiceWorker registrato con successo! Scope:', registration.scope);
+                })
+                .catch(error => {
+                    console.log('❌ Registrazione ServiceWorker fallita:', error);
+                });
+        }
 
     </script>
     <!-- Modal numerico -->
