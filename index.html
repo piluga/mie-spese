@@ -1181,24 +1181,42 @@
         async function handleImage(event) {
             const file = event.target.files[0];
             if (!file || !apiKey) return;
+
             const loader = document.getElementById('camera-loader');
             loader.classList.remove('hidden');
+
             try {
                 const reader = new FileReader();
                 reader.readAsDataURL(file);
                 reader.onload = async () => {
-                    const b64 = reader.result.split(',')[1];
-                    const result = await analyzeReceipt(b64);
-                    if (result.amount) document.getElementById('amount-input').value = result.amount;
-                    if (result.description) document.getElementById('desc-input').value = result.description;
-                    loader.classList.add('hidden');
+                    try {
+                        const b64 = reader.result.split(',')[1];
+                        const result = await analyzeReceipt(b64);
+
+                        if (result && result.amount) document.getElementById('amount-input').value = result.amount;
+                        if (result && result.description) document.getElementById('desc-input').value = result.description;
+                    } catch (apiError) {
+                        // Mostra l'errore reale all'utente
+                        showSimpleAlert("Errore Scansione", apiError.message);
+                    } finally {
+                        // Nascondi sempre il caricamento alla fine (sia in caso di successo che di errore)
+                        loader.classList.add('hidden');
+                        // Resetta l'input per permettere di scattare di nuovo
+                        document.getElementById('camera-input').value = '';
+                    }
                 };
-            } catch (err) { alert(err.message); loader.classList.add('hidden'); }
+            } catch (err) {
+                showSimpleAlert("Errore", err.message);
+                loader.classList.add('hidden');
+            }
         }
 
         async function analyzeReceipt(base64) {
             const prompt = "JSON: { 'amount': float, 'description': 'store_name' }. Only JSON.";
+
+            // HO AGGIORNATO IL NOME DEL MODELLO a una versione stabile (1.5-flash) per evitare errori di versioni preview scadute
             const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+
             const response = await fetch(url, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -1207,8 +1225,25 @@
                     generationConfig: { responseMimeType: "application/json" }
                 })
             });
+
             const data = await response.json();
-            return JSON.parse(data.candidates[0].content.parts[0].text);
+
+            // --- GESTIONE ERRORI AGGIUNTA ---
+            if (data.error) {
+                console.error("Errore API Gemini:", data.error);
+                throw new Error(data.error.message || "La chiave API non è valida o c'è un problema con i server Google.");
+            }
+
+            if (!data.candidates || data.candidates.length === 0) {
+                throw new Error("L'intelligenza artificiale non è riuscita a leggere lo scontrino.");
+            }
+
+            // Prova a fare il parsing del testo
+            try {
+                return JSON.parse(data.candidates[0].content.parts[0].text);
+            } catch (parseError) {
+                throw new Error("Formato dati non riconosciuto. Riprova con una foto più nitida.");
+            }
         }
 
         function triggerCamera() {
