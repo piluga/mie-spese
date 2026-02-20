@@ -4,54 +4,115 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 
-    <title>FinanzaPro Budget</title>
+    <title>SpesePro</title>
 
     <!-- PWA Meta -->
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="apple-mobile-web-app-title" content="SpesePro">
     <link rel="apple-touch-icon" href="https://i.ibb.co/vx96Xb8Q/budget.png">
 
-    <!-- Manifest Base64 -->
-    <link rel="manifest" href="data:application/json;base64,ewogICJkZWZhdWx0X2xvY2FsZSI6ICJpdCIsCiAgIm5hbWUiOiAiR2VzdGlvbmUgU3Blc2UgUHJvIiwKICAic2hvcnRfbmFtZSI6ICJTcGVzZVBybyIsCiAgInN0YXJ0X3VybCI6ICIuIiwKICAiaWNvbnMiOiBbCiAgICB7CiAgICAgICJzcmMiOiAiaHR0cHM6Ly9pLmliYi5jby92eDk2WGI4US9idWRnZXQucG5nIiwKICAgICAgInNpemVzIjogIjUxMng1MTIiLAogICAgICAidHlwZSI6ICJpbWFnZS9wbmciCiAgICB9CiAgXSwKICAiZGlzcGxheSI6ICJzdGFuZGFsb25lIiwKICAiYmFja2dyb3VuZF9jb2xvciI6ICIjZjNmNGY2IiwKICAidGhlbWVfY29sb3IiOiAiIzI1NjNmMSIKfQ==">
+    <!-- Manifest Inline -->
+    <link rel="manifest" id="my-manifest">
 
-    <meta name="theme-color" content="#4f46e5">
+    <meta name="theme-color" content="#2563eb">
 
+    <!-- Google Fonts: Inter -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Poppins:wght@500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
 
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    fontFamily: { sans: ['Inter', 'sans-serif'], heading: ['Poppins', 'sans-serif'] },
-                    colors: {
-                        brand: { 50: '#f5f3ff', 100: '#ede9fe', 500: '#8b5cf6', 600: '#7c3aed', 700: '#6d28d9', 800: '#5b21b6', 900: '#4c1d95' }
-                    },
-                    boxShadow: { 'soft': '0 10px 40px -10px rgba(0,0,0,0.08)' }
-                }
-            }
-        }
-    </script>
     <style>
         body {
-            background-color: #f8fafc;
             font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6;
             touch-action: manipulation;
             -webkit-tap-highlight-color: transparent;
+            overscroll-behavior-y: none;
         }
 
-        h1, h2, h3, .font-heading {
-            font-family: 'Poppins', sans-serif;
+        /* Stili ripresi da MedicinePro */
+        .card-shadow {
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+        }
+
+        .fade-in {
+            animation: fadeIn 0.3s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        .modal-overlay {
+            background-color: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(2px);
+        }
+
+        .transaction-card:active {
+            transform: scale(0.98);
+        }
+
+        .cat-btn {
+            transition: all 0.2s;
+            border: 2px solid transparent;
+            opacity: 0.7;
+        }
+
+            .cat-btn.selected {
+                border-color: #2563eb;
+                background-color: #eff6ff;
+                color: #2563eb;
+                opacity: 1;
+                transform: scale(1.05);
+            }
+
+        .toast {
+            position: fixed;
+            bottom: 5rem;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #1e293b;
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 99px;
+            font-weight: 600;
+            font-size: 0.875rem;
+            z-index: 999;
+            opacity: 0;
+            transition: opacity 0.3s;
+            pointer-events: none;
+            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);
         }
 
         .loader {
             border: 3px solid #e2e8f0;
-            border-top: 3px solid #7c3aed;
+            border-top: 3px solid #2563eb;
             border-radius: 50%;
             width: 24px;
             height: 24px;
@@ -67,522 +128,436 @@
                 transform: rotate(360deg);
             }
         }
-
-        .modal-transition {
-            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        input:focus, select:focus {
-            outline: none;
-            border-color: #8b5cf6;
-            box-shadow: 0 0 0 3px #ddd6fe; /* Questo crea l'effetto "ring" corretto */
-        }
-
-        .transaction-card:active {
-            transform: scale(0.98);
-            background-color: #f5f3ff;
-        }
-
-        header {
-            padding-top: env(safe-area-inset-top, 2.5rem);
-        }
-
-        .pb-safe {
-            padding-bottom: env(safe-area-inset-bottom, 1rem);
-        }
-
-        .toast {
-            position: fixed;
-            bottom: 5rem;
-            left: 50%;
-            transform: translateX(-50%);
-            background: #1e293b;
-            color: white;
-            padding: 0.75rem 1.5rem;
-            border-radius: 99px;
-            font-weight: 500;
-            z-index: 100;
-            opacity: 0;
-            transition: opacity 0.3s;
-            pointer-events: none;
-            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);
-        }
     </style>
 </head>
-<body class="antialiased text-gray-900">
+<body class="text-slate-800 h-screen flex flex-col overflow-hidden">
 
     <div id="toast" class="toast">Messaggio</div>
 
-    <div id="app" class="max-w-md mx-auto min-h-screen flex flex-col bg-white shadow-lg relative">
-
-        <!-- View Principale -->
-        <div id="main-view">
-            <header class="bg-gradient-to-br from-brand-800 via-brand-700 to-brand-600 text-white pb-8 rounded-b-[2.5rem] shadow-xl relative overflow-hidden">
-                <div class="absolute top-0 right-0 w-64 h-64 bg-white opacity-5 rounded-full -mr-20 -mt-20 pointer-events-none"></div>
-
-                <div class="relative px-6 pt-4">
-                    <input type="file" id="camera-input" accept="image/*" capture="environment" class="hidden" onchange="handleImage(event)">
-                    <div id="camera-loader" class="fixed inset-0 z-[100] bg-white/80 backdrop-blur-sm flex flex-col items-center justify-center hidden">
-                        <div class="loader mb-4" style="width: 40px; height: 40px; border-width: 3px;"></div>
-                        <span class="text-brand-600 font-bold animate-pulse">Analisi scontrino...</span>
-                    </div>
-
-                    <div class="flex justify-between items-center mb-6">
-
-                        <div class="w-10"></div>
-
-                        <div class="flex flex-col items-center">
-                            <span id="account-name-display" class="text-xs font-bold uppercase tracking-widest text-brand-200">Conto</span>
-                            <div class="flex items-center space-x-1 mt-0.5">
-                                <span class="w-1.5 h-1.5 rounded-full bg-green-400"></span>
-                                <span class="text-[10px] text-brand-100">Attivo</span>
-                            </div>
-                        </div>
-
-                        <button onclick="toggleSettings(true)" class="p-2 bg-white/10 backdrop-blur-md rounded-xl hover:bg-white/20 transition-all">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-brand-100" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
-                        </button>
-                    </div>
-
-                    <div class="text-center mt-2 mb-6">
-                        <div class="flex items-center justify-center space-x-6 mb-2">
-                            <button onclick="changeMonth(-1)" class="p-1 text-brand-200 hover:text-white"><svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" /></svg></button>
-                            <h2 id="current-month-display" class="text-lg font-heading font-medium text-brand-100 min-w-[120px]">Mese</h2>
-                            <button onclick="changeMonth(1)" class="p-1 text-brand-200 hover:text-white"><svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg></button>
-                        </div>
-                        <div id="balance" class="text-5xl font-heading font-bold tracking-tight drop-shadow-sm">€ 0.00</div>
-                        <div id="initial-balance-display" class="text-xs mt-2 text-brand-200 bg-brand-900/30 inline-block px-3 py-1 rounded-full hidden"></div>
-                    </div>
-
-                    <div id="budget-container" class="bg-white/10 backdrop-blur-sm rounded-2xl p-4 border border-white/10 hidden">
-                        <div class="flex justify-between text-xs text-brand-100 mb-2 font-medium">
-                            <span>Speso: <strong id="budget-spent" class="text-white">€0</strong></span>
-                            <span>Budget: <strong id="budget-total" class="text-white">€0</strong></span>
-                        </div>
-                        <div class="w-full bg-brand-900/40 rounded-full h-2 overflow-hidden">
-                            <div id="budget-bar" class="bg-white h-full rounded-full shadow-[0_0_10px_rgba(255,255,255,0.5)] transition-all duration-700" style="width: 0%"></div>
-                        </div>
-                    </div>
-
-                    <div class="flex justify-center mt-6 space-x-2">
-                        <button onclick="navigateAccount(-1)" class="w-2 h-2 rounded-full bg-white/30 hover:bg-white"></button>
-                        <button onclick="navigateAccount(1)" class="w-2 h-2 rounded-full bg-white/30 hover:bg-white"></button>
-                    </div>
-                </div>
-            </header>
-
-            <main class="flex-grow p-4">
-                <div class="grid grid-cols-2 gap-4 -mt-6 mb-8 px-2 relative z-10">
-                    <button onclick="openModal('income')" class="bg-white p-4 rounded-2xl shadow-soft flex flex-col items-center justify-center space-y-2 active:scale-95 transition-all border border-green-50">
-                        <div class="p-3 bg-green-100 text-green-600 rounded-full">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 11l5-5m0 0l5 5m-5-5v12" /></svg>
-                        </div>
-                        <span class="font-bold text-gray-600 text-sm">Entrata</span>
-                    </button>
-                    <button onclick="openModal('expense')" class="bg-white p-4 rounded-2xl shadow-soft flex flex-col items-center justify-center space-y-2 active:scale-95 transition-all border border-red-50">
-                        <div class="p-3 bg-red-100 text-red-500 rounded-full">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 13l-5 5m0 0l-5-5m5 5V6" /></svg>
-                        </div>
-                        <span class="font-bold text-gray-600 text-sm">Uscita</span>
-                    </button>
-                </div>
-
-                <div id="chart-container" class="mb-8 bg-gray-50 p-4 rounded-2xl hidden">
-                    <canvas id="expenseChart" width="200" height="200"></canvas>
-                </div>
-
-                <div class="flex justify-between items-center mb-4">
-                    <h2 class="text-xl font-bold text-gray-800 italic">Movimenti</h2>
-                </div>
-
-                <div class="relative mb-4">
-                    <input type="text" id="search-input" placeholder="Cerca spesa o categoria..."
-                           class="w-full bg-white border border-gray-100 text-gray-800 text-sm font-medium rounded-2xl py-3 pl-11 pr-4 focus:border-brand-500 focus:ring-2 focus:ring-brand-200 outline-none shadow-sm transition-all placeholder-gray-400"
-                           oninput="updateUI()">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400 absolute left-4 top-1/2 -translate-y-1/2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                    </svg>
-                </div>
-
-                <div id="transaction-list" class="space-y-3 pb-24"></div>
-            </main>
+    <!-- HEADER -->
+    <header class="bg-blue-600 text-white p-4 shadow-md z-20 flex justify-between items-center shrink-0 h-16">
+        <div class="flex items-center gap-3">
+            <button id="btn-back" onclick="toggleSettings(false)" class="hidden text-xl p-1 active:scale-95 transition-transform">
+                <i class="fa-solid fa-arrow-left"></i>
+            </button>
+            <h1 class="text-xl font-bold tracking-wide flex items-center gap-2">
+                <i class="fa-solid fa-wallet"></i> SpesePro
+            </h1>
         </div>
 
-        <!-- View Impostazioni -->
-        <div id="settings-view" class="hidden absolute inset-0 bg-gray-50 z-40 overflow-y-auto pb-10">
-            <header class="bg-white p-6 border-b sticky top-0 flex items-center justify-between z-10">
-                <button onclick="toggleSettings(false)" class="p-2 text-indigo-600">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7 7-7" /></svg>
-                </button>
-                <h2 class="text-lg font-bold">Impostazioni</h2>
-                <div class="w-10"></div>
-            </header>
-
-            <div class="p-6 space-y-6">
-                <!-- Sezione Conti -->
-                <div class="settings-card">
-                    <h3 class="text-xs font-bold text-gray-400 uppercase mb-3">I Tuoi Conti & Budget</h3>
-                    <div id="account-list-settings" class="space-y-2 mb-4"></div>
-
-                    <div class="bg-gray-50 p-3 rounded-xl border border-dashed border-gray-300">
-                        <div class="text-[10px] font-bold text-gray-400 uppercase mb-2">Aggiungi nuovo conto</div>
-                        <div class="flex flex-col gap-2">
-                            <div class="settings-card">
-                                <h3 class="text-xs font-bold text-gray-400 uppercase mb-3">I Tuoi Conti & Budget</h3>
-                                <div id="account-list-settings" class="space-y-2 mb-4"></div>
-
-                                <button onclick="openAddAccountModal()" class="w-full py-3 bg-brand-50 text-brand-600 font-bold rounded-xl border-2 border-brand-100 border-dashed hover:bg-brand-100 transition-colors flex items-center justify-center gap-2 active:scale-95">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V7z" clip-rule="evenodd" /></svg>
-                                    Aggiungi Nuovo Conto
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Sezione Backup Avanzato -->
-                <div class="settings-card">
-                    <h3 class="text-xs font-bold text-gray-400 uppercase mb-4 tracking-wider">Salvataggio & Dati</h3>
-
-                    <button onclick="saveToFileSystem()" class="w-full group relative overflow-hidden bg-brand-50 border border-brand-100 rounded-2xl p-5 mb-4 flex items-center justify-between transition-all hover:shadow-md hover:border-brand-200 active:scale-95">
-                        <div class="flex items-center gap-4 relative z-10">
-                            <div class="w-12 h-12 bg-white rounded-full shadow-sm flex items-center justify-center text-brand-600 group-hover:scale-110 transition-transform">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
-                            </div>
-                            <div class="text-left">
-                                <div class="font-heading font-bold text-brand-900 text-lg">Salva Backup</div>
-                                <div class="text-xs text-brand-500 font-medium">Scarica file .json sul dispositivo</div>
-                            </div>
-                        </div>
-                        <div class="text-brand-300 group-hover:text-brand-500 transition-colors">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>
-                        </div>
-                    </button>
-
-                    <div class="grid grid-cols-2 gap-3">
-                        <label class="cursor-pointer group flex flex-col items-center justify-center p-4 bg-brand-50 border border-brand-100 rounded-2xl hover:bg-white hover:shadow-sm hover:border-brand-200 transition-all active:scale-95">
-                            <span class="mb-2 text-brand-400 group-hover:text-brand-600 transition-colors">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" /></svg>
-                            </span>
-                            <span class="text-xs font-bold text-brand-600 uppercase tracking-wide">Importa Dati</span>
-                            <input type="file" id="import-json" class="hidden" accept=".json" onchange="importJSON(event)">
-                        </label>
-
-                        <button onclick="exportCSV()" class="group flex flex-col items-center justify-center p-4 bg-green-50 border border-green-100 rounded-2xl hover:bg-green-100 hover:shadow-sm hover:border-green-200 transition-all active:scale-95">
-                            <div class="mb-2 text-green-500 group-hover:text-green-600 transition-colors">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
-                            </div>
-                            <span class="text-xs font-bold text-green-600 uppercase tracking-wide">Export CSV</span>
-                        </button>
-                    </div>
-                </div>
-
-                <div class="settings-card">
-                    <h3 class="text-xs font-bold text-gray-400 uppercase mb-3">AI Engine</h3>
-                    <button onclick="openApiKeyModal()" class="w-full py-3 bg-brand-50 text-brand-700 rounded-xl text-xs font-bold flex items-center justify-center gap-2 active:scale-95 transition-transform border border-brand-100">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
-                        Configura API Key Gemini
-                    </button>
-                </div>
-
-                <div class="settings-card">
-                    <button onclick="openResetModal()" class="w-full py-3 bg-red-50 text-red-700 rounded-xl text-xs font-bold flex items-center justify-center gap-2 active:scale-95 transition-transform border border-red-100">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
-                        Resetta tutti i dati
-                    </button>
-                </div>
-            </div>
-        </div>
-
-        <!-- Modal Inserimento -->
-        <div id="modal" class="fixed inset-0 z-50 hidden" role="dialog" aria-modal="true">
-            <div class="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity" onclick="closeModal()"></div>
-
-            <div id="modal-content" class="absolute bottom-0 left-0 right-0 bg-white rounded-t-[2rem] shadow-2xl transform translate-y-full transition-transform duration-300 flex flex-col max-h-[90vh]">
-
-                <div class="w-full flex justify-center pt-4 pb-2" onclick="closeModal()">
-                    <div class="w-12 h-1.5 bg-gray-200 rounded-full"></div>
-                </div>
-
-                <div class="px-6 pb-6 overflow-y-auto no-scrollbar">
-                    <div class="flex justify-between items-center mb-6">
-                        <h3 id="modal-title" class="text-lg font-heading font-semibold text-gray-500 uppercase tracking-wider">Nuova Transazione</h3>
-                        <button onclick="closeModal()" class="p-2 bg-gray-100 rounded-full text-gray-500 hover:bg-gray-200 transition-colors">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
-                        </button>
-                    </div>
-
-                    <div class="mb-8 relative text-center">
-                        <label class="block text-xs font-bold text-gray-400 uppercase mb-2">Importo</label>
-                        <div class="relative flex items-center justify-center">
-                            <input type="number" id="amount-input" step="0.01" inputmode="decimal" placeholder="0.00"
-                                   onkeydown="if(event.key === 'Enter') this.blur()"
-                                   class="w-full text-5xl font-heading font-bold text-gray-800 text-center bg-transparent border-none focus:ring-0 p-0 placeholder-gray-200">
-
-                            <button onclick="triggerCamera()" class="absolute right-0 top-1/2 -translate-y-1/2 p-3 text-brand-500 bg-brand-50 rounded-2xl active:scale-95 transition-transform">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
-                            </button>
-                        </div>
-                    </div>
-
-                    <div class="space-y-4">
-                        <div class="grid grid-cols-2 gap-4">
-                            <div class="bg-gray-50 rounded-2xl p-3 border border-gray-100">
-                                <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Data</label>
-                                <input type="date" id="date-input" class="w-full bg-transparent font-semibold text-gray-700 text-sm outline-none">
-                            </div>
-                            <div class="bg-gray-50 rounded-2xl p-3 border border-gray-100 cursor-pointer active:bg-gray-100 transition-colors" onclick="openAccountPicker()">
-                                <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1 pointer-events-none">Conto</label>
-
-                                <div class="flex items-center justify-between pointer-events-none">
-                                    <span id="selected-account-display" class="font-semibold text-gray-700 text-sm truncate">Seleziona...</span>
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-                                    </svg>
-                                </div>
-
-                                <input type="hidden" id="modal-account-select">
-                            </div>
-                        </div>
-
-                        <div class="bg-gray-50 rounded-2xl p-4 border border-gray-100 flex items-center">
-                            <span class="text-gray-400 mr-3">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
-                            </span>
-                            <input type="text" id="desc-input" placeholder="Aggiungi nota..."
-                                   onkeydown="if(event.key === 'Enter') this.blur()"
-                                   class="w-full bg-transparent font-medium text-gray-700 placeholder-gray-400 outline-none">
-                        </div>
-
-                        <div>
-                            <label class="block text-xs font-bold text-gray-400 uppercase mb-3 ml-1">Categoria</label>
-                            <div id="category-grid" class="grid grid-cols-4 gap-3">
-                            </div>
-                        </div>
-
-                        <div class="pt-4 flex gap-3 pb-safe">
-                            <button id="delete-btn" onclick="deleteTx(editingTxId)" class="hidden w-16 bg-red-50 text-red-500 rounded-2xl flex items-center justify-center active:bg-red-100 transition-colors">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
-                            </button>
-                            <button onclick="saveTransaction()" id="save-btn" class="flex-1 py-4 rounded-2xl text-white font-heading font-semibold text-lg shadow-lg active:scale-95 transition-all">
-                                Salva Movimento
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div id="rename-modal" class="fixed inset-0 z-[60] hidden flex items-center justify-center p-4">
-        <div class="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity" onclick="closeRenameModal()"></div>
-        <div class="bg-white w-full max-w-sm rounded-3xl p-6 shadow-2xl relative z-10 transform transition-all scale-100">
-            <h3 class="text-lg font-heading font-bold text-gray-800 mb-4">Rinomina Conto</h3>
-            <input type="text" id="rename-input" class="w-full bg-gray-50 border border-gray-200 text-gray-800 text-lg font-medium rounded-xl p-3 mb-6 focus:border-brand-500 focus:ring-2 focus:ring-brand-200 outline-none" placeholder="Nuovo nome">
-            <div class="flex gap-3">
-                <button onclick="closeRenameModal()" class="flex-1 py-3 bg-gray-100 text-gray-600 font-semibold rounded-xl hover:bg-gray-200 transition-colors">Annulla</button>
-                <button onclick="confirmRename()" class="flex-1 py-3 bg-brand-600 text-white font-semibold rounded-xl shadow-lg shadow-brand-200 active:scale-95 transition-all">Salva</button>
-            </div>
-        </div>
-    </div>
-
-    <div id="delete-account-modal" class="fixed inset-0 z-[60] hidden flex items-center justify-center p-4">
-        <div class="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity" onclick="closeDeleteModal()"></div>
-        <div class="bg-white w-full max-w-sm rounded-3xl p-6 shadow-2xl relative z-10">
-            <div class="text-center mb-4">
-                <div class="w-12 h-12 bg-red-100 text-red-500 rounded-full flex items-center justify-center mx-auto mb-3">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
-                </div>
-                <h3 class="text-lg font-heading font-bold text-gray-800">Elimina Conto</h3>
-                <p class="text-sm text-gray-500 mt-1">Questa azione è irreversibile.</p>
-            </div>
-
-            <div id="delete-options" class="hidden mb-6 bg-orange-50 p-4 rounded-2xl border border-orange-100">
-                <p class="text-xs font-bold text-orange-700 uppercase mb-2">Attenzione</p>
-                <p class="text-sm text-orange-800 mb-3">Ci sono <span id="del-tx-count" class="font-bold">0</span> movimenti su questo conto.</p>
-
-                <div class="space-y-2">
-                    <label class="flex items-center space-x-2 p-2 rounded-lg border bg-white cursor-pointer hover:border-brand-400">
-                        <input type="radio" name="del-strategy" value="delete" checked class="text-brand-600 focus:ring-brand-500" onchange="toggleMoveSelect(false)">
-                        <span class="text-sm font-medium text-gray-700">Elimina anche i movimenti</span>
-                    </label>
-                    <label class="flex items-center space-x-2 p-2 rounded-lg border bg-white cursor-pointer hover:border-brand-400">
-                        <input type="radio" name="del-strategy" value="move" class="text-brand-600 focus:ring-brand-500" onchange="toggleMoveSelect(true)">
-                        <span class="text-sm font-medium text-gray-700">Sposta su altro conto</span>
-                    </label>
-                </div>
-
-                <div id="target-acc-container" class="hidden mt-2 ml-6">
-                    <select id="target-acc-select" class="w-full p-2 bg-white border border-gray-300 rounded-lg text-sm outline-none focus:border-brand-500"></select>
-                </div>
-            </div>
-
-            <div class="flex gap-3">
-                <button onclick="closeDeleteModal()" class="flex-1 py-3 bg-gray-100 text-gray-600 font-semibold rounded-xl hover:bg-gray-200">Annulla</button>
-                <button onclick="confirmDeleteAccount()" class="flex-1 py-3 bg-red-500 text-white font-semibold rounded-xl shadow-lg shadow-red-200 active:scale-95 transition-all">Elimina</button>
-            </div>
-        </div>
-    </div>
-
-    <div id="simple-alert-modal" class="fixed inset-0 z-[70] hidden flex items-center justify-center p-6">
-        <div class="absolute inset-0 bg-black/40 backdrop-blur-sm transition-opacity" onclick="closeSimpleAlert()"></div>
-
-        <div class="bg-white w-full max-w-xs rounded-3xl p-6 shadow-2xl relative z-10 text-center transform scale-100 transition-all">
-            <div class="w-14 h-14 bg-orange-100 text-orange-500 rounded-full flex items-center justify-center mx-auto mb-4">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                </svg>
-            </div>
-
-            <h3 id="alert-title" class="text-xl font-heading font-bold text-gray-800 mb-2">Attenzione</h3>
-            <p id="alert-message" class="text-gray-500 text-sm leading-relaxed mb-6">Messaggio di avviso...</p>
-
-            <button onclick="closeSimpleAlert()" class="w-full py-3.5 bg-gray-900 text-white font-semibold rounded-2xl shadow-lg active:scale-95 transition-transform">
-                Ho capito
+        <div class="flex gap-2">
+            <button onclick="toggleSettings(true)" class="text-xl p-2 hover:bg-blue-700 rounded-full transition-colors" title="Impostazioni">
+                <i class="fa-solid fa-cog"></i>
             </button>
         </div>
-    </div>
+    </header>
 
-    <div id="new-account-modal" class="fixed inset-0 z-[60] hidden flex items-center justify-center p-4">
-        <div class="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity" onclick="closeAddAccountModal()"></div>
+    <!-- MAIN APP CONTAINER -->
+    <main id="app-container" class="flex-1 overflow-y-auto no-scrollbar relative p-4 max-w-lg mx-auto w-full">
 
-        <div class="bg-white w-full max-w-sm rounded-3xl p-6 shadow-2xl relative z-10">
-            <div class="flex justify-between items-center mb-6">
-                <h3 class="text-lg font-heading font-bold text-gray-800">Nuovo Conto</h3>
-                <button onclick="closeAddAccountModal()" class="p-2 bg-gray-50 rounded-full text-gray-400 hover:bg-gray-100">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" /></svg>
+        <!-- View Principale -->
+        <section id="main-view" class="fade-in pb-24">
+
+            <input type="file" id="camera-input" accept="image/*" capture="environment" class="hidden" onchange="handleImage(event)">
+            <div id="camera-loader" class="fixed inset-0 z-[100] modal-overlay flex flex-col items-center justify-center hidden">
+                <div class="bg-white p-6 rounded-2xl shadow-2xl flex flex-col items-center">
+                    <div class="loader mb-4" style="width: 40px; height: 40px; border-width: 4px;"></div>
+                    <span class="text-blue-600 font-bold text-sm">Analisi scontrino...</span>
+                </div>
+            </div>
+
+            <!-- Dashboard Card -->
+            <div class="bg-white p-6 rounded-2xl card-shadow mb-6 text-center relative overflow-hidden">
+                <div class="flex items-center justify-between mb-4">
+                    <button onclick="changeMonth(-1)" class="w-8 h-8 rounded-full bg-slate-50 text-slate-400 hover:bg-slate-100 flex items-center justify-center transition-colors"><i class="fa-solid fa-chevron-left"></i></button>
+                    <h2 id="current-month-display" class="text-sm font-bold text-slate-600 uppercase tracking-wider">Mese</h2>
+                    <button onclick="changeMonth(1)" class="w-8 h-8 rounded-full bg-slate-50 text-slate-400 hover:bg-slate-100 flex items-center justify-center transition-colors"><i class="fa-solid fa-chevron-right"></i></button>
+                </div>
+
+                <p id="account-name-display" class="text-[10px] text-slate-400 font-bold uppercase mb-1 flex items-center justify-center gap-1 cursor-pointer" onclick="openAccountPicker()">
+                    <span class="w-2 h-2 rounded-full bg-green-500 inline-block"></span>
+                    <span>Conto</span> <i class="fa-solid fa-chevron-down ml-1"></i>
+                </p>
+
+                <div id="balance" class="text-4xl font-bold text-slate-800 tracking-tight">€ 0.00</div>
+                <div id="initial-balance-display" class="text-[10px] mt-2 text-slate-500 font-medium hidden"></div>
+
+                <div id="budget-container" class="mt-4 p-3 bg-slate-50 rounded-xl border border-slate-100 hidden">
+                    <div class="flex justify-between text-[10px] font-bold text-slate-500 uppercase mb-1.5">
+                        <span>Speso: <strong id="budget-spent" class="text-slate-700">€0</strong></span>
+                        <span>Budget: <strong id="budget-total" class="text-slate-700">€0</strong></span>
+                    </div>
+                    <div class="w-full bg-slate-200 rounded-full h-2 overflow-hidden">
+                        <div id="budget-bar" class="bg-blue-500 h-full rounded-full transition-all duration-700" style="width: 0%"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="grid grid-cols-2 gap-3 mb-6">
+                <button onclick="openModal('income')" class="bg-white p-4 rounded-2xl card-shadow flex flex-col items-center justify-center gap-2 active:scale-95 transition-all group">
+                    <div class="w-12 h-12 rounded-full bg-emerald-50 text-emerald-500 flex items-center justify-center text-xl group-hover:scale-110 transition-transform">
+                        <i class="fa-solid fa-arrow-down"></i>
+                    </div>
+                    <span class="font-bold text-slate-700 text-sm">Entrata</span>
+                </button>
+                <button onclick="openModal('expense')" class="bg-white p-4 rounded-2xl card-shadow flex flex-col items-center justify-center gap-2 active:scale-95 transition-all group">
+                    <div class="w-12 h-12 rounded-full bg-rose-50 text-rose-500 flex items-center justify-center text-xl group-hover:scale-110 transition-transform">
+                        <i class="fa-solid fa-arrow-up"></i>
+                    </div>
+                    <span class="font-bold text-slate-700 text-sm">Uscita</span>
                 </button>
             </div>
 
-            <div class="space-y-4">
-                <div>
-                    <label class="block text-xs font-bold text-gray-400 uppercase mb-1 ml-1">Nome Conto</label>
-                    <input type="text" id="modal-new-name" placeholder="Es. Hype, Wallet..." class="w-full bg-gray-50 border border-gray-200 text-gray-800 font-medium rounded-xl p-3 focus:border-brand-500 focus:ring-2 focus:ring-brand-200 outline-none">
-                </div>
-
-                <div>
-                    <label class="block text-xs font-bold text-gray-400 uppercase mb-1 ml-1">Saldo Iniziale (€)</label>
-                    <input type="number" id="modal-new-balance" placeholder="0.00" inputmode="decimal" step="0.01" class="w-full bg-gray-50 border border-gray-200 text-gray-800 font-bold text-lg rounded-xl p-3 focus:border-brand-500 focus:ring-2 focus:ring-brand-200 outline-none">
-                </div>
-
-                <div>
-                    <label class="block text-xs font-bold text-gray-400 uppercase mb-1 ml-1">Budget Mensile (€)</label>
-                    <input type="number" id="modal-new-budget" placeholder="Opzionale" inputmode="decimal" class="w-full bg-gray-50 border border-gray-200 text-gray-800 font-medium rounded-xl p-3 focus:border-brand-500 focus:ring-2 focus:ring-brand-200 outline-none">
+            <!-- Chart -->
+            <div id="chart-container" class="mb-6 bg-white p-5 rounded-2xl card-shadow hidden">
+                <h4 class="text-xs font-bold text-slate-500 uppercase mb-4 text-center">Riepilogo Uscite</h4>
+                <div class="h-40">
+                    <canvas id="expenseChart"></canvas>
                 </div>
             </div>
 
-            <button onclick="confirmAddAccount()" class="w-full mt-6 py-3.5 bg-brand-600 text-white font-semibold rounded-xl shadow-lg shadow-brand-200 active:scale-95 transition-all">
+            <!-- Search -->
+            <div class="relative mb-4">
+                <i class="fa-solid fa-magnifying-glass absolute left-4 top-3.5 text-slate-400"></i>
+                <input type="text" id="search-input" placeholder="Cerca movimento o categoria..."
+                       class="w-full bg-white border border-slate-200 text-slate-700 text-sm font-medium rounded-xl py-3 pl-10 pr-4 focus:ring-2 focus:ring-blue-500 outline-none shadow-sm transition-all"
+                       oninput="updateUI()">
+            </div>
+
+            <div class="flex justify-between items-center mb-3 px-1">
+                <h3 class="text-sm font-bold text-slate-500 uppercase">Lista Movimenti</h3>
+            </div>
+
+            <div id="transaction-list" class="space-y-3"></div>
+        </section>
+
+        <!-- View Impostazioni -->
+        <section id="settings-view" class="hidden fade-in space-y-6">
+            <div class="flex items-center gap-4 mb-2">
+                <h2 class="text-2xl font-bold text-slate-800">Impostazioni</h2>
+            </div>
+
+            <!-- Conti -->
+            <div class="bg-white p-5 rounded-2xl card-shadow">
+                <h3 class="font-bold text-slate-800 mb-3 flex items-center gap-2">
+                    <i class="fa-solid fa-building-columns text-blue-500"></i> I Tuoi Conti & Budget
+                </h3>
+                <div id="account-list-settings" class="space-y-2 mb-4"></div>
+
+                <button onclick="openAddAccountModal()" class="w-full bg-blue-50 hover:bg-blue-100 text-blue-600 font-semibold py-3 rounded-xl border border-blue-200 border-dashed active:scale-95 transition-all flex items-center justify-center gap-2 text-sm">
+                    <i class="fa-solid fa-plus"></i> Nuovo Conto
+                </button>
+            </div>
+
+            <!-- Dati & Backup -->
+            <div class="bg-white p-5 rounded-2xl card-shadow">
+                <h3 class="font-bold text-slate-800 mb-3 flex items-center gap-2">
+                    <i class="fa-solid fa-server text-emerald-500"></i> Gestione Dati
+                </h3>
+                <p class="text-[11px] text-slate-400 mb-4 leading-relaxed">
+                    Salva una copia di sicurezza o esporta i movimenti in formato CSV per Excel.
+                </p>
+
+                <div class="grid grid-cols-2 gap-3 mb-3">
+                    <button onclick="saveToFileSystem()" class="col-span-2 flex items-center justify-center gap-2 p-4 bg-emerald-50 text-emerald-700 border border-emerald-100 rounded-xl hover:bg-emerald-100 transition-colors active:scale-95 text-sm font-bold">
+                        <i class="fa-solid fa-download"></i> Salva Backup
+                    </button>
+
+                    <label class="cursor-pointer flex flex-col items-center justify-center p-3 border border-slate-200 rounded-xl hover:bg-slate-50 transition-colors group active:scale-95">
+                        <i class="fa-solid fa-upload text-blue-500 text-lg mb-1 group-hover:scale-110 transition-transform"></i>
+                        <span class="text-[10px] font-bold text-slate-600 uppercase">Importa</span>
+                        <input type="file" id="import-json" class="hidden" accept=".json" onchange="importJSON(event)">
+                    </label>
+
+                    <button onclick="exportCSV()" class="flex flex-col items-center justify-center p-3 border border-slate-200 rounded-xl hover:bg-slate-50 transition-colors group active:scale-95">
+                        <i class="fa-solid fa-file-csv text-green-500 text-lg mb-1 group-hover:scale-110 transition-transform"></i>
+                        <span class="text-[10px] font-bold text-slate-600 uppercase">Esporta CSV</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Scanner AI -->
+            <div class="bg-sky-50 p-5 rounded-2xl card-shadow">
+                <h3 class="font-bold text-slate-800 mb-3 flex items-center gap-2">
+                    <i class="fa-solid fa-wand-magic-sparkles text-indigo-500"></i> Google Gemini API
+                </h3>
+                <p class="text-[11px] text-slate-500 mb-4 leading-relaxed">
+                    Configura la chiave API per abilitare l'analisi automatica degli scontrini tramite fotocamera.
+                </p>
+                <button onclick="openApiKeyModal()" class="w-full bg-indigo-600 text-white py-3 rounded-xl font-bold shadow-md hover:bg-indigo-700 active:scale-95 transition-all text-sm flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-key"></i> Configura Chiave API
+                </button>
+            </div>
+
+            <!-- Reset -->
+            <div class="bg-white p-5 rounded-2xl card-shadow mt-6">
+                <button onclick="openResetModal()" class="w-full bg-red-50 text-red-600 py-3 rounded-xl font-bold border border-red-100 hover:bg-red-100 transition-all flex items-center justify-center gap-2 text-sm">
+                    <i class="fa-solid fa-triangle-exclamation"></i> Resetta tutti i dati
+                </button>
+            </div>
+        </section>
+    </main>
+
+    <!-- ================= MODALI (Stile MedicinePro) ================= -->
+    <!-- Modal Inserimento (Add/Edit) -->
+    <div id="modal" class="hidden fixed inset-0 modal-overlay z-[100] flex items-center justify-center p-4 fade-in">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-0 overflow-hidden flex flex-col max-h-[90vh]">
+            <div class="p-4 border-b border-slate-100 flex justify-between items-center bg-slate-50 shrink-0">
+                <h3 id="modal-title" class="text-lg font-bold text-slate-800">Nuova Transazione</h3>
+                <button onclick="closeModal()" class="w-8 h-8 flex items-center justify-center rounded-full text-slate-400 hover:bg-slate-200">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <div class="p-5 overflow-y-auto custom-scrollbar space-y-4">
+                <!-- Importo -->
+                <div class="relative bg-slate-50 rounded-xl p-4 border border-slate-100 text-center">
+                    <label class="block text-[10px] font-bold text-slate-400 uppercase mb-2">Importo (€)</label>
+                    <div class="flex items-center justify-center">
+                        <input type="number" id="amount-input" step="0.01" inputmode="decimal" placeholder="0.00"
+                               class="w-full text-4xl font-bold text-slate-800 text-center bg-transparent border-none focus:ring-0 p-0 outline-none">
+
+                        <button onclick="triggerCamera()" class="absolute right-4 top-1/2 p-2.5 text-blue-600 bg-blue-100 rounded-full active:scale-95 transition-transform" title="Scansiona scontrino">
+                            <i class="fa-solid fa-camera text-lg"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Data & Conto -->
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1.5 ml-1">Data</label>
+                        <input type="date" id="date-input" class="w-full p-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none text-sm font-bold text-slate-700 bg-white shadow-sm">
+                    </div>
+                    <div onclick="openAccountPicker()" class="cursor-pointer">
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1.5 ml-1">Conto</label>
+                        <div class="w-full p-3 border border-slate-200 rounded-xl bg-white shadow-sm flex items-center justify-between hover:border-blue-300 transition-colors">
+                            <span id="selected-account-display" class="font-bold text-slate-700 text-sm truncate">...</span>
+                            <i class="fa-solid fa-chevron-down text-slate-300 text-[10px]"></i>
+                        </div>
+                        <input type="hidden" id="modal-account-select">
+                    </div>
+                </div>
+
+                <!-- Descrizione -->
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 uppercase mb-1.5 ml-1">Nota / Descrizione</label>
+                    <div class="relative">
+                        <i class="fa-solid fa-pen absolute left-3 top-3.5 text-slate-400 text-sm"></i>
+                        <input type="text" id="desc-input" placeholder="Es. Spesa al supermercato..."
+                               class="w-full pl-9 p-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none text-slate-700 font-medium bg-white text-sm transition-shadow">
+                    </div>
+                </div>
+
+                <!-- Categorie -->
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 uppercase mb-2 ml-1">Categoria</label>
+                    <div id="category-grid" class="grid grid-cols-4 gap-2">
+                        <!-- Generato via JS -->
+                    </div>
+                </div>
+            </div>
+
+            <div class="p-4 border-t border-slate-100 bg-slate-50 flex gap-3 shrink-0">
+                <button id="delete-btn" onclick="deleteTx(editingTxId)" class="hidden px-4 py-2.5 bg-red-50 text-red-600 rounded-xl font-bold shadow-sm hover:bg-red-100 transition-colors active:scale-95">
+                    <i class="fa-solid fa-trash-can"></i>
+                </button>
+                <button id="save-btn" onclick="saveTransaction()" class="flex-1 py-3 bg-blue-600 text-white rounded-xl font-bold shadow-md hover:bg-blue-700 transition-transform active:scale-95">
+                    Salva Movimento
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modale Alert Semplice (Sostituisce gli alert nativi) -->
+    <div id="simple-alert-modal" class="hidden fixed inset-0 modal-overlay z-[200] flex items-center justify-center p-4 fade-in">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6 text-center">
+            <div class="w-12 h-12 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center mx-auto mb-4 text-xl">
+                <i class="fa-solid fa-circle-info"></i>
+            </div>
+            <h3 id="alert-title" class="text-xl font-bold text-slate-800 mb-2">Avviso</h3>
+            <p id="alert-message" class="text-slate-500 mb-6 text-sm leading-relaxed"></p>
+            <button onclick="closeSimpleAlert()" class="w-full py-3 bg-blue-600 text-white rounded-xl font-bold shadow-md hover:bg-blue-700 transition-transform active:scale-95">OK</button>
+        </div>
+    </div>
+
+    <!-- Modale Aggiungi Conto -->
+    <div id="new-account-modal" class="hidden fixed inset-0 modal-overlay z-[100] flex items-center justify-center p-4 fade-in">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6">
+            <div class="flex justify-between items-center mb-5">
+                <h3 class="text-lg font-bold text-slate-800">Nuovo Conto</h3>
+                <button onclick="closeAddAccountModal()" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1 ml-1">Nome Conto</label>
+                    <input type="text" id="modal-new-name" placeholder="Es. Hype, Conto Corrente..." class="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm font-bold text-slate-700">
+                </div>
+                <div>
+                    <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1 ml-1">Saldo Iniziale (€)</label>
+                    <input type="number" id="modal-new-balance" placeholder="0.00" step="0.01" class="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm font-bold text-slate-700">
+                </div>
+                <div>
+                    <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1 ml-1">Budget Mensile (€)</label>
+                    <input type="number" id="modal-new-budget" placeholder="Opzionale" step="0.01" class="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm font-bold text-slate-700">
+                </div>
+            </div>
+            <button onclick="confirmAddAccount()" class="w-full mt-6 py-3 bg-blue-600 text-white font-bold rounded-xl shadow-md hover:bg-blue-700 active:scale-95 transition-all">
                 Crea Conto
             </button>
         </div>
     </div>
 
-    <div id="api-key-modal" class="fixed inset-0 z-[60] hidden flex items-center justify-center p-4">
-        <div class="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity" onclick="closeApiKeyModal()"></div>
-        <div class="bg-white w-full max-w-sm rounded-3xl p-6 shadow-2xl relative z-10">
-            <div class="flex items-center justify-between mb-4">
-                <h3 class="text-lg font-heading font-bold text-gray-800">Gemini AI Key</h3>
-                <button onclick="closeApiKeyModal()" class="p-2 bg-gray-50 rounded-full text-gray-400 hover:bg-gray-100">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" /></svg>
-                </button>
+    <!-- Modale Rinomina Conto -->
+    <div id="rename-modal" class="hidden fixed inset-0 modal-overlay z-[100] flex items-center justify-center p-4 fade-in">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6 text-center">
+            <div class="w-12 h-12 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center mx-auto mb-4 text-xl">
+                <i class="fa-solid fa-pen"></i>
             </div>
-
-            <p class="text-xs text-gray-500 mb-4 leading-relaxed">
-                Incolla qui la tua API Key di Google Gemini per abilitare la scansione intelligente degli scontrini.
-            </p>
-
-            <input type="text" id="modal-api-key" placeholder="Incolla la chiave qui..." class="w-full bg-gray-50 border border-gray-200 text-gray-800 text-sm font-medium rounded-xl p-3 mb-6 focus:border-brand-500 focus:ring-2 focus:ring-brand-200 outline-none">
-
-            <button onclick="saveApiKey()" class="w-full py-3 bg-brand-600 text-white font-semibold rounded-xl shadow-lg shadow-brand-200 active:scale-95 transition-all">
-                Salva Chiave
-            </button>
+            <h3 class="text-xl font-bold text-slate-800 mb-4">Rinomina Conto</h3>
+            <input type="text" id="rename-input" class="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm font-bold text-slate-700 mb-6 text-center" placeholder="Nuovo nome">
+            <div class="flex gap-3">
+                <button onclick="closeRenameModal()" class="flex-1 py-3 text-slate-500 font-bold hover:bg-slate-50 rounded-xl transition-colors">Annulla</button>
+                <button onclick="confirmRename()" class="flex-1 py-3 bg-blue-600 text-white rounded-xl font-bold shadow-md hover:bg-blue-700 active:scale-95 transition-all">Salva</button>
+            </div>
         </div>
     </div>
 
-    <div id="reset-data-modal" class="fixed inset-0 z-[70] hidden flex items-center justify-center p-4">
-        <div class="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity" onclick="closeResetModal()"></div>
-        <div class="bg-white w-full max-w-sm rounded-3xl p-6 shadow-2xl relative z-10 text-center">
-            <div class="w-16 h-16 bg-red-100 text-red-500 rounded-full flex items-center justify-center mx-auto mb-4 animate-pulse">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
+    <!-- Modale Input Numerico (Per Budget e Saldo Iniziale) -->
+    <div id="numberModal" class="hidden fixed inset-0 modal-overlay z-[100] flex items-center justify-center p-4 fade-in">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6 text-center">
+            <h3 id="numberTitle" class="text-lg font-bold text-slate-800 mb-4">Inserisci Valore</h3>
+            <input type="number" id="numberInput" inputmode="decimal" step="0.01" class="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-xl font-bold text-slate-700 text-center mb-6" placeholder="0.00">
+            <div class="flex gap-3">
+                <button onclick="closeNumberModal()" class="flex-1 py-3 text-slate-500 font-bold hover:bg-slate-50 rounded-xl transition-colors">Annulla</button>
+                <button onclick="confirmNumberModal()" class="flex-1 py-3 bg-blue-600 text-white rounded-xl font-bold shadow-md hover:bg-blue-700 active:scale-95 transition-all">OK</button>
             </div>
+        </div>
+    </div>
 
-            <h3 class="text-xl font-heading font-bold text-gray-900 mb-2">Sei sicuro?</h3>
-            <p class="text-sm text-gray-500 mb-6 leading-relaxed">
-                Stai per cancellare <b>tutti i conti, i movimenti e le impostazioni</b>. Questa azione non può essere annullata.
-            </p>
+    <!-- Modale Elimina Conto -->
+    <div id="delete-account-modal" class="hidden fixed inset-0 modal-overlay z-[100] flex items-center justify-center p-4 fade-in">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6 text-center">
+            <div class="w-12 h-12 rounded-full bg-red-100 text-red-600 flex items-center justify-center mx-auto mb-4 text-xl">
+                <i class="fa-solid fa-trash-can"></i>
+            </div>
+            <h3 class="text-xl font-bold text-slate-800 mb-1">Elimina Conto</h3>
+            <p class="text-slate-500 text-sm mb-4">Questa azione è irreversibile.</p>
+
+            <div id="delete-options" class="hidden mb-6 bg-orange-50 p-4 rounded-xl border border-orange-100 text-left">
+                <p class="text-[10px] font-bold text-orange-600 uppercase mb-2">Attenzione</p>
+                <p class="text-xs text-orange-800 mb-3">Ci sono <span id="del-tx-count" class="font-bold">0</span> movimenti su questo conto.</p>
+                <div class="space-y-2">
+                    <label class="flex items-center gap-2 p-2 bg-white rounded-lg border border-slate-200 cursor-pointer">
+                        <input type="radio" name="del-strategy" value="delete" checked class="accent-red-500 w-4 h-4" onchange="toggleMoveSelect(false)">
+                        <span class="text-xs font-bold text-slate-700">Elimina anche i movimenti</span>
+                    </label>
+                    <label class="flex items-center gap-2 p-2 bg-white rounded-lg border border-slate-200 cursor-pointer">
+                        <input type="radio" name="del-strategy" value="move" class="accent-blue-500 w-4 h-4" onchange="toggleMoveSelect(true)">
+                        <span class="text-xs font-bold text-slate-700">Sposta su altro conto</span>
+                    </label>
+                </div>
+                <div id="target-acc-container" class="hidden mt-3">
+                    <select id="target-acc-select" class="w-full p-2 bg-white border border-slate-300 rounded-lg text-sm outline-none focus:border-blue-500 font-medium text-slate-700"></select>
+                </div>
+            </div>
 
             <div class="flex gap-3">
-                <button onclick="closeResetModal()" class="flex-1 py-3 bg-gray-100 text-gray-700 font-semibold rounded-xl hover:bg-gray-200 transition-colors">
-                    Annulla
-                </button>
-                <button onclick="confirmResetData()" class="flex-1 py-3 bg-red-600 text-white font-semibold rounded-xl shadow-lg shadow-red-200 active:scale-95 transition-all">
-                    Elimina Tutto
-                </button>
+                <button onclick="closeDeleteModal()" class="flex-1 py-3 text-slate-500 font-bold hover:bg-slate-50 rounded-xl transition-colors">Annulla</button>
+                <button onclick="confirmDeleteAccount()" class="flex-1 py-3 bg-red-600 text-white rounded-xl font-bold shadow-md hover:bg-red-700 active:scale-95 transition-all">Elimina</button>
             </div>
         </div>
     </div>
 
-    <div id="delete-tx-modal" class="fixed inset-0 z-[80] hidden flex items-center justify-center p-4">
-        <div class="absolute inset-0 bg-black/50 backdrop-blur-sm transition-opacity" onclick="closeDeleteTxModal()"></div>
-
-        <div class="bg-white w-full max-w-xs rounded-3xl p-6 shadow-2xl relative z-10 text-center transform scale-100 transition-all">
-            <div class="w-14 h-14 bg-red-100 text-red-500 rounded-full flex items-center justify-center mx-auto mb-4">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+    <!-- Modale Elimina Transazione -->
+    <div id="delete-tx-modal" class="hidden fixed inset-0 modal-overlay z-[110] flex items-center justify-center p-4 fade-in">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6 text-center">
+            <div class="w-12 h-12 rounded-full bg-red-100 text-red-600 flex items-center justify-center mx-auto mb-4 text-xl">
+                <i class="fa-solid fa-eraser"></i>
             </div>
-
-            <h3 class="text-lg font-heading font-bold text-gray-800 mb-2">Elimina Movimento?</h3>
-            <p class="text-sm text-gray-500 mb-6">Questa azione non può essere annullata.</p>
-
+            <h3 class="text-xl font-bold text-slate-800 mb-2">Elimina Movimento?</h3>
+            <p class="text-slate-500 mb-6 text-sm">Il movimento verrà rimosso definitivamente.</p>
             <div class="flex gap-3">
-                <button onclick="closeDeleteTxModal()" class="flex-1 py-3 bg-gray-100 text-gray-700 font-semibold rounded-xl hover:bg-gray-200 transition-colors">
-                    No
-                </button>
-                <button onclick="confirmDeleteTx()" class="flex-1 py-3 bg-red-500 text-white font-semibold rounded-xl shadow-lg shadow-red-200 active:scale-95 transition-all">
-                    Elimina
-                </button>
+                <button onclick="closeDeleteTxModal()" class="flex-1 py-3 text-slate-500 font-bold hover:bg-slate-50 rounded-xl transition-colors">Annulla</button>
+                <button onclick="confirmDeleteTx()" class="flex-1 py-3 bg-red-600 text-white rounded-xl font-bold shadow-md hover:bg-red-700 active:scale-95 transition-all">Elimina</button>
             </div>
         </div>
     </div>
 
-    <div id="account-picker-modal" class="fixed inset-0 z-[70] hidden flex items-end sm:items-center justify-center pointer-events-none">
-        <div class="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity pointer-events-auto" onclick="closeAccountPicker()"></div>
-
-        <div class="bg-white w-full max-w-sm rounded-t-3xl sm:rounded-3xl p-6 shadow-2xl relative z-10 transform transition-transform translate-y-full sm:translate-y-0 pointer-events-auto" id="account-picker-content">
-            <div class="flex justify-between items-center mb-6">
-                <h3 class="text-lg font-heading font-bold text-gray-800">Scegli Conto</h3>
-                <button onclick="closeAccountPicker()" class="p-2 bg-gray-50 rounded-full text-gray-400 hover:bg-gray-100">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" /></svg>
+    <!-- Modale Scelta Conto -->
+    <div id="account-picker-modal" class="hidden fixed inset-0 modal-overlay z-[110] flex items-center justify-center p-4 fade-in">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden flex flex-col max-h-[80vh]">
+            <div class="p-4 bg-slate-50 border-b border-slate-200 flex justify-between items-center">
+                <h3 class="font-bold text-slate-800 flex items-center gap-2">
+                    <i class="fa-solid fa-building-columns text-blue-500"></i> Seleziona Conto
+                </h3>
+                <button onclick="closeAccountPicker()" class="w-8 h-8 flex items-center justify-center rounded-full text-slate-400 hover:bg-slate-200">
+                    <i class="fa-solid fa-xmark"></i>
                 </button>
             </div>
-
-            <div id="account-picker-list" class="space-y-3 max-h-[60vh] overflow-y-auto no-scrollbar pb-safe">
+            <div id="account-picker-list" class="overflow-y-auto custom-scrollbar p-3 space-y-2 flex-1">
+                <!-- Popolato via JS -->
             </div>
         </div>
     </div>
+
+    <!-- Modale API Key -->
+    <div id="api-key-modal" class="hidden fixed inset-0 modal-overlay z-[100] flex items-center justify-center p-4 fade-in">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6 text-center">
+            <div class="w-12 h-12 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center mx-auto mb-4 text-xl">
+                <i class="fa-solid fa-key"></i>
+            </div>
+            <h3 class="text-xl font-bold text-slate-800 mb-2">API Key Gemini</h3>
+            <p class="text-slate-500 mb-4 text-sm leading-relaxed">Inserisci la tua chiave di Google Gemini per scansionare gli scontrini.</p>
+            <input type="text" id="modal-api-key" class="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none mb-6 text-sm" placeholder="Incolla chiave qui...">
+            <div class="flex gap-3">
+                <button onclick="closeApiKeyModal()" class="flex-1 py-3 text-slate-500 font-bold hover:bg-slate-50 rounded-xl transition-colors">Annulla</button>
+                <button onclick="saveApiKey()" class="flex-1 py-3 bg-blue-600 text-white rounded-xl font-bold shadow-md hover:bg-blue-700 active:scale-95 transition-all">Salva</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modale Reset Dati -->
+    <div id="reset-data-modal" class="hidden fixed inset-0 modal-overlay z-[100] flex items-center justify-center p-4 fade-in">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6 text-center">
+            <div class="w-12 h-12 rounded-full bg-red-100 text-red-600 flex items-center justify-center mx-auto mb-4 text-xl">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+            </div>
+            <h3 class="text-xl font-bold text-slate-800 mb-2">Resetta Tutto</h3>
+            <p class="text-slate-500 mb-6 text-sm">Sei sicuro? Tutti i conti e movimenti verranno cancellati irreversibilmente.</p>
+            <div class="flex gap-3">
+                <button onclick="closeResetModal()" class="flex-1 py-3 text-slate-500 font-bold hover:bg-slate-50 rounded-xl transition-colors">Annulla</button>
+                <button onclick="confirmResetData()" class="flex-1 py-3 bg-red-600 text-white rounded-xl font-bold shadow-md hover:bg-red-700 active:scale-95 transition-all">Elimina Tutto</button>
+            </div>
+        </div>
+    </div>
+
     <script>
+        // Logica originale invariata
         const STORAGE_TX = 'spese_v3_data';
         const STORAGE_ACC = 'spese_v3_accounts';
         let apiKey = localStorage.getItem('gemini_api_key') || "";
 
+        // Mappa icone modificate per usare FontAwesome invece delle Emoji, mantenendo i colori originali per l'UI
         const categories = {
             expense: [
-                { id: 'cibo', label: 'Cibo', icon: '🍎', color: '#f87171' },     // Rosso soft
-                { id: 'casa', label: 'Casa', icon: '🏠', color: '#60a5fa' },     // Blu soft
-                { id: 'trasporti', label: 'Auto', icon: '🚗', color: '#fbbf24' }, // Giallo
-                { id: 'svago', label: 'Svago', icon: '🎮', color: '#a78bfa' },    // Viola
-                { id: 'salute', label: 'Salute', icon: '💊', color: '#34d399' },  // Verde
-                { id: 'shopping', label: 'Shopping', icon: '🛍️', color: '#f472b6' }, // Rosa
-                { id: 'altro', label: 'Altro', icon: '📦', color: '#94a3b8' }     // Grigio
+                { id: 'cibo', label: 'Cibo', icon: 'fa-solid fa-utensils', color: '#f87171' },
+                { id: 'casa', label: 'Casa', icon: 'fa-solid fa-house', color: '#60a5fa' },
+                { id: 'trasporti', label: 'Auto', icon: 'fa-solid fa-car', color: '#fbbf24' },
+                { id: 'svago', label: 'Svago', icon: 'fa-solid fa-gamepad', color: '#a78bfa' },
+                { id: 'salute', label: 'Salute', icon: 'fa-solid fa-heart-pulse', color: '#34d399' },
+                { id: 'shopping', label: 'Shopping', icon: 'fa-solid fa-bag-shopping', color: '#f472b6' },
+                { id: 'altro', label: 'Altro', icon: 'fa-solid fa-box', color: '#94a3b8' }
             ],
             income: [
-                { id: 'stipendio', label: 'Stipendio', icon: '💰', color: '#10b981' },
-                { id: 'regalo', label: 'Regalo', icon: '🎁', color: '#f59e0b' },
-                { id: 'altro_in', label: 'Altro', icon: '📈', color: '#6b7280' }
+                { id: 'stipendio', label: 'Stipendio', icon: 'fa-solid fa-money-bill-wave', color: '#10b981' },
+                { id: 'regalo', label: 'Regalo', icon: 'fa-solid fa-gift', color: '#f59e0b' },
+                { id: 'altro_in', label: 'Altro', icon: 'fa-solid fa-arrow-trend-up', color: '#6b7280' }
             ]
         };
 
         let transactions = JSON.parse(localStorage.getItem(STORAGE_TX)) || [];
-        // Accounts migration: ensure existing accounts have budget set to 0 if not present
         let rawAccounts = JSON.parse(localStorage.getItem(STORAGE_ACC)) || [{ id: 'acc_01', name: 'Conto Corrente', budget: 0 }];
         let accounts = rawAccounts.map(a => ({
             ...a,
@@ -596,40 +571,7 @@
         let selectedCategory = 'altro';
         let editingTxId = null;
         let chartInstance = null;
-
         let numberCallback = null;
-
-        function openNumberModal(title, value, callback) {
-            document.getElementById('numberTitle').innerText = title;
-
-            const input = document.getElementById('numberInput');
-            input.value = value ?? '';
-
-            numberCallback = callback;
-            document.getElementById('numberModal').classList.remove('hidden');
-
-            setTimeout(() => input.focus(), 50);
-        }
-
-        function closeNumberModal() {
-            document.getElementById('numberModal').classList.add('hidden');
-            numberCallback = null;
-        }
-
-        function confirmNumberModal() {
-            if (!numberCallback) return;
-
-            const raw = document.getElementById('numberInput').value.replace(',', '.');
-            const val = parseFloat(raw);
-
-            if (isNaN(val)) {
-                alert("Inserisci un numero valido");
-                return;
-            }
-
-            numberCallback(val);
-            closeNumberModal();
-        }
 
         // UI TOAST
         function showToast(msg) {
@@ -639,249 +581,7 @@
             setTimeout(() => t.style.opacity = '0', 2500);
         }
 
-        // --- FUNZIONI DI BACKUP OTTIMIZZATE ---
-
-        // 1. Helper per generare i dati (evita codice duplicato)
-        function getBackupData() {
-            const timestamp = new Date().toISOString().split('T')[0];
-            const filename = `backup_spesepro_${timestamp}.json`;
-            const data = {
-                app: "SpesePro",
-                version: "3.1",
-                exportedAt: new Date().toISOString(),
-                transactions: transactions,
-                accounts: accounts
-            };
-            return { json: JSON.stringify(data, null, 2), filename };
-        }
-
-        // 3. Salvataggio Locale (Supporto PC Desktop + Download Mobile classico)
-        async function saveToFileSystem() {
-            const { json, filename } = getBackupData();
-
-            // Tenta API Desktop moderna (Chrome/Edge PC)
-            if ('showSaveFilePicker' in window) {
-                try {
-                    const handle = await window.showSaveFilePicker({
-                        suggestedName: filename,
-                        types: [{ description: 'JSON File', accept: { 'application/json': ['.json'] } }],
-                    });
-                    const writable = await handle.createWritable();
-                    await writable.write(json);
-                    await writable.close();
-                    showToast("Salvato su disco!");
-                } catch (err) {
-                    if (err.name !== 'AbortError') showToast("Salvataggio annullato");
-                }
-            } else {
-                // Fallback per Mobile (iOS/Android) -> Download classico
-                downloadBackupManual(json, filename);
-            }
-        }
-
-        // 4. Funzione di Download "Manuale" (Fallback universale)
-        function downloadBackupManual(json, filename) {
-            const blob = new Blob([json], { type: 'application/json' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.style.display = 'none';
-            a.href = url;
-            a.download = filename;
-            document.body.appendChild(a);
-            a.click();
-
-            setTimeout(() => {
-                document.body.removeChild(a);
-                URL.revokeObjectURL(url);
-                showToast("Backup scaricato!");
-            }, 100);
-        }
-
-        // --- GESTIONE NUOVO CONTO ---
-        function openAddAccountModal() {
-            // Resetta i campi
-            document.getElementById('modal-new-name').value = '';
-            document.getElementById('modal-new-balance').value = '';
-            document.getElementById('modal-new-budget').value = '';
-
-            document.getElementById('new-account-modal').classList.remove('hidden');
-            setTimeout(() => document.getElementById('modal-new-name').focus(), 50);
-        }
-
-        function closeAddAccountModal() {
-            document.getElementById('new-account-modal').classList.add('hidden');
-        }
-
-        function confirmAddAccount() {
-            const nameInput = document.getElementById('modal-new-name');
-            const balanceInput = document.getElementById('modal-new-balance');
-            const budgetInput = document.getElementById('modal-new-budget');
-
-            const name = nameInput.value.trim();
-            // Sostituisce la virgola con punto per i decimali
-            const initialBalance = parseFloat(balanceInput.value.replace(',', '.')) || 0;
-            const budget = parseFloat(budgetInput.value.replace(',', '.')) || 0;
-
-            // --- MODIFICA QUI: Usa il modale invece dell'alert ---
-            if (!name) {
-                showSimpleAlert(
-                    "Nome Mancante",
-                    "Per favore, inserisci un nome per il nuovo conto."
-                );
-                return;
-            }
-            // ----------------------------------------------------
-
-            // Crea il nuovo conto
-            const newAccount = {
-                id: 'acc_' + Date.now(),
-                name: name,
-                budget: budget,
-                initialBalance: initialBalance
-            };
-
-            accounts.push(newAccount);
-
-            // Se è il primo conto, attivalo subito
-            if (accounts.length === 1) {
-                activeAccountId = newAccount.id;
-            }
-
-            localStorage.setItem(STORAGE_ACC, JSON.stringify(accounts));
-
-            renderSettingsAccounts();
-            updateUI();
-            closeAddAccountModal();
-
-            // Feedback utente elegante
-            showToast("Conto creato con successo!");
-        }
-
-        // --- GESTIONE RINOMINA ---
-        let accountToRenameId = null;
-
-        function renameAccount(id) {
-            accountToRenameId = id;
-            const acc = accounts.find(a => a.id === id);
-            if (!acc) return;
-
-            document.getElementById('rename-input').value = acc.name;
-            document.getElementById('rename-modal').classList.remove('hidden');
-            setTimeout(() => document.getElementById('rename-input').focus(), 50);
-        }
-
-        function closeRenameModal() {
-            document.getElementById('rename-modal').classList.add('hidden');
-            accountToRenameId = null;
-        }
-
-        function confirmRename() {
-            if (!accountToRenameId) return;
-            const newName = document.getElementById('rename-input').value.trim();
-
-            if (newName) {
-                const acc = accounts.find(a => a.id === accountToRenameId);
-                if (acc) {
-                    acc.name = newName;
-                    localStorage.setItem(STORAGE_ACC, JSON.stringify(accounts));
-                    renderSettingsAccounts();
-                    updateUI();
-                }
-            }
-            closeRenameModal();
-        }
-
-        // --- GESTIONE ELIMINAZIONE CONTO ---
-        let accountToDeleteId = null;
-
-        function deleteAccount(id) {
-            if (accounts.length === 1) {
-                // Invece di alert("..."), usiamo il nuovo modale bello
-                showSimpleAlert(
-                    "Impossibile Eliminare",
-                    "Non puoi eliminare l'unico conto rimasto. Per favore, crea prima un nuovo conto e poi riprova."
-                );
-                return;
-            }
-
-            accountToDeleteId = id;
-            const txCount = transactions.filter(t => t.accountId === id).length;
-            const optionsDiv = document.getElementById('delete-options');
-            const countSpan = document.getElementById('del-tx-count');
-
-            // Reset del form
-            document.querySelector('input[name="del-strategy"][value="delete"]').checked = true;
-            toggleMoveSelect(false);
-
-            // Se ci sono movimenti, mostra le opzioni complesse
-            if (txCount > 0) {
-                optionsDiv.classList.remove('hidden');
-                countSpan.textContent = txCount;
-
-                // Popola la select con gli altri conti
-                const targetSelect = document.getElementById('target-acc-select');
-                targetSelect.innerHTML = accounts
-                    .filter(a => a.id !== id)
-                    .map(a => `<option value="${a.id}">${a.name}</option>`)
-                    .join('');
-            } else {
-                optionsDiv.classList.add('hidden');
-            }
-
-            document.getElementById('delete-account-modal').classList.remove('hidden');
-        }
-
-        function toggleMoveSelect(show) {
-            const container = document.getElementById('target-acc-container');
-            if (show) container.classList.remove('hidden');
-            else container.classList.add('hidden');
-        }
-
-        function closeDeleteModal() {
-            document.getElementById('delete-account-modal').classList.add('hidden');
-            accountToDeleteId = null;
-        }
-
-        function confirmDeleteAccount() {
-            if (!accountToDeleteId) return;
-
-            const txCount = transactions.filter(t => t.accountId === accountToDeleteId).length;
-
-            if (txCount > 0) {
-                const strategy = document.querySelector('input[name="del-strategy"]:checked').value;
-
-                if (strategy === 'move') {
-                    // Logica SPOSTAMENTO
-                    const targetId = document.getElementById('target-acc-select').value;
-                    if (!targetId) return;
-
-                    transactions.forEach(t => {
-                        if (t.accountId === accountToDeleteId) t.accountId = targetId;
-                    });
-                } else {
-                    // Logica ELIMINAZIONE A CASCATA
-                    transactions = transactions.filter(t => t.accountId !== accountToDeleteId);
-                }
-            }
-
-            // Elimina il conto
-            accounts = accounts.filter(a => a.id !== accountToDeleteId);
-
-            // Se abbiamo eliminato il conto attivo, spostiamoci sul primo disponibile
-            if (activeAccountId === accountToDeleteId) {
-                activeAccountId = accounts[0].id;
-            }
-
-            // Salvataggio
-            localStorage.setItem(STORAGE_ACC, JSON.stringify(accounts));
-            localStorage.setItem(STORAGE_TX, JSON.stringify(transactions));
-
-            renderSettingsAccounts();
-            updateUI();
-            closeDeleteModal();
-        }
-
-        // --- GESTIONE AVVISI SEMPLICI ---
+        // --- GESTIONE MODALI DI SISTEMA ---
         function showSimpleAlert(title, message) {
             document.getElementById('alert-title').textContent = title;
             document.getElementById('alert-message').textContent = message;
@@ -892,149 +592,301 @@
             document.getElementById('simple-alert-modal').classList.add('hidden');
         }
 
+        function openNumberModal(title, value, callback) {
+            document.getElementById('numberTitle').innerText = title;
+            const input = document.getElementById('numberInput');
+            input.value = value ?? '';
+            numberCallback = callback;
+            document.getElementById('numberModal').classList.remove('hidden');
+            setTimeout(() => input.focus(), 50);
+        }
+
+        function closeNumberModal() {
+            document.getElementById('numberModal').classList.add('hidden');
+            numberCallback = null;
+        }
+
+        function confirmNumberModal() {
+            if (!numberCallback) return;
+            const raw = document.getElementById('numberInput').value.replace(',', '.');
+            const val = parseFloat(raw);
+            if (isNaN(val)) {
+                showSimpleAlert("Attenzione", "Inserisci un numero valido");
+                return;
+            }
+            numberCallback(val);
+            closeNumberModal();
+        }
+
+        // --- BACKUP & EXPORT ---
+        function getBackupData() {
+            const timestamp = new Date().toISOString().split('T')[0];
+            const filename = `backup_spesepro_${timestamp}.json`;
+            const data = { app: "SpesePro", version: "3.2", exportedAt: new Date().toISOString(), transactions, accounts };
+            return { json: JSON.stringify(data, null, 2), filename };
+        }
+
+        async function saveToFileSystem() {
+            const { json, filename } = getBackupData();
+            if ('showSaveFilePicker' in window) {
+                try {
+                    const handle = await window.showSaveFilePicker({ suggestedName: filename, types: [{ description: 'JSON File', accept: { 'application/json': ['.json'] } }] });
+                    const writable = await handle.createWritable();
+                    await writable.write(json);
+                    await writable.close();
+                    showToast("Salvato su disco!");
+                } catch (err) {
+                    if (err.name !== 'AbortError') showToast("Salvataggio annullato");
+                }
+            } else {
+                downloadBackupManual(json, filename);
+            }
+        }
+
+        function downloadBackupManual(json, filename) {
+            const blob = new Blob([json], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.style.display = 'none';
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            setTimeout(() => { document.body.removeChild(a); URL.revokeObjectURL(url); showToast("Backup scaricato!"); }, 100);
+        }
+
+        function exportCSV() {
+            const headers = ["Data", "Descrizione", "Importo", "Categoria", "Tipo", "Conto", "Budget Conto"];
+            const rows = transactions.map(t => {
+                const acc = accounts.find(a => a.id === t.accountId);
+                return [
+                    new Date(t.date).toLocaleDateString(),
+                    t.description || '',
+                    t.amount.toFixed(2),
+                    t.category,
+                    t.type,
+                    acc?.name || "N/A",
+                    acc?.budget || 0
+                ].join(';')
+            });
+            const blob = new Blob(["\ufeff" + [headers.join(';'), ...rows].join('\n')], { type: 'text/csv' });
+            downloadBackupManual(blob, `spese_export.csv`);
+        }
+
+        function importJSON(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const r = new FileReader();
+            r.onload = (e) => {
+                try {
+                    const d = JSON.parse(e.target.result);
+                    if (confirm("Vuoi ripristinare il backup? I dati attuali andranno persi.")) {
+                        transactions = d.transactions || [];
+                        accounts = d.accounts || accounts;
+                        localStorage.setItem(STORAGE_TX, JSON.stringify(transactions));
+                        localStorage.setItem(STORAGE_ACC, JSON.stringify(accounts));
+                        location.reload();
+                    }
+                } catch { showToast("File non valido"); }
+            };
+            r.readAsText(file);
+        }
+
+        // --- CONTI ---
+        function openAddAccountModal() {
+            document.getElementById('modal-new-name').value = '';
+            document.getElementById('modal-new-balance').value = '';
+            document.getElementById('modal-new-budget').value = '';
+            document.getElementById('new-account-modal').classList.remove('hidden');
+            setTimeout(() => document.getElementById('modal-new-name').focus(), 50);
+        }
+        function closeAddAccountModal() { document.getElementById('new-account-modal').classList.add('hidden'); }
+
+        function confirmAddAccount() {
+            const name = document.getElementById('modal-new-name').value.trim();
+            const initialBalance = parseFloat(document.getElementById('modal-new-balance').value.replace(',', '.')) || 0;
+            const budget = parseFloat(document.getElementById('modal-new-budget').value.replace(',', '.')) || 0;
+
+            if (!name) { showSimpleAlert("Nome Mancante", "Per favore, inserisci un nome per il conto."); return; }
+
+            const newAccount = { id: 'acc_' + Date.now(), name, budget, initialBalance };
+            accounts.push(newAccount);
+            if (accounts.length === 1) activeAccountId = newAccount.id;
+
+            localStorage.setItem(STORAGE_ACC, JSON.stringify(accounts));
+            renderSettingsAccounts(); updateUI(); closeAddAccountModal(); showToast("Conto creato!");
+        }
+
+        let accountToRenameId = null;
+        function renameAccount(id) {
+            accountToRenameId = id;
+            const acc = accounts.find(a => a.id === id);
+            if (!acc) return;
+            document.getElementById('rename-input').value = acc.name;
+            document.getElementById('rename-modal').classList.remove('hidden');
+            setTimeout(() => document.getElementById('rename-input').focus(), 50);
+        }
+        function closeRenameModal() { document.getElementById('rename-modal').classList.add('hidden'); accountToRenameId = null; }
+        function confirmRename() {
+            if (!accountToRenameId) return;
+            const newName = document.getElementById('rename-input').value.trim();
+            if (newName) {
+                const acc = accounts.find(a => a.id === accountToRenameId);
+                if (acc) { acc.name = newName; localStorage.setItem(STORAGE_ACC, JSON.stringify(accounts)); renderSettingsAccounts(); updateUI(); }
+            }
+            closeRenameModal();
+        }
+
+        let accountToDeleteId = null;
+        function deleteAccount(id) {
+            if (accounts.length === 1) { showSimpleAlert("Impossibile Eliminare", "Non puoi eliminare l'unico conto rimasto."); return; }
+            accountToDeleteId = id;
+            const txCount = transactions.filter(t => t.accountId === id).length;
+            const optionsDiv = document.getElementById('delete-options');
+            document.querySelector('input[name="del-strategy"][value="delete"]').checked = true;
+            toggleMoveSelect(false);
+
+            if (txCount > 0) {
+                optionsDiv.classList.remove('hidden');
+                document.getElementById('del-tx-count').textContent = txCount;
+                document.getElementById('target-acc-select').innerHTML = accounts.filter(a => a.id !== id).map(a => `<option value="${a.id}">${a.name}</option>`).join('');
+            } else { optionsDiv.classList.add('hidden'); }
+            document.getElementById('delete-account-modal').classList.remove('hidden');
+        }
+        function toggleMoveSelect(show) { document.getElementById('target-acc-container').classList.toggle('hidden', !show); }
+        function closeDeleteModal() { document.getElementById('delete-account-modal').classList.add('hidden'); accountToDeleteId = null; }
+
+        function confirmDeleteAccount() {
+            if (!accountToDeleteId) return;
+            const txCount = transactions.filter(t => t.accountId === accountToDeleteId).length;
+            if (txCount > 0) {
+                const strategy = document.querySelector('input[name="del-strategy"]:checked').value;
+                if (strategy === 'move') {
+                    const targetId = document.getElementById('target-acc-select').value;
+                    if (!targetId) return;
+                    transactions.forEach(t => { if (t.accountId === accountToDeleteId) t.accountId = targetId; });
+                } else { transactions = transactions.filter(t => t.accountId !== accountToDeleteId); }
+            }
+            accounts = accounts.filter(a => a.id !== accountToDeleteId);
+            if (activeAccountId === accountToDeleteId) activeAccountId = accounts[0].id;
+            localStorage.setItem(STORAGE_ACC, JSON.stringify(accounts)); localStorage.setItem(STORAGE_TX, JSON.stringify(transactions));
+            renderSettingsAccounts(); updateUI(); closeDeleteModal(); showToast("Conto eliminato");
+        }
+
         function setBudget(id) {
             const acc = accounts.find(a => a.id === id);
             if (!acc) return;
             openNumberModal("Budget mensile (€)", acc.budget || 0, val => {
-                acc.budget = val;
-                localStorage.setItem(STORAGE_ACC, JSON.stringify(accounts));
-                renderSettingsAccounts();
-                updateUI();
+                acc.budget = val; localStorage.setItem(STORAGE_ACC, JSON.stringify(accounts)); renderSettingsAccounts(); updateUI();
             });
-            if (newBudget !== null) {
-                const parsed = parseFloat(newBudget);
-                if (!isNaN(parsed) && parsed >= 0) {
-                    acc.budget = parsed;
-                    localStorage.setItem(STORAGE_ACC, JSON.stringify(accounts));
-                    renderSettingsAccounts();
-                    updateUI();
-                } else {
-                    alert("Inserisci un numero valido.");
-                }
-            }
         }
 
         function setInitialBalance(id) {
             const acc = accounts.find(a => a.id === id);
             if (!acc) return;
-
-            openNumberModal("Saldo iniziale del conto (€)", acc.initialBalance || 0, val => {
-                acc.initialBalance = val;
-                localStorage.setItem(STORAGE_ACC, JSON.stringify(accounts));
-                renderSettingsAccounts();
-                updateUI();
+            openNumberModal("Saldo iniziale (€)", acc.initialBalance || 0, val => {
+                acc.initialBalance = val; localStorage.setItem(STORAGE_ACC, JSON.stringify(accounts)); renderSettingsAccounts(); updateUI();
             });
+        }
 
-            if (val === null) return;
+        // --- RENDER IMPOSTAZIONI ---
+        function toggleSettings(show) {
+            const main = document.getElementById('main-view');
+            const settings = document.getElementById('settings-view');
+            const backBtn = document.getElementById('btn-back');
 
-            const parsed = parseFloat(val);
-            if (isNaN(parsed)) {
-                alert("Inserisci un numero valido");
-                return;
+            if (show) {
+                renderSettingsAccounts();
+                main.classList.add('hidden');
+                settings.classList.remove('hidden');
+                backBtn.classList.remove('hidden');
+            } else {
+                main.classList.remove('hidden');
+                settings.classList.add('hidden');
+                backBtn.classList.add('hidden');
+                updateUI();
             }
-            acc.initialBalance = parsed;
-            localStorage.setItem(STORAGE_ACC, JSON.stringify(accounts));
-            renderSettingsAccounts();
-            updateUI();
-        }
-
-        function navigateAccount(dir) {
-            const idx = accounts.findIndex(a => a.id === activeAccountId);
-            let nextIdx = (idx + dir + accounts.length) % accounts.length;
-            activeAccountId = accounts[nextIdx].id;
-            updateUI();
-        }
-
-        function handleSwipe() {
-            const swipeDistance = touchEndX - touchStartX;
-
-            // evita swipe accidentali
-            if (Math.abs(swipeDistance) < 80) return;
-
-            // verifica se le impostazioni sono aperte
-            const settingsEl = document.getElementById('settings');
-            if (!settingsEl || settingsEl.classList.contains('hidden')) return;
-
-            // swipe orizzontale → torna alla home
-            closeSettings();
         }
 
         function renderSettingsAccounts() {
             const list = document.getElementById('account-list-settings');
             list.innerHTML = accounts.map(a => `
-                                                        <div class="flex items-center justify-between p-3 bg-gray-50 rounded-xl mb-2 border border-gray-100">
-                                                            <div class="flex flex-col overflow-hidden mr-2">
-                                                                <span class="font-bold text-sm truncate ${a.id === activeAccountId ? 'text-indigo-600' : 'text-gray-800'}">${a.name}</span>
-                                                                <span class="text-[10px] text-gray-500 font-medium">Budget: € ${(a.budget || 0).toLocaleString('it-IT')}</span>
-                                                                <span class="text-[10px] text-green-500 font-medium"> Saldo iniziale: € ${(a.initialBalance || 0).toLocaleString('it-IT')}</span>
-                                                            </div>
-                                                            <div class="flex space-x-1 shrink-0">
-                                                                <button onclick="setInitialBalance('${a.id}')" class="p-2 bg-green-50 text-green-600 rounded-lg hover:bg-green-100 transition-colors" title="Saldo iniziale">
-                                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2 m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6 a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
-                                                                    </svg>
-                                                                </button>
-                                                                <button onclick="setBudget('${a.id}')" class="p-2 bg-indigo-50 text-indigo-600 rounded-lg hover:bg-indigo-100 transition-colors" title="Imposta Budget">
-                                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
-                                                                </button>
-                                                                <button onclick="renameAccount('${a.id}')" class="p-2 bg-gray-100 text-gray-500 rounded-lg hover:bg-gray-200 transition-colors" title="Rinomina Conto">
-                                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
-                                                                </button>
-                                                                <button onclick="deleteAccount('${a.id}')" class="p-2 bg-red-50 text-red-500 rounded-lg hover:bg-red-100 transition-colors" title="Elimina Conto">
-                                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
-                                                                </button>
-                                                            </div>
-                                                        </div>`).join('');
+                <div class="p-3 border border-slate-100 rounded-xl bg-slate-50 flex items-center justify-between">
+                    <div class="overflow-hidden mr-2">
+                        <span class="font-bold text-sm truncate ${a.id === activeAccountId ? 'text-blue-600' : 'text-slate-700'}">${a.name}</span>
+                        <div class="text-[10px] text-slate-500 font-medium mt-0.5">Budget: € ${(a.budget || 0).toLocaleString('it-IT')} | Saldo: € ${(a.initialBalance || 0).toLocaleString('it-IT')}</div>
+                    </div>
+                    <div class="flex gap-1 shrink-0">
+                        <button onclick="setInitialBalance('${a.id}')" class="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center hover:bg-emerald-100 transition-colors"><i class="fa-solid fa-coins"></i></button>
+                        <button onclick="setBudget('${a.id}')" class="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center hover:bg-blue-100 transition-colors"><i class="fa-solid fa-bullseye"></i></button>
+                        <button onclick="renameAccount('${a.id}')" class="w-8 h-8 rounded-lg bg-slate-200 text-slate-500 flex items-center justify-center hover:bg-slate-300 transition-colors"><i class="fa-solid fa-pen"></i></button>
+                        <button onclick="deleteAccount('${a.id}')" class="w-8 h-8 rounded-lg bg-red-50 text-red-500 flex items-center justify-center hover:bg-red-100 transition-colors"><i class="fa-solid fa-trash"></i></button>
+                    </div>
+                </div>`).join('');
         }
 
-        function toggleSettings(show) {
-            const view = document.getElementById('settings-view');
-            if (show) { renderSettingsAccounts(); view.classList.remove('hidden'); }
-            else { view.classList.add('hidden'); }
+        // --- ACCOUNT PICKER ---
+        function openAccountPicker() {
+            const list = document.getElementById('account-picker-list');
+            const currentId = document.getElementById('modal-account-select')?.value || activeAccountId;
+
+            list.innerHTML = accounts.map(a => {
+                const isSelected = a.id === currentId;
+                const activeClass = isSelected ? 'bg-blue-50 border-blue-200' : 'bg-white border-slate-100 hover:bg-slate-50';
+                return `
+                    <button onclick="pickAccount('${a.id}', '${a.name}')" class="w-full flex items-center justify-between p-4 border rounded-xl ${activeClass} transition-colors text-left">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-full bg-slate-100 text-slate-600 flex items-center justify-center font-bold text-lg"><i class="fa-solid fa-building-columns"></i></div>
+                            <div>
+                                <div class="font-bold text-slate-800 text-sm">${a.name}</div>
+                                <div class="text-[10px] text-slate-400">Saldo Iniziale: € ${a.initialBalance}</div>
+                            </div>
+                        </div>
+                        ${isSelected ? '<i class="fa-solid fa-check text-blue-600"></i>' : ''}
+                    </button>`;
+            }).join('');
+            document.getElementById('account-picker-modal').classList.remove('hidden');
+        }
+        function closeAccountPicker() { document.getElementById('account-picker-modal').classList.add('hidden'); }
+        function pickAccount(id, name) {
+            const selectEl = document.getElementById('modal-account-select');
+            if(selectEl) {
+                selectEl.value = id;
+                document.getElementById('selected-account-display').textContent = name;
+            } else {
+                activeAccountId = id;
+                updateUI();
+            }
+            closeAccountPicker();
         }
 
-        // --- FUNZIONI PER GRUPPI MOVIMENTI ---
-
-        // Formatta la data in modo amichevole (Oggi, Ieri, Lun 14 Ott...)
+        // --- TRANSACTIONS ---
         function getFriendlyDate(dateStr) {
             const d = new Date(dateStr);
             const today = new Date().toISOString().split('T')[0];
             const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0];
-
             if (dateStr === today) return 'Oggi';
             if (dateStr === yesterday) return 'Ieri';
-
-            // Es: "Lun 14 Ottobre"
-            const options = { weekday: 'short', day: 'numeric', month: 'long' };
-            return d.toLocaleDateString('it-IT', options);
+            return d.toLocaleDateString('it-IT', { weekday: 'short', day: 'numeric', month: 'long' });
         }
 
-        // Gestisce il click sull'header della data
         function toggleGroup(dateKey) {
             const list = document.getElementById(`group-list-${dateKey}`);
             const icon = document.getElementById(`group-icon-${dateKey}`);
-
-            if (list.classList.contains('hidden')) {
-                list.classList.remove('hidden');
-                icon.classList.add('rotate-180');
-            } else {
-                list.classList.add('hidden');
-                icon.classList.remove('rotate-180');
-            }
+            list.classList.toggle('hidden');
+            icon.classList.toggle('rotate-180');
         }
+
+        function changeMonth(d) { viewDate.setMonth(viewDate.getMonth() + d); updateUI(); }
 
         function updateUI() {
             const m = viewDate.getMonth();
             const y = viewDate.getFullYear();
             let currentAcc = accounts.find(a => a.id === activeAccountId);
-
-            if (!currentAcc && accounts.length) {
-                activeAccountId = accounts[0].id;
-                currentAcc = accounts[0];
-            }
-
+            if (!currentAcc && accounts.length) { activeAccountId = accounts[0].id; currentAcc = accounts[0]; }
 
             document.getElementById('current-month-display').textContent = viewDate.toLocaleDateString('it-IT', { month: 'long', year: 'numeric' });
-            document.getElementById('account-name-display').textContent = currentAcc.name;
+            document.getElementById('account-name-display').innerHTML = `<span class="w-2 h-2 rounded-full bg-green-500 inline-block"></span> <span>${currentAcc.name}</span> <i class="fa-solid fa-chevron-down ml-1 text-slate-400"></i>`;
 
             const filtered = transactions.filter(t => {
                 const d = new Date(t.date);
@@ -1047,425 +899,89 @@
 
             const balEl = document.getElementById('balance');
             balEl.textContent = `€ ${bal.toLocaleString('it-IT', { minimumFractionDigits: 2 })}`;
+            balEl.className = bal >= 0 ? 'text-4xl font-bold text-slate-800 tracking-tight' : 'text-4xl font-bold text-red-500 tracking-tight';
+
             const initEl = document.getElementById('initial-balance-display');
-
             if ((currentAcc.initialBalance || 0) !== 0) {
-                initEl.textContent =
-                    `Saldo iniziale: € ${currentAcc.initialBalance.toLocaleString('it-IT', { minimumFractionDigits: 2 })}`;
+                initEl.textContent = `Saldo iniziale: € ${currentAcc.initialBalance.toLocaleString('it-IT', { minimumFractionDigits: 2 })}`;
                 initEl.classList.remove('hidden');
-            } else {
-                initEl.classList.add('hidden');
-            }
-            balEl.className = bal >= 0 ? 'text-4xl font-bold text-white' : 'text-4xl font-bold text-red-200';
+            } else { initEl.classList.add('hidden'); }
 
-            // GESTIONE BUDGET DISPLAY
             const budgetContainer = document.getElementById('budget-container');
             const budget = currentAcc.budget || 0;
-
             if (budget > 0) {
                 budgetContainer.classList.remove('hidden');
                 document.getElementById('budget-total').textContent = '€ ' + budget.toLocaleString('it-IT');
                 document.getElementById('budget-spent').textContent = '€ ' + exp.toLocaleString('it-IT');
-
-                let perc = (exp / budget) * 100;
-                let displayPerc = perc > 100 ? 100 : perc;
-
+                let perc = Math.min((exp / budget) * 100, 100);
                 const bar = document.getElementById('budget-bar');
-                bar.style.width = displayPerc + '%';
-
+                bar.style.width = perc + '%';
                 if (exp > budget) {
-                    bar.classList.remove('bg-white');
-                    bar.classList.add('bg-red-400'); // Mantieni rosso per overflow
-                    document.getElementById('budget-spent').classList.add('text-red-200');
-                    document.getElementById('budget-spent').classList.remove('text-white');
+                    bar.classList.replace('bg-blue-500', 'bg-red-500');
+                    document.getElementById('budget-spent').classList.add('text-red-600');
                 } else {
-                    bar.classList.add('bg-white');
-                    bar.classList.add('bg-red-400'); // Mantieni rosso per overflow
-                    document.getElementById('budget-spent').classList.add('text-white');
-                    document.getElementById('budget-spent').classList.remove('text-red-200');
+                    bar.classList.replace('bg-red-500', 'bg-blue-500');
+                    document.getElementById('budget-spent').classList.remove('text-red-600');
                 }
-            } else {
-                budgetContainer.classList.add('hidden');
-            }
+            } else { budgetContainer.classList.add('hidden'); }
 
-            // --- INIZIO NUOVA LOGICA LISTA (Raggruppata + Ricerca) ---
             const listEl = document.getElementById('transaction-list');
-            const searchInput = document.getElementById('search-input');
-            const searchTerm = searchInput ? searchInput.value.toLowerCase().trim() : '';
+            const searchTerm = (document.getElementById('search-input')?.value || '').toLowerCase().trim();
 
-            // Applica il filtro di ricerca (se c'è testo)
             let listTransactions = filtered;
             if (searchTerm) {
                 listTransactions = filtered.filter(t => {
                     const cat = [...categories.expense, ...categories.income].find(c => c.id === t.category);
-                    const catLabel = cat ? cat.label.toLowerCase() : '';
-                    const desc = (t.description || '').toLowerCase();
-                    return desc.includes(searchTerm) || catLabel.includes(searchTerm);
+                    return (t.description || '').toLowerCase().includes(searchTerm) || (cat && cat.label.toLowerCase().includes(searchTerm));
                 });
             }
 
             if (listTransactions.length === 0) {
-                listEl.innerHTML = `
-                    <div class="flex flex-col items-center justify-center py-12 text-gray-300">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 mb-4 opacity-50" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" /></svg>
-                        <span class="font-medium italic">${searchTerm ? 'Nessun risultato trovato' : 'Nessun movimento'}</span>
-                    </div>`;
+                listEl.innerHTML = `<div class="text-center py-10 opacity-50"><i class="fa-solid fa-receipt text-4xl text-slate-300 mb-3"></i><p class="text-sm font-bold text-slate-500">${searchTerm ? 'Nessun risultato' : 'Nessun movimento'}</p></div>`;
             } else {
-                // 1. Ordina per data decrescente
                 listTransactions.sort((a, b) => new Date(b.date) - new Date(a.date));
-
-                // 2. Raggruppa per Giorno
                 const groups = {};
-                listTransactions.forEach(t => {
-                    const dateKey = t.date.split('T')[0];
-                    if (!groups[dateKey]) groups[dateKey] = [];
-                    groups[dateKey].push(t);
-                });
+                listTransactions.forEach(t => { const d = t.date.split('T')[0]; if(!groups[d]) groups[d] = []; groups[d].push(t); });
 
-                // 3. Genera HTML per ogni gruppo
                 listEl.innerHTML = Object.keys(groups).map(dateKey => {
                     const dailyTx = groups[dateKey];
                     const dailySum = dailyTx.reduce((acc, t) => t.type === 'income' ? acc + t.amount : acc - t.amount, 0);
-                    const sumColor = dailySum >= 0 ? 'text-green-500' : 'text-gray-400';
-                    const sumSign = dailySum > 0 ? '+' : '';
+                    const sumColor = dailySum >= 0 ? 'text-emerald-500' : 'text-slate-500';
 
                     const txHtml = dailyTx.map(t => {
                         const cat = [...categories.expense, ...categories.income].find(c => c.id === t.category);
-                        return `
-                                <div onclick="editTransaction(${t.id})" class="transaction-card flex items-center justify-between p-3 mb-2 bg-white rounded-2xl border border-gray-100 shadow-sm active:scale-98 cursor-pointer relative overflow-hidden">
-                                    <div class="absolute left-0 top-0 bottom-0 w-1" style="background-color: ${cat?.color || '#ccc'}"></div>
+                        const isInc = t.type === 'income';
+                        const amountStr = `${isInc ? '+' : '-'} €${t.amount.toFixed(2)}`;
 
-                                    <div class="flex items-center space-x-3 pl-3 overflow-hidden">
-                                        <div class="w-10 h-10 rounded-full bg-gray-50 flex items-center justify-center text-xl shrink-0">
-                                            ${cat?.icon || '📦'}
-                                        </div>
-                                        <div class="flex flex-col truncate">
-                                            <span class="font-bold text-gray-800 text-sm truncate leading-tight">${t.description || cat?.label}</span>
-                                            <span class="text-[10px] text-gray-400 font-medium uppercase tracking-wide">${cat?.label}</span>
-                                        </div>
-                                    </div>
-                                    <span class="font-heading font-bold whitespace-nowrap text-sm ${t.type === 'income' ? 'text-green-600' : 'text-gray-800'}">
-                                        ${t.type === 'income' ? '+' : '-'} €${t.amount.toFixed(2)}
-                                    </span>
-                                </div>`;
+                        return `
+                        <div onclick="editTransaction(${t.id})" class="bg-white p-3 rounded-xl border border-slate-100 card-shadow mb-2 flex items-center justify-between cursor-pointer active:scale-98 transition-all relative overflow-hidden">
+                            <div class="flex items-center gap-3 overflow-hidden z-10">
+                                <div class="w-10 h-10 rounded-full flex items-center justify-center text-white shrink-0 shadow-sm" style="background-color: ${cat?.color || '#94a3b8'}">
+                                    <i class="${cat?.icon || 'fa-solid fa-box'}"></i>
+                                </div>
+                                <div class="truncate">
+                                    <h4 class="font-bold text-slate-800 text-sm truncate leading-tight">${t.description || cat?.label}</h4>
+                                    <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400">${cat?.label}</span>
+                                </div>
+                            </div>
+                            <span class="font-bold whitespace-nowrap text-sm z-10 ${isInc ? 'text-emerald-600' : 'text-slate-800'}">${amountStr}</span>
+                        </div>`;
                     }).join('');
 
-                    // Ritorna il blocco intero (Header + Lista)
                     return `
-                                <div class="mb-4">
-                                    <div onclick="toggleGroup('${dateKey}')" class="flex justify-between items-end px-2 mb-2 cursor-pointer select-none group">
-                                        <div>
-                                            <div class="text-xs font-bold text-gray-400 uppercase tracking-widest">${getFriendlyDate(dateKey)}</div>
-                                        </div>
-                                        <div class="flex items-center space-x-2">
-                                            <span class="text-xs font-bold ${sumColor}">${sumSign}€${dailySum.toFixed(2)}</span>
-                                            <svg id="group-icon-${dateKey}" xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-400 transform rotate-180 transition-transform duration-200 group-hover:text-brand-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-                                            </svg>
-                                        </div>
-                                    </div>
-
-                                    <div id="group-list-${dateKey}" class="transition-all">
-                                        ${txHtml}
-                                    </div>
-                                </div>
-                            `;
+                    <div class="mb-4">
+                        <div onclick="toggleGroup('${dateKey}')" class="flex justify-between items-center px-2 mb-2 cursor-pointer select-none">
+                            <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">${getFriendlyDate(dateKey)}</span>
+                            <div class="flex items-center gap-2">
+                                <span class="text-xs font-bold ${sumColor}">${dailySum > 0 ? '+' : ''}€${dailySum.toFixed(2)}</span>
+                                <i id="group-icon-${dateKey}" class="fa-solid fa-chevron-down text-slate-300 text-[10px] transition-transform rotate-180"></i>
+                            </div>
+                        </div>
+                        <div id="group-list-${dateKey}" class="space-y-0">${txHtml}</div>
+                    </div>`;
                 }).join('');
             }
-            // --- FINE NUOVA LOGICA ---
-
             renderChart(filtered.filter(t => t.type === 'expense'));
-        }
-
-        // AI CAMERA LOGIC
-        async function handleImage(event) {
-            const file = event.target.files[0];
-            if (!file || !apiKey) return;
-
-            const loader = document.getElementById('camera-loader');
-            loader.classList.remove('hidden');
-
-            try {
-                const reader = new FileReader();
-                reader.readAsDataURL(file);
-                reader.onload = async () => {
-                    try {
-                        const b64 = reader.result.split(',')[1];
-                        const result = await analyzeReceipt(b64);
-
-                        if (result && result.amount) document.getElementById('amount-input').value = result.amount;
-                        if (result && result.description) document.getElementById('desc-input').value = result.description;
-                    } catch (apiError) {
-                        // Mostra l'errore reale all'utente
-                        showSimpleAlert("Errore Scansione", apiError.message);
-                    } finally {
-                        // Nascondi sempre il caricamento alla fine (sia in caso di successo che di errore)
-                        loader.classList.add('hidden');
-                        // Resetta l'input per permettere di scattare di nuovo
-                        document.getElementById('camera-input').value = '';
-                    }
-                };
-            } catch (err) {
-                showSimpleAlert("Errore", err.message);
-                loader.classList.add('hidden');
-            }
-        }
-
-        async function analyzeReceipt(base64) {
-            const prompt = "JSON: { 'amount': float, 'description': 'store_name' }. Only JSON.";
-
-            // HO AGGIORNATO IL NOME DEL MODELLO a una versione stabile (1.5-flash) per evitare errori di versioni preview scadute
-            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
-
-            const response = await fetch(url, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    contents: [{ parts: [{ text: prompt }, { inlineData: { mimeType: "image/jpeg", data: base64 } }] }],
-                    generationConfig: { responseMimeType: "application/json" }
-                })
-            });
-
-            const data = await response.json();
-
-            // --- GESTIONE ERRORI AGGIUNTA ---
-            if (data.error) {
-                console.error("Errore API Gemini:", data.error);
-                throw new Error(data.error.message || "La chiave API non è valida o c'è un problema con i server Google.");
-            }
-
-            if (!data.candidates || data.candidates.length === 0) {
-                throw new Error("L'intelligenza artificiale non è riuscita a leggere lo scontrino.");
-            }
-
-            // Prova a fare il parsing del testo
-            try {
-                return JSON.parse(data.candidates[0].content.parts[0].text);
-            } catch (parseError) {
-                throw new Error("Formato dati non riconosciuto. Riprova con una foto più nitida.");
-            }
-        }
-
-        function triggerCamera() {
-            if (!apiKey) {
-                // Usa il nuovo modale invece della vecchia funzione inesistente
-                openApiKeyModal();
-                return;
-            }
-            document.getElementById('camera-input').click();
-        }
-
-        // GESTIONE MODAL
-        function openModal(mode, tx = null) {
-            currentMode = mode;
-            editingTxId = tx ? tx.id : null;
-            selectedCategory = tx ? tx.category : categories[mode][0].id;
-
-            // Elementi UI
-            const modal = document.getElementById('modal');
-            const content = document.getElementById('modal-content');
-            const title = document.getElementById('modal-title');
-            const saveBtn = document.getElementById('save-btn');
-            const amountInput = document.getElementById('amount-input');
-
-            // Reset visibilità
-            modal.classList.remove('hidden');
-            document.getElementById('delete-btn').classList.toggle('hidden', !editingTxId);
-
-            // --- CORREZIONE COLORI ---
-            // Definiamo lo stile "Attivo" in base alla modalità (Verde o Viola)
-            const activeStyle = mode === 'income'
-                ? 'bg-green-500 border-green-500 ring-2 ring-green-200 text-white transform scale-105 shadow-md'
-                : 'bg-brand-600 border-brand-600 ring-2 ring-brand-200 text-white transform scale-105 shadow-md';
-
-            const inactiveStyle = 'bg-gray-50 border-gray-100 text-gray-500 hover:bg-gray-100 hover:border-gray-200';
-
-            // Configurazione UI Testi e Bottoni
-            if (mode === 'income') {
-                title.textContent = editingTxId ? 'Modifica Entrata' : 'Nuova Entrata';
-                title.className = "text-lg font-heading font-semibold text-green-600 uppercase tracking-wider";
-                saveBtn.className = "flex-1 py-4 rounded-2xl text-white font-heading font-semibold text-lg shadow-lg active:scale-95 transition-all bg-green-500 shadow-green-200";
-                amountInput.className = "w-full text-5xl font-heading font-bold text-green-600 text-center bg-transparent border-none focus:ring-0 p-0 placeholder-gray-200";
-            } else {
-                title.textContent = editingTxId ? 'Modifica Uscita' : 'Nuova Uscita';
-                title.className = "text-lg font-heading font-semibold text-brand-600 uppercase tracking-wider";
-                saveBtn.className = "flex-1 py-4 rounded-2xl text-white font-heading font-semibold text-lg shadow-lg active:scale-95 transition-all bg-brand-600 shadow-brand-200";
-                amountInput.className = "w-full text-5xl font-heading font-bold text-gray-800 text-center bg-transparent border-none focus:ring-0 p-0 placeholder-gray-200";
-            }
-
-            // Popola Select Account
-            // --- MODIFICA QUESTA PARTE IN openModal ---
-
-            // Imposta il conto iniziale
-            const targetAccountId = tx ? tx.accountId : activeAccountId;
-            const targetAccount = accounts.find(a => a.id === targetAccountId) || accounts[0];
-
-            // Aggiorna l'input nascosto e il testo visibile
-            document.getElementById('modal-account-select').value = targetAccount.id;
-            document.getElementById('selected-account-display').textContent = targetAccount.name;
-
-            // (Nota: Non serve più generare l'innerHTML della select qui, lo fa openAccountPicker al volo)
-            // ------------------------------------------
-
-            // Renderizza Griglia Categorie con i colori corretti
-            const grid = document.getElementById('category-grid');
-            grid.innerHTML = categories[mode].map(c => `
-                    <button onclick="selectCategory('${c.id}')" id="cat-${c.id}"
-                        class="cat-btn p-3 rounded-2xl border flex flex-col items-center justify-center gap-2 transition-all duration-200 ${c.id === selectedCategory ? activeStyle : inactiveStyle}">
-                        <span class="text-2xl filter drop-shadow-sm">${c.icon}</span>
-                        <span class="text-[10px] font-bold uppercase tracking-tight">${c.label}</span>
-                    </button>`).join('');
-
-            // Setta Valori Input
-            document.getElementById('amount-input').value = tx ? tx.amount : '';
-            document.getElementById('desc-input').value = tx ? tx.description : '';
-
-            // Gestione Data
-            const dateInput = document.getElementById('date-input');
-            if (tx && tx.date) {
-                dateInput.value = tx.date.split('T')[0];
-            } else {
-                dateInput.value = new Date().toISOString().split('T')[0];
-            }
-
-            // Animazione Entrata
-            setTimeout(() => {
-                content.classList.remove('translate-y-full');
-                document.getElementById('amount-input').focus();
-            }, 10);
-        }
-
-        function editTransaction(id) { const tx = transactions.find(t => t.id === id); if (tx) openModal(tx.type, tx); }
-
-        function selectCategory(id) {
-            selectedCategory = id;
-            // Resetta tutti i bottoni allo stato "non selezionato"
-            document.querySelectorAll('.cat-btn').forEach(b => {
-                b.className = "cat-btn p-3 rounded-2xl border flex flex-col items-center justify-center gap-2 transition-all duration-200 bg-gray-50 border-gray-100 text-gray-500 hover:bg-gray-100";
-            });
-            // Applica lo stile "selezionato" al bottone cliccato
-            const activeBtn = document.getElementById('cat-' + id);
-            // Usa un colore diverso se è Entrata (Verde) o Uscita (Viola scuro/Grigio scuro)
-            const activeColor = currentMode === 'income' ? 'bg-green-500 border-green-500 ring-green-200' : 'bg-brand-600 border-brand-600 ring-brand-200';
-
-            activeBtn.className = `cat-btn p-3 rounded-2xl border flex flex-col items-center justify-center gap-2 transition-all duration-200 text-white ring-2 ring-offset-1 transform scale-105 ${activeColor}`;
-        }
-
-        function saveTransaction() {
-            const amt = parseFloat(document.getElementById('amount-input').value);
-            if (isNaN(amt) || amt <= 0) return;
-            const desc = document.getElementById('desc-input').value.trim();
-            const targetAccId = document.getElementById('modal-account-select').value;
-
-            const selectedDate = document.getElementById('date-input').value;
-
-            const isoDate = selectedDate
-                ? new Date(selectedDate + 'T12:00:00').toISOString()
-                : new Date().toISOString();
-
-            if (editingTxId) {
-                const idx = transactions.findIndex(t => t.id === editingTxId);
-                transactions[idx] = {
-                    ...transactions[idx],
-                    amount: amt,
-                    description: desc,
-                    category: selectedCategory,
-                    accountId: targetAccId,
-                    date: isoDate
-                };
-            } else {
-                transactions.push({ id: Date.now(), amount: amt, description: desc, category: selectedCategory, type: currentMode, accountId: targetAccId, date: isoDate });
-            }
-            localStorage.setItem(STORAGE_TX, JSON.stringify(transactions));
-            activeAccountId = targetAccId;
-            updateUI();
-            closeModal();
-        }
-
-        // --- GESTIONE ELIMINAZIONE TRANSAZIONE ---
-        let txToDeleteId = null;
-
-        // Questa funzione viene chiamata quando premi il cestino nel modale di modifica
-        function deleteTx(id) {
-            txToDeleteId = id;
-            document.getElementById('delete-tx-modal').classList.remove('hidden');
-        }
-
-        function closeDeleteTxModal() {
-            document.getElementById('delete-tx-modal').classList.add('hidden');
-            txToDeleteId = null;
-        }
-
-        // Questa funzione esegue l'eliminazione vera e propria
-        function confirmDeleteTx() {
-            if (!txToDeleteId) return;
-
-            // Filtra via la transazione
-            transactions = transactions.filter(t => t.id !== txToDeleteId);
-
-            // Salva
-            localStorage.setItem(STORAGE_TX, JSON.stringify(transactions));
-
-            // Aggiorna Interfaccia
-            updateUI();
-
-            // Chiudi i modali
-            closeDeleteTxModal(); // Chiude la conferma
-            closeModal();         // Chiude il modale di modifica/inserimento
-
-            showToast("Movimento eliminato");
-        }
-
-        function changeMonth(d) { viewDate.setMonth(viewDate.getMonth() + d); updateUI(); }
-        function closeModal() { document.getElementById('modal-content').classList.add('translate-y-full'); setTimeout(() => document.getElementById('modal').classList.add('hidden'), 300); }
-
-        // --- GESTIONE API KEY MODALE ---
-        function openApiKeyModal() {
-            // Carica la chiave esistente se c'è
-            const currentKey = localStorage.getItem('gemini_api_key') || "";
-            document.getElementById('modal-api-key').value = currentKey;
-
-            document.getElementById('api-key-modal').classList.remove('hidden');
-        }
-
-        function closeApiKeyModal() {
-            document.getElementById('api-key-modal').classList.add('hidden');
-        }
-
-        function saveApiKey() {
-            const input = document.getElementById('modal-api-key');
-            const key = input.value.trim();
-
-            if (key) {
-                apiKey = key;
-                localStorage.setItem('gemini_api_key', key);
-                showToast("API Key salvata!");
-                closeApiKeyModal();
-            } else {
-                // Se l'utente cancella tutto e salva, rimuoviamo la chiave
-                apiKey = "";
-                localStorage.removeItem('gemini_api_key');
-                showToast("API Key rimossa");
-                closeApiKeyModal();
-            }
-        }
-
-        // --- GESTIONE RESET DATI MODALE ---
-        function openResetModal() {
-            document.getElementById('reset-data-modal').classList.remove('hidden');
-        }
-
-        function closeResetModal() {
-            document.getElementById('reset-data-modal').classList.add('hidden');
-        }
-
-        function confirmResetData() {
-            localStorage.clear();
-            // Feedback visivo prima del reload
-            showToast("Reset completato. Riavvio...");
-            setTimeout(() => {
-                location.reload();
-            }, 1000);
         }
 
         function renderChart(exps) {
@@ -1489,158 +1005,152 @@
                         borderWidth: 0
                     }]
                 },
-                options: {
-                    plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 10 }, padding: 10 } } },
-                    cutout: '70%', maintainAspectRatio: false
-                }
+                options: { plugins: { legend: { position: 'right', labels: { boxWidth: 10, font: { size: 10, family: 'Inter' } } } }, cutout: '75%', maintainAspectRatio: false }
             });
         }
 
-        function exportCSV() {
-            const headers = ["Data", "Descrizione", "Importo", "Categoria", "Tipo", "Conto", "Budget Conto"];
-            const rows = transactions.map(t => {
-                const acc = accounts.find(a => a.id === t.accountId);
-                return [
-                    new Date(t.date).toLocaleDateString(),
-                    t.description,
-                    t.amount.toFixed(2),
-                    t.category,
-                    t.type,
-                    acc?.name || "N/A",
-                    acc?.budget || 0
-                ].join(';')
-            });
-            const blob = new Blob(["\ufeff" + [headers.join(';'), ...rows].join('\n')], { type: 'text/csv' });
-            downloadBackupManual(blob, `spese_export.csv`);
+        // --- MODAL TX ---
+        function openModal(mode, tx = null) {
+            currentMode = mode;
+            editingTxId = tx ? tx.id : null;
+            selectedCategory = tx ? tx.category : categories[mode][0].id;
+
+            document.getElementById('modal-title').textContent = editingTxId ? (mode==='income'?'Modifica Entrata':'Modifica Uscita') : (mode==='income'?'Nuova Entrata':'Nuova Uscita');
+            document.getElementById('delete-btn').classList.toggle('hidden', !editingTxId);
+
+            const targetAccId = tx ? tx.accountId : activeAccountId;
+            const targetAcc = accounts.find(a => a.id === targetAccId) || accounts[0];
+            document.getElementById('modal-account-select').value = targetAcc.id;
+            document.getElementById('selected-account-display').textContent = targetAcc.name;
+
+            renderCategoryGrid();
+
+            document.getElementById('amount-input').value = tx ? tx.amount : '';
+            document.getElementById('desc-input').value = tx ? tx.description : '';
+            document.getElementById('date-input').value = tx && tx.date ? tx.date.split('T')[0] : new Date().toISOString().split('T')[0];
+
+            document.getElementById('modal').classList.remove('hidden');
+            setTimeout(() => document.getElementById('amount-input').focus(), 50);
         }
 
-        function importJSON(event) {
+        function renderCategoryGrid() {
+            const grid = document.getElementById('category-grid');
+            grid.innerHTML = categories[currentMode].map(c => `
+                <button onclick="selectCategory('${c.id}')" id="cat-${c.id}" class="cat-btn flex flex-col items-center justify-center p-3 border border-slate-200 rounded-xl bg-white shadow-sm outline-none">
+                    <i class="${c.icon} text-2xl" style="color: ${c.color}"></i>
+                    <span class="text-[10px] font-bold text-slate-600 mt-2 uppercase tracking-tight">${c.label}</span>
+                </button>`).join('');
+            selectCategory(selectedCategory);
+        }
+
+        function selectCategory(id) {
+            selectedCategory = id;
+            document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('selected'));
+            const btn = document.getElementById('cat-' + id);
+            if (btn) btn.classList.add('selected');
+        }
+
+        function closeModal() {
+            document.getElementById('modal').classList.add('hidden');
+            editingTxId = null;
+        }
+
+        function saveTransaction() {
+            const amt = parseFloat(document.getElementById('amount-input').value);
+            if (isNaN(amt) || amt <= 0) { showSimpleAlert("Attenzione", "Inserisci un importo valido."); return; }
+            const desc = document.getElementById('desc-input').value.trim();
+            const targetAccId = document.getElementById('modal-account-select').value;
+            const selectedDate = document.getElementById('date-input').value;
+            const isoDate = selectedDate ? new Date(selectedDate + 'T12:00:00').toISOString() : new Date().toISOString();
+
+            if (editingTxId) {
+                const idx = transactions.findIndex(t => t.id === editingTxId);
+                transactions[idx] = { ...transactions[idx], amount: amt, description: desc, category: selectedCategory, accountId: targetAccId, date: isoDate };
+            } else {
+                transactions.push({ id: Date.now(), amount: amt, description: desc, category: selectedCategory, type: currentMode, accountId: targetAccId, date: isoDate });
+            }
+            localStorage.setItem(STORAGE_TX, JSON.stringify(transactions));
+            activeAccountId = targetAccId;
+            updateUI(); closeModal();
+        }
+
+        function editTransaction(id) { const tx = transactions.find(t => t.id === id); if (tx) openModal(tx.type, tx); }
+
+        function deleteTx(id) {
+            txToDeleteId = id;
+            document.getElementById('delete-tx-modal').classList.remove('hidden');
+        }
+        function closeDeleteTxModal() { document.getElementById('delete-tx-modal').classList.add('hidden'); txToDeleteId = null; }
+        function confirmDeleteTx() {
+            if (!txToDeleteId) return;
+            transactions = transactions.filter(t => t.id !== txToDeleteId);
+            localStorage.setItem(STORAGE_TX, JSON.stringify(transactions));
+            updateUI(); closeDeleteTxModal(); closeModal(); showToast("Movimento eliminato");
+        }
+
+        // --- GEMINI AI ---
+        function openApiKeyModal() {
+            document.getElementById('modal-api-key').value = apiKey;
+            document.getElementById('api-key-modal').classList.remove('hidden');
+        }
+        function closeApiKeyModal() { document.getElementById('api-key-modal').classList.add('hidden'); }
+        function saveApiKey() {
+            const key = document.getElementById('modal-api-key').value.trim();
+            if (key) { apiKey = key; localStorage.setItem('gemini_api_key', key); showToast("API Key salvata!"); }
+            else { apiKey = ""; localStorage.removeItem('gemini_api_key'); showToast("API Key rimossa"); }
+            closeApiKeyModal();
+        }
+
+        function triggerCamera() {
+            if (!apiKey) { openApiKeyModal(); return; }
+            document.getElementById('camera-input').click();
+        }
+
+        async function handleImage(event) {
             const file = event.target.files[0];
-            if (!file) return;
-            const r = new FileReader();
-            r.onload = (e) => {
-                try {
-                    const d = JSON.parse(e.target.result);
-                    if (confirm("Ripristinare backup?")) {
-                        transactions = d.transactions || [];
-                        accounts = d.accounts || accounts;
-                        localStorage.setItem(STORAGE_TX, JSON.stringify(transactions));
-                        localStorage.setItem(STORAGE_ACC, JSON.stringify(accounts));
-                        location.reload();
-                    }
-                } catch { showToast("File non valido"); }
-            };
-            r.readAsText(file);
+            if (!file || !apiKey) return;
+            const loader = document.getElementById('camera-loader');
+            loader.classList.remove('hidden');
+            try {
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = async () => {
+                    try {
+                        const b64 = reader.result.split(',')[1];
+                        const result = await analyzeReceipt(b64);
+                        if (result && result.amount) document.getElementById('amount-input').value = result.amount;
+                        if (result && result.description) document.getElementById('desc-input').value = result.description;
+                    } catch (apiError) { showSimpleAlert("Errore Scansione", apiError.message); }
+                    finally { loader.classList.add('hidden'); document.getElementById('camera-input').value = ''; }
+                };
+            } catch (err) { showSimpleAlert("Errore", err.message); loader.classList.add('hidden'); }
         }
 
-        // --- GESTIONE PICKER CONTO ---
-        function openAccountPicker() {
-            const list = document.getElementById('account-picker-list');
-            const currentId = document.getElementById('modal-account-select').value;
-
-            // Genera la lista dei conti
-            list.innerHTML = accounts.map(a => {
-                const isSelected = a.id === currentId;
-                // Stile diverso se selezionato
-                const activeClass = isSelected
-                    ? 'bg-brand-50 border-brand-500 ring-1 ring-brand-200'
-                    : 'bg-white border-gray-200 hover:border-brand-200';
-
-                return `
-            <button onclick="pickAccount('${a.id}', '${a.name}')" class="w-full flex items-center justify-between p-4 rounded-xl border ${activeClass} transition-all active:scale-98 text-left shadow-sm">
-                <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 rounded-full bg-brand-100 text-brand-600 flex items-center justify-center font-bold text-lg">
-                        ${a.name.charAt(0).toUpperCase()}
-                    </div>
-                    <div>
-                        <div class="font-bold text-gray-800 text-sm">${a.name}</div>
-                        <div class="text-[10px] text-gray-400">Saldo Iniziale: € ${a.initialBalance}</div>
-                    </div>
-                </div>
-                ${isSelected ? '<div class="text-brand-600"><svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg></div>' : ''}
-            </button>
-            `;
-            }).join('');
-
-            // Mostra il modale con animazione dal basso
-            const modal = document.getElementById('account-picker-modal');
-            const content = document.getElementById('account-picker-content');
-            modal.classList.remove('hidden');
-            // Piccolo ritardo per permettere la transizione CSS
-            setTimeout(() => {
-                content.classList.remove('translate-y-full');
-            }, 10);
+        async function analyzeReceipt(base64) {
+            const prompt = "JSON: { 'amount': float, 'description': 'store_name' }. Only JSON.";
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ contents: [{ parts: [{ text: prompt }, { inlineData: { mimeType: "image/jpeg", data: base64 } }] }], generationConfig: { responseMimeType: "application/json" } })
+            });
+            const data = await response.json();
+            if (data.error) throw new Error(data.error.message);
+            if (!data.candidates || data.candidates.length === 0) throw new Error("Lettura fallita.");
+            try { return JSON.parse(data.candidates[0].content.parts[0].text); }
+            catch { throw new Error("Formato dati non riconosciuto."); }
         }
 
-        function closeAccountPicker() {
-            const modal = document.getElementById('account-picker-modal');
-            const content = document.getElementById('account-picker-content');
-
-            content.classList.add('translate-y-full');
-            setTimeout(() => {
-                modal.classList.add('hidden');
-            }, 300);
-        }
-
-        function pickAccount(id, name) {
-            // Aggiorna i valori nel form principale
-            document.getElementById('modal-account-select').value = id;
-            document.getElementById('selected-account-display').textContent = name;
-            closeAccountPicker();
+        // --- RESET DATI ---
+        function openResetModal() { document.getElementById('reset-data-modal').classList.remove('hidden'); }
+        function closeResetModal() { document.getElementById('reset-data-modal').classList.add('hidden'); }
+        function confirmResetData() {
+            localStorage.clear();
+            showToast("Reset completato. Riavvio...");
+            setTimeout(() => location.reload(), 1000);
         }
 
         window.onload = updateUI;
-        document.getElementById('modal').onclick = (e) => { if (e.target === document.getElementById('modal')) closeModal(); };
-
-        let touchStartX = 0;
-        let touchStartY = 0;
-        let isHorizontalSwipe = false;
-
-        document.addEventListener('touchstart', e => {
-            touchStartX = e.touches[0].clientX;
-            touchStartY = e.touches[0].clientY;
-            isHorizontalSwipe = false;
-        }, { passive: true });
-
-        document.addEventListener('touchmove', e => {
-            const dx = e.touches[0].clientX - touchStartX;
-            const dy = e.touches[0].clientY - touchStartY;
-
-            // riconosce swipe orizzontale (ovunque)
-            if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 30) {
-                isHorizontalSwipe = true;
-
-                // 🔒 blocca gesture di sistema SOLO nelle impostazioni
-                const settingsEl = document.getElementById('settings-view');
-                if (settingsEl && !settingsEl.classList.contains('hidden')) {
-                    e.preventDefault();
-                }
-            }
-        }, { passive: false });
-
-        document.addEventListener('touchend', e => {
-
-            // 🔒 se il modal è aperto → chiudi e basta
-            if (!isHorizontalSwipe) return;
-
-            const dx = e.changedTouches[0].clientX - touchStartX;
-            if (Math.abs(dx) < 80) return;
-
-            const settingsEl = document.getElementById('settings-view');
-
-            // 📌 IMPOSTAZIONI → TORNA HOME
-            if (settingsEl && !settingsEl.classList.contains('hidden')) {
-                toggleSettings(false);
-                return;
-            }
-
-            // 📌 HOME → CAMBIO CONTO
-            if (dx < 0) {
-                navigateAccount(1);   // swipe sinistra
-            } else {
-                navigateAccount(-1);  // swipe destra
-            }
-        });
 
         // ==========================================
         // SERVICE WORKER REGISTRATION
@@ -1658,36 +1168,6 @@
                     });
             });
         }
-
     </script>
-    <!-- Modal numerico -->
-    <div id="numberModal"
-         class="fixed inset-0 bg-black/40 hidden flex items-center justify-center z-50">
-
-        <!-- BOX (NON FLEX!) -->
-        <div class="bg-white rounded-2xl p-5 w-72 shadow-xl">
-
-            <h3 id="numberTitle"
-                class="font-bold mb-3 text-center"></h3>
-
-            <input id="numberInput"
-                   type="number"
-                   inputmode="decimal"
-                   class="w-full text-center text-xl border rounded-lg py-2 mb-4"
-                   placeholder="0">
-
-            <div class="flex justify-between gap-3">
-                <button onclick="closeNumberModal()"
-                        class="flex-1 py-2 rounded-lg bg-gray-200">
-                    Annulla
-                </button>
-
-                <button onclick="confirmNumberModal()"
-                        class="flex-1 py-2 rounded-lg bg-indigo-600 text-white">
-                    OK
-                </button>
-            </div>
-        </div>
-    </div>
 </body>
 </html>
