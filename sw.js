@@ -1,9 +1,9 @@
-const CACHE_NAME = 'spesepro-cache-v3'; // Aggiornato a v4 per forzare il reset
+const CACHE_NAME = 'spesepro-cache-v4';
 
 // FASE 1: Mettiamo in cache SOLO i file locali per evitare blocchi CORS
 const urlsToCache = [
     './', 
-    'index.html' // Assicurati che su GitHub si chiami esattamente così, con la S maiuscola
+    'index.html'
 ];
 
 self.addEventListener('install', event => {
@@ -62,3 +62,4 @@ self.addEventListener('fetch', event => {
         })
     );
 });
+
