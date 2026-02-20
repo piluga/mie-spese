@@ -1,4 +1,4 @@
-const CACHE_NAME = 'spesepro-cache-v5';
+const CACHE_NAME = 'spesepro-cache-v6';
 
 // FASE 1: Mettiamo in cache SOLO i file locali per evitare blocchi CORS
 const urlsToCache = [
@@ -62,5 +62,6 @@ self.addEventListener('fetch', event => {
         })
     );
 });
+
 
 
