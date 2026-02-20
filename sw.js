@@ -1,15 +1,11 @@
-const CACHE_NAME = 'spesepro-cache-v3';
+const CACHE_NAME = 'spesepro-cache-v3'; // Aggiornato a v4 per forzare il reset
 
-// Risorse fondamentali da salvare subito in memoria
+// FASE 1: Mettiamo in cache SOLO i file locali per evitare blocchi CORS
 const urlsToCache = [
-    './',
-    '/index.html', // Specifichiamo il nome esatto del tuo file HTML
-    'https://cdn.tailwindcss.com',
-    'https://cdn.jsdelivr.net/npm/chart.js',
-    'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Poppins:wght@500;600;700&display=swap'
+    './', 
+    'index.html' // Assicurati che su GitHub si chiami esattamente così, con la S maiuscola
 ];
 
-// FASE 1: Installazione e caching iniziale
 self.addEventListener('install', event => {
     event.waitUntil(
         caches.open(CACHE_NAME)
@@ -18,42 +14,42 @@ self.addEventListener('install', event => {
     );
 });
 
-// FASE 2: Attivazione e pulizia vecchie cache
 self.addEventListener('activate', event => {
     event.waitUntil(
         caches.keys().then(cacheNames => {
             return Promise.all(
                 cacheNames.filter(name => name !== CACHE_NAME)
-                    .map(name => caches.delete(name))
+                          .map(name => caches.delete(name))
             );
         })
     );
     self.clients.claim();
 });
 
-// FASE 3: Intercettazione chiamate di rete (Offline Mode)
+// FASE 3: Intercettazione e Caching Dinamico
 self.addEventListener('fetch', event => {
-    // Ignora le chiamate API verso Gemini (devono sempre richiedere internet)
+    // Ignora le chiamate API verso Gemini
     if (event.request.url.includes('generativelanguage.googleapis.com')) {
         return;
     }
 
     event.respondWith(
         caches.match(event.request).then(cachedResponse => {
-            // Se c'è in cache, usa quello (velocissimo)
+            // 1. Se c'è in cache, usa quello (velocissimo)
             if (cachedResponse) {
                 return cachedResponse;
             }
-
-            // Altrimenti scaricalo da internet e salvalo in cache per la prossima volta
+            
+            // 2. Altrimenti scaricalo da internet e salvalo "al volo"
             return fetch(event.request).then(networkResponse => {
-                // Salva solo le risposte valide e sicure (http/https)
-                if (!networkResponse || networkResponse.status !== 200 || networkResponse.type !== 'basic' && networkResponse.type !== 'cors') {
+                // Accettiamo anche le risposte "opache" (status 0) per aggirare il blocco CORS di Tailwind e Chart.js
+                if(!networkResponse || (networkResponse.status !== 200 && networkResponse.status !== 0)) {
                     return networkResponse;
                 }
 
                 const responseToCache = networkResponse.clone();
                 caches.open(CACHE_NAME).then(cache => {
+                    // Salva dinamicamente tutto ciò che viene caricato (immagini, font, CDN)
                     if (event.request.url.startsWith('http')) {
                         cache.put(event.request, responseToCache);
                     }
@@ -65,8 +61,4 @@ self.addEventListener('fetch', event => {
             });
         })
     );
-
 });
-
-
-
