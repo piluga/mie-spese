@@ -3,7 +3,7 @@ const CACHE_NAME = 'spesepro-cache-v3';
 // Risorse fondamentali da salvare subito in memoria
 const urlsToCache = [
     './',
-    'index.html', // Specifichiamo il nome esatto del tuo file HTML
+    '/index.html', // Specifichiamo il nome esatto del tuo file HTML
     'https://cdn.tailwindcss.com',
     'https://cdn.jsdelivr.net/npm/chart.js',
     'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Poppins:wght@500;600;700&display=swap'
@@ -67,5 +67,6 @@ self.addEventListener('fetch', event => {
     );
 
 });
+
 
 
