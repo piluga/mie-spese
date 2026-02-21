@@ -1275,9 +1275,20 @@
 
         window.onload = updateUI;
 
+        // ==========================================
+        // SERVICE WORKER REGISTRATION
+        // ==========================================
         if ('serviceWorker' in navigator) {
+            // Aspettiamo che la pagina sia caricata prima di registrare il SW
             window.addEventListener('load', () => {
-                navigator.serviceWorker.register('sw.js').catch(error => console.log('❌ SW error:', error));
+                // Registriamo il file sw.js che si trova nella stessa cartella
+                navigator.serviceWorker.register('sw.js')
+                    .then(registration => {
+                        console.log('✅ ServiceWorker registrato con successo! Scope:', registration.scope);
+                    })
+                    .catch(error => {
+                        console.log('❌ Registrazione ServiceWorker fallita:', error);
+                    });
             });
         }
     </script>
