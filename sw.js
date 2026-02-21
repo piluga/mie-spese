@@ -1,71 +1,50 @@
-const CACHE_NAME = 'spesepro-cache-v10';
+const CACHE_NAME = 'spesepro-cache-v1';
 
-// FASE 1: Mettiamo in cache SOLO i file locali per evitare blocchi CORS
+// I file base e le librerie esterne da salvare per l'uso offline
 const urlsToCache = [
-    './', 
-    'index.html'
+    './',
+    './index.html',
+    './manifest.json',
+    'https://cdn.tailwindcss.com',
+    'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css',
+    'https://cdn.jsdelivr.net/npm/chart.js',
+    'https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap'
 ];
 
+// FASE 1: Installazione (Salvataggio in Cache)
 self.addEventListener('install', event => {
     event.waitUntil(
         caches.open(CACHE_NAME)
-            .then(cache => cache.addAll(urlsToCache))
-            .then(() => self.skipWaiting())
+            .then(cache => {
+                console.log('Service Worker: Cache aperta e file salvati');
+                return cache.addAll(urlsToCache);
+            })
     );
 });
 
+// FASE 2: Intercettazione delle richieste (Network First, poi Cache)
+self.addEventListener('fetch', event => {
+    event.respondWith(
+        fetch(event.request).catch(() => {
+            // Se la richiesta di rete fallisce (es. sei offline), cerca nella cache
+            return caches.match(event.request);
+        })
+    );
+});
+
+// FASE 3: Attivazione e pulizia delle vecchie cache
 self.addEventListener('activate', event => {
+    const cacheWhitelist = [CACHE_NAME];
     event.waitUntil(
         caches.keys().then(cacheNames => {
             return Promise.all(
-                cacheNames.filter(name => name !== CACHE_NAME)
-                          .map(name => caches.delete(name))
+                cacheNames.map(cacheName => {
+                    if (cacheWhitelist.indexOf(cacheName) === -1) {
+                        console.log('Service Worker: Vecchia cache eliminata', cacheName);
+                        return caches.delete(cacheName);
+                    }
+                })
             );
         })
     );
-    self.clients.claim();
 });
-
-// FASE 3: Intercettazione e Caching Dinamico
-self.addEventListener('fetch', event => {
-    // Ignora le chiamate API verso Gemini
-    if (event.request.url.includes('generativelanguage.googleapis.com')) {
-        return;
-    }
-
-    event.respondWith(
-        caches.match(event.request).then(cachedResponse => {
-            // 1. Se c'è in cache, usa quello (velocissimo)
-            if (cachedResponse) {
-                return cachedResponse;
-            }
-            
-            // 2. Altrimenti scaricalo da internet e salvalo "al volo"
-            return fetch(event.request).then(networkResponse => {
-                // Accettiamo anche le risposte "opache" (status 0) per aggirare il blocco CORS di Tailwind e Chart.js
-                if(!networkResponse || (networkResponse.status !== 200 && networkResponse.status !== 0)) {
-                    return networkResponse;
-                }
-
-                const responseToCache = networkResponse.clone();
-                caches.open(CACHE_NAME).then(cache => {
-                    // Salva dinamicamente tutto ciò che viene caricato (immagini, font, CDN)
-                    if (event.request.url.startsWith('http')) {
-                        cache.put(event.request, responseToCache);
-                    }
-                });
-
-                return networkResponse;
-            }).catch(() => {
-                console.log('Sei offline e la risorsa non è in cache:', event.request.url);
-            });
-        })
-    );
-});
-
-
-
-
-
-
-
