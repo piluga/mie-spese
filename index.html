@@ -208,16 +208,22 @@
             <!-- Action Buttons -->
             <div class="grid grid-cols-2 gap-3 mb-6">
                 <button onclick="openModal('income')" class="bg-emerald-50 border border-emerald-100 p-4 rounded-2xl card-shadow flex flex-col items-center justify-center gap-2 active:scale-95 transition-all group">
-                    <div class="w-12 h-12 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center text-xl group-hover:scale-110 transition-transform">
+                    <div class="w-10 h-10 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center text-lg group-hover:scale-110 transition-transform">
                         <i class="fa-solid fa-arrow-down"></i>
                     </div>
-                    <span class="font-bold text-emerald-800 text-sm">Entrata</span>
+                    <span class="font-bold text-emerald-800 text-xs">Entrata</span>
                 </button>
                 <button onclick="openModal('expense')" class="bg-rose-50 border border-rose-100 p-4 rounded-2xl card-shadow flex flex-col items-center justify-center gap-2 active:scale-95 transition-all group">
-                    <div class="w-12 h-12 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center text-xl group-hover:scale-110 transition-transform">
+                    <div class="w-10 h-10 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center text-lg group-hover:scale-110 transition-transform">
                         <i class="fa-solid fa-arrow-up"></i>
                     </div>
-                    <span class="font-bold text-rose-800 text-sm">Uscita</span>
+                    <span class="font-bold text-rose-800 text-xs">Uscita</span>
+                </button>
+                <button onclick="openTransferModal()" class="bg-violet-50 border border-violet-100 p-4 rounded-2xl card-shadow flex flex-col items-center justify-center gap-2 active:scale-95 transition-all group">
+                    <div class="w-10 h-10 rounded-full bg-violet-100 text-violet-600 flex items-center justify-center text-lg group-hover:scale-110 transition-transform">
+                        <i class="fa-solid fa-right-left"></i>
+                    </div>
+                    <span class="font-bold text-violet-800 text-xs">Giroconto</span>
                 </button>
             </div>
 
@@ -260,6 +266,14 @@
                 <button onclick="openAddAccountModal()" class="w-full bg-blue-50 hover:bg-blue-100 text-blue-600 font-semibold py-3 rounded-xl border border-blue-200 border-dashed active:scale-95 transition-all flex items-center justify-center gap-2 text-sm">
                     <i class="fa-solid fa-plus"></i> Nuovo Conto
                 </button>
+            </div>
+
+            <div class="bg-white p-5 rounded-2xl card-shadow mt-6">
+                <h3 class="font-bold text-slate-800 mb-3 flex items-center gap-2">
+                    <i class="fa-solid fa-rotate text-purple-500"></i> Pagamenti Ricorrenti
+                </h3>
+                <div id="recurring-list-settings" class="space-y-2">
+                </div>
             </div>
 
             <!-- Dati & Backup -->
@@ -369,6 +383,20 @@
                     <div id="category-grid" class="grid grid-cols-4 gap-2">
                         <!-- Generato via JS -->
                     </div>
+                </div>
+            </div>
+
+            <div id="recurring-container" class="bg-slate-50 p-3 rounded-xl border border-slate-200 mt-2">
+                <label class="flex items-center gap-2 cursor-pointer">
+                    <input type="checkbox" id="is-recurring-checkbox" class="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500" onchange="document.getElementById('recurring-options').classList.toggle('hidden', !this.checked)">
+                    <span class="text-xs font-bold text-slate-700">Rendi ricorrente</span>
+                </label>
+                <div id="recurring-options" class="hidden mt-3">
+                    <select id="recurring-freq" class="w-full p-2 border border-slate-300 rounded-lg text-sm outline-none bg-white font-medium text-slate-700">
+                        <option value="monthly">Ogni Mese</option>
+                        <option value="weekly">Ogni Settimana</option>
+                        <option value="yearly">Ogni Anno</option>
+                    </select>
                 </div>
             </div>
 
@@ -546,10 +574,89 @@
         </div>
     </div>
 
+    <div id="transfer-modal" class="hidden fixed inset-0 modal-overlay z-[100] flex items-center justify-center p-4 fade-in">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden flex flex-col max-h-[90vh]">
+            <div class="p-4 bg-violet-50 border-b border-violet-100 flex justify-between items-center shrink-0">
+                <h3 class="text-lg font-bold text-violet-900"><i class="fa-solid fa-right-left mr-2"></i> Nuovo Giroconto</h3>
+                <button onclick="closeTransferModal()" class="w-8 h-8 flex items-center justify-center rounded-full text-violet-600 hover:bg-violet-200 transition-colors">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            <div class="p-5 space-y-4">
+                <div class="relative rounded-xl p-4 border border-violet-100 bg-violet-50 text-center">
+                    <label class="block text-[10px] font-bold text-violet-400 uppercase mb-2">Importo da trasferire (€)</label>
+                    <input type="number" id="transfer-amount" step="0.01" inputmode="decimal" placeholder="0.00" class="w-full text-4xl font-bold text-center bg-transparent border-none focus:ring-0 p-0 outline-none text-violet-900">
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1.5 ml-1">Da Conto</label>
+                        <select id="transfer-from" class="w-full p-3 border border-slate-200 rounded-xl bg-white shadow-sm text-sm font-bold text-slate-700 outline-none focus:border-violet-500"></select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1.5 ml-1">A Conto</label>
+                        <select id="transfer-to" class="w-full p-3 border border-slate-200 rounded-xl bg-white shadow-sm text-sm font-bold text-slate-700 outline-none focus:border-violet-500"></select>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 uppercase mb-1.5 ml-1">Data</label>
+                    <input type="date" id="transfer-date" class="w-full p-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-violet-500 outline-none text-sm font-bold text-slate-700 bg-white shadow-sm">
+                </div>
+            </div>
+            <div class="p-4 border-t border-violet-100 bg-violet-50 flex gap-3 shrink-0">
+                <button onclick="saveTransfer()" class="flex-1 py-3 bg-violet-600 text-white rounded-xl font-bold shadow-md hover:bg-violet-700 transition-all active:scale-95">
+                    Conferma Giroconto
+                </button>
+            </div>
+        </div>
+    </div>
+
     <script>
         const STORAGE_TX = 'spese_v3_data';
         const STORAGE_ACC = 'spese_v3_accounts';
         let apiKey = localStorage.getItem('gemini_api_key') || "";
+
+        const STORAGE_REC = 'spese_v3_recurring';
+        let recurringTxs = JSON.parse(localStorage.getItem(STORAGE_REC)) || [];
+
+        // Funzione per calcolare la data successiva
+        function getNextDate(dateStr, freq) {
+            const d = new Date(dateStr);
+            if (freq === 'monthly') d.setMonth(d.getMonth() + 1);
+            if (freq === 'weekly') d.setDate(d.getDate() + 7);
+            if (freq === 'yearly') d.setFullYear(d.getFullYear() + 1);
+            return d.toISOString().split('T')[0];
+        }
+
+        // Funzione "Motore" che controlla le scadenze all'apertura dell'app
+        function processRecurringTransactions() {
+            const today = new Date().toISOString().split('T')[0];
+            let hasUpdates = false;
+
+            recurringTxs.forEach(rec => {
+                // Finché la data della prossima esecuzione è <= a oggi, genera la transazione
+                while (rec.nextDate <= today) {
+                    transactions.push({
+                        id: Date.now() + Math.floor(Math.random() * 1000), // ID univoco
+                        amount: rec.amount,
+                        description: rec.description,
+                        category: rec.category,
+                        type: rec.type,
+                        accountId: rec.accountId,
+                        date: new Date(rec.nextDate + 'T12:00:00').toISOString()
+                    });
+
+                    // Aggiorna la data alla prossima ricorrenza
+                    rec.nextDate = getNextDate(rec.nextDate, rec.frequency);
+                    hasUpdates = true;
+                }
+            });
+
+            if (hasUpdates) {
+                localStorage.setItem(STORAGE_TX, JSON.stringify(transactions));
+                localStorage.setItem(STORAGE_REC, JSON.stringify(recurringTxs));
+                showToast("Transazioni ricorrenti aggiornate!");
+            }
+        }
 
         const categories = {
             expense: [
@@ -590,6 +697,42 @@
             t.textContent = msg;
             t.style.opacity = '1';
             setTimeout(() => t.style.opacity = '0', 2500);
+        }
+
+        function renderSettingsRecurring() {
+            const list = document.getElementById('recurring-list-settings');
+            if (recurringTxs.length === 0) {
+                list.innerHTML = `<p class="text-[11px] text-slate-400 italic">Nessuna transazione ricorrente attiva.</p>`;
+                return;
+            }
+
+            list.innerHTML = recurringTxs.map(rec => {
+                const isInc = rec.type === 'income';
+                const color = isInc ? 'text-emerald-600' : 'text-rose-600';
+                const freqText = rec.frequency === 'monthly' ? 'Mensile' : (rec.frequency === 'weekly' ? 'Settimanale' : 'Annuale');
+
+                return `
+        <div class="p-3 border border-slate-100 rounded-xl bg-slate-50 flex items-center justify-between">
+            <div class="overflow-hidden mr-2">
+                <span class="font-bold text-sm truncate text-slate-700">${rec.description || 'Senza nome'}</span>
+                <div class="text-[10px] text-slate-500 font-medium mt-0.5">
+                    <span class="${color} font-bold">€ ${rec.amount.toFixed(2)}</span> • ${freqText} • Prossima: ${getFriendlyDate(rec.nextDate)}
+                </div>
+            </div>
+            <button onclick="deleteRecurring('${rec.id}')" class="w-8 h-8 rounded-lg bg-red-50 text-red-500 flex items-center justify-center hover:bg-red-100 transition-colors shrink-0">
+                <i class="fa-solid fa-trash"></i>
+            </button>
+        </div>`;
+            }).join('');
+        }
+
+        function deleteRecurring(id) {
+            if (confirm("Vuoi annullare questa transazione ricorrente? (I movimenti passati non verranno eliminati)")) {
+                recurringTxs = recurringTxs.filter(r => r.id !== id);
+                localStorage.setItem(STORAGE_REC, JSON.stringify(recurringTxs));
+                renderSettingsRecurring();
+                showToast("Ricorrenza eliminata");
+            }
         }
 
         // --- GESTIONE MODALI DI SISTEMA ---
@@ -808,6 +951,7 @@
 
             if (show) {
                 renderSettingsAccounts();
+                renderSettingsRecurring();
                 main.classList.add('hidden');
                 settings.classList.remove('hidden');
                 backBtn.classList.remove('hidden');
@@ -822,18 +966,18 @@
         function renderSettingsAccounts() {
             const list = document.getElementById('account-list-settings');
             list.innerHTML = accounts.map(a => `
-                    <div class="p-3 border border-slate-100 rounded-xl bg-slate-50 flex items-center justify-between">
-                        <div class="overflow-hidden mr-2">
-                            <span class="font-bold text-sm truncate ${a.id === activeAccountId ? 'text-blue-600' : 'text-slate-700'}">${a.name}</span>
-                            <div class="text-[10px] text-slate-500 font-medium mt-0.5">Saldo: € ${(a.initialBalance || 0).toLocaleString('it-IT')} | Budget: € ${(a.budget || 0).toLocaleString('it-IT')}</div>
-                        </div>
-                        <div class="flex gap-1 shrink-0">
-                            <button onclick="setInitialBalance('${a.id}')" class="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center hover:bg-emerald-100 transition-colors"><i class="fa-solid fa-coins"></i></button>
-                            <button onclick="setBudget('${a.id}')" class="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center hover:bg-blue-100 transition-colors"><i class="fa-solid fa-bullseye"></i></button>
-                            <button onclick="renameAccount('${a.id}')" class="w-8 h-8 rounded-lg bg-slate-200 text-slate-500 flex items-center justify-center hover:bg-slate-300 transition-colors"><i class="fa-solid fa-pen"></i></button>
-                            <button onclick="deleteAccount('${a.id}')" class="w-8 h-8 rounded-lg bg-red-50 text-red-500 flex items-center justify-center hover:bg-red-100 transition-colors"><i class="fa-solid fa-trash"></i></button>
-                        </div>
-                    </div>`).join('');
+                        <div class="p-3 border border-slate-100 rounded-xl bg-slate-50 flex items-center justify-between">
+                            <div class="overflow-hidden mr-2">
+                                <span class="font-bold text-sm truncate ${a.id === activeAccountId ? 'text-blue-600' : 'text-slate-700'}">${a.name}</span>
+                                <div class="text-[10px] text-slate-500 font-medium mt-0.5">Saldo: € ${(a.initialBalance || 0).toLocaleString('it-IT')} | Budget: € ${(a.budget || 0).toLocaleString('it-IT')}</div>
+                            </div>
+                            <div class="flex gap-1 shrink-0">
+                                <button onclick="setInitialBalance('${a.id}')" class="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center hover:bg-emerald-100 transition-colors"><i class="fa-solid fa-coins"></i></button>
+                                <button onclick="setBudget('${a.id}')" class="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center hover:bg-blue-100 transition-colors"><i class="fa-solid fa-bullseye"></i></button>
+                                <button onclick="renameAccount('${a.id}')" class="w-8 h-8 rounded-lg bg-slate-200 text-slate-500 flex items-center justify-center hover:bg-slate-300 transition-colors"><i class="fa-solid fa-pen"></i></button>
+                                <button onclick="deleteAccount('${a.id}')" class="w-8 h-8 rounded-lg bg-red-50 text-red-500 flex items-center justify-center hover:bg-red-100 transition-colors"><i class="fa-solid fa-trash"></i></button>
+                            </div>
+                        </div>`).join('');
         }
 
         // --- ACCOUNT PICKER ---
@@ -845,16 +989,16 @@
                 const isSelected = a.id === currentId;
                 const activeClass = isSelected ? 'bg-blue-50 border-blue-200' : 'bg-white border-slate-100 hover:bg-slate-50';
                 return `
-                        <button onclick="pickAccount('${a.id}', '${a.name}')" class="w-full flex items-center justify-between p-4 border rounded-xl ${activeClass} transition-colors text-left">
-                            <div class="flex items-center gap-3">
-                                <div class="w-10 h-10 rounded-full bg-slate-100 text-slate-600 flex items-center justify-center font-bold text-lg"><i class="fa-solid fa-building-columns"></i></div>
-                                <div>
-                                    <div class="font-bold text-slate-800 text-sm">${a.name}</div>
-                                    <div class="text-[10px] text-slate-400">Saldo Iniziale: € ${a.initialBalance}</div>
+                            <button onclick="pickAccount('${a.id}', '${a.name}')" class="w-full flex items-center justify-between p-4 border rounded-xl ${activeClass} transition-colors text-left">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-10 h-10 rounded-full bg-slate-100 text-slate-600 flex items-center justify-center font-bold text-lg"><i class="fa-solid fa-building-columns"></i></div>
+                                    <div>
+                                        <div class="font-bold text-slate-800 text-sm">${a.name}</div>
+                                        <div class="text-[10px] text-slate-400">Saldo Iniziale: € ${a.initialBalance}</div>
+                                    </div>
                                 </div>
-                            </div>
-                            ${isSelected ? '<i class="fa-solid fa-check text-blue-600"></i>' : ''}
-                        </button>`;
+                                ${isSelected ? '<i class="fa-solid fa-check text-blue-600"></i>' : ''}
+                            </button>`;
             }).join('');
             document.getElementById('account-picker-modal').classList.remove('hidden');
         }
@@ -879,6 +1023,87 @@
             if (dateStr === today) return 'Oggi';
             if (dateStr === yesterday) return 'Ieri';
             return d.toLocaleDateString('it-IT', { weekday: 'short', day: 'numeric', month: 'long' });
+        }
+
+        // --- LOGICA GIROCONTO ---
+        function openTransferModal() {
+            if (accounts.length < 2) {
+                showSimpleAlert("Attenzione", "Devi avere almeno due conti configurati per effettuare un giroconto.");
+                return;
+            }
+
+            const fromSelect = document.getElementById('transfer-from');
+            const toSelect = document.getElementById('transfer-to');
+
+            // Popola le tendine
+            const options = accounts.map(a => `<option value="${a.id}">${a.name}</option>`).join('');
+            fromSelect.innerHTML = options;
+            toSelect.innerHTML = options;
+
+            // Pre-seleziona i conti
+            fromSelect.value = activeAccountId;
+            toSelect.value = accounts.find(a => a.id !== activeAccountId)?.id || accounts[0].id;
+
+            // Reset valori
+            document.getElementById('transfer-amount').value = '';
+            document.getElementById('transfer-date').value = new Date().toISOString().split('T')[0];
+
+            document.getElementById('transfer-modal').classList.remove('hidden');
+            setTimeout(() => document.getElementById('transfer-amount').focus(), 50);
+        }
+
+        function closeTransferModal() {
+            document.getElementById('transfer-modal').classList.add('hidden');
+        }
+
+        function saveTransfer() {
+            const amt = parseFloat(document.getElementById('transfer-amount').value);
+            if (isNaN(amt) || amt <= 0) { showSimpleAlert("Attenzione", "Inserisci un importo valido."); return; }
+
+            const fromId = document.getElementById('transfer-from').value;
+            const toId = document.getElementById('transfer-to').value;
+
+            if (fromId === toId) {
+                showSimpleAlert("Attenzione", "Il conto di origine e quello di destinazione non possono essere gli stessi.");
+                return;
+            }
+
+            const fromAcc = accounts.find(a => a.id === fromId);
+            const toAcc = accounts.find(a => a.id === toId);
+            const selectedDate = document.getElementById('transfer-date').value;
+            const isoDate = selectedDate ? new Date(selectedDate + 'T12:00:00').toISOString() : new Date().toISOString();
+
+            const txId1 = Date.now();
+            const txId2 = txId1 + 1; // Unico escamotage per garantire ID diversi se creati nello stesso millisecondo
+
+            // 1. Uscita dal conto di origine
+            transactions.push({
+                id: txId1,
+                amount: amt,
+                description: `Giroconto verso ${toAcc.name}`,
+                category: 'altro',
+                type: 'expense',
+                accountId: fromId,
+                date: isoDate,
+                linkedId: txId2 // Li leghiamo assieme!
+            });
+
+            // 2. Entrata nel conto di destinazione
+            transactions.push({
+                id: txId2,
+                amount: amt,
+                description: `Giroconto da ${fromAcc.name}`,
+                category: 'altro_in',
+                type: 'income',
+                accountId: toId,
+                date: isoDate,
+                linkedId: txId1 // Li leghiamo assieme!
+            });
+
+            localStorage.setItem(STORAGE_TX, JSON.stringify(transactions));
+            updateUI();
+            closeTransferModal();
+            showToast("Giroconto completato!");
         }
 
         function toggleGroup(dateKey) {
@@ -941,14 +1166,14 @@
 
                 // Disegna la barra inizialmente a larghezza 0%
                 budgetContainer.innerHTML = `
-                        <div class="flex justify-between text-[10px] font-bold text-blue-600 uppercase mb-1.5">
-                            <span>Speso: <strong id="budget-spent" class="${spentColorClass}">€${exp.toLocaleString('it-IT', { minimumFractionDigits: 2 })}</strong></span>
-                            <span>Budget: <strong id="budget-total" class="text-blue-800">€${budget.toLocaleString('it-IT', { minimumFractionDigits: 2 })}</strong></span>
-                        </div>
-                        <div class="w-full bg-blue-100 rounded-full h-2 overflow-hidden">
-                            <div id="budget-bar" class="${barColorClass} h-full rounded-full transition-all duration-1000 ease-out" style="width: 0%"></div>
-                        </div>
-                    `;
+                            <div class="flex justify-between text-[10px] font-bold text-blue-600 uppercase mb-1.5">
+                                <span>Speso: <strong id="budget-spent" class="${spentColorClass}">€${exp.toLocaleString('it-IT', { minimumFractionDigits: 2 })}</strong></span>
+                                <span>Budget: <strong id="budget-total" class="text-blue-800">€${budget.toLocaleString('it-IT', { minimumFractionDigits: 2 })}</strong></span>
+                            </div>
+                            <div class="w-full bg-blue-100 rounded-full h-2 overflow-hidden">
+                                <div id="budget-bar" class="${barColorClass} h-full rounded-full transition-all duration-1000 ease-out" style="width: 0%"></div>
+                            </div>
+                        `;
 
                 // Attiva l'animazione applicando la larghezza reale un istante dopo
                 setTimeout(() => {
@@ -958,10 +1183,10 @@
 
             } else {
                 budgetContainer.innerHTML = `
-                        <div class="flex items-center justify-center gap-2 text-xs font-bold text-blue-500 py-1">
-                            <i class="fa-solid fa-bullseye text-blue-400"></i> Imposta un Budget Mensile
-                        </div>
-                    `;
+                            <div class="flex items-center justify-center gap-2 text-xs font-bold text-blue-500 py-1">
+                                <i class="fa-solid fa-bullseye text-blue-400"></i> Imposta un Budget Mensile
+                            </div>
+                        `;
             }
 
             const listEl = document.getElementById('transaction-list');
@@ -993,31 +1218,31 @@
                         const amountStr = `${isInc ? '+' : '-'} €${t.amount.toFixed(2)}`;
 
                         return `
-                            <div onclick="editTransaction(${t.id})" class="bg-white p-3 rounded-xl border border-slate-100 card-shadow mb-2 flex items-center justify-between cursor-pointer active:scale-98 transition-all relative overflow-hidden">
-                                <div class="flex items-center gap-3 overflow-hidden z-10">
-                                    <div class="w-10 h-10 rounded-full flex items-center justify-center text-white shrink-0 shadow-sm" style="background-color: ${cat?.color || '#94a3b8'}">
-                                        <i class="${cat?.icon || 'fa-solid fa-box'}"></i>
+                                <div onclick="editTransaction(${t.id})" class="bg-white p-3 rounded-xl border border-slate-100 card-shadow mb-2 flex items-center justify-between cursor-pointer active:scale-98 transition-all relative overflow-hidden">
+                                    <div class="flex items-center gap-3 overflow-hidden z-10">
+                                        <div class="w-10 h-10 rounded-full flex items-center justify-center text-white shrink-0 shadow-sm" style="background-color: ${cat?.color || '#94a3b8'}">
+                                            <i class="${cat?.icon || 'fa-solid fa-box'}"></i>
+                                        </div>
+                                        <div class="truncate">
+                                            <h4 class="font-bold text-slate-800 text-sm truncate leading-tight">${t.description || cat?.label}</h4>
+                                            <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400">${cat?.label}</span>
+                                        </div>
                                     </div>
-                                    <div class="truncate">
-                                        <h4 class="font-bold text-slate-800 text-sm truncate leading-tight">${t.description || cat?.label}</h4>
-                                        <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400">${cat?.label}</span>
-                                    </div>
-                                </div>
-                                <span class="font-bold whitespace-nowrap text-sm z-10 ${isInc ? 'text-emerald-600' : 'text-slate-800'}">${amountStr}</span>
-                            </div>`;
+                                    <span class="font-bold whitespace-nowrap text-sm z-10 ${isInc ? 'text-emerald-600' : 'text-slate-800'}">${amountStr}</span>
+                                </div>`;
                     }).join('');
 
                     return `
-                        <div class="mb-4">
-                            <div onclick="toggleGroup('${dateKey}')" class="flex justify-between items-center px-2 mb-2 cursor-pointer select-none">
-                                <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">${getFriendlyDate(dateKey)}</span>
-                                <div class="flex items-center gap-2">
-                                    <span class="text-xs font-bold ${sumColor}">${dailySum > 0 ? '+' : ''}€${dailySum.toFixed(2)}</span>
-                                    <i id="group-icon-${dateKey}" class="fa-solid fa-chevron-down text-slate-300 text-[10px] transition-transform rotate-180"></i>
+                            <div class="mb-4">
+                                <div onclick="toggleGroup('${dateKey}')" class="flex justify-between items-center px-2 mb-2 cursor-pointer select-none">
+                                    <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">${getFriendlyDate(dateKey)}</span>
+                                    <div class="flex items-center gap-2">
+                                        <span class="text-xs font-bold ${sumColor}">${dailySum > 0 ? '+' : ''}€${dailySum.toFixed(2)}</span>
+                                        <i id="group-icon-${dateKey}" class="fa-solid fa-chevron-down text-slate-300 text-[10px] transition-transform rotate-180"></i>
+                                    </div>
                                 </div>
-                            </div>
-                            <div id="group-list-${dateKey}" class="space-y-0">${txHtml}</div>
-                        </div>`;
+                                <div id="group-list-${dateKey}" class="space-y-0">${txHtml}</div>
+                            </div>`;
                 }).join('');
             }
             renderChart(filtered.filter(t => t.type === 'expense'));
@@ -1107,6 +1332,12 @@
             document.getElementById('modal-title').textContent = editingTxId ? (mode === 'income' ? 'Modifica Entrata' : 'Modifica Uscita') : (mode === 'income' ? 'Nuova Entrata' : 'Nuova Uscita');
             document.getElementById('delete-btn').classList.toggle('hidden', !editingTxId);
 
+            // Aggiungi queste due righe dentro openModal(mode, tx = null):
+            document.getElementById('is-recurring-checkbox').checked = false;
+            document.getElementById('recurring-options').classList.add('hidden');
+            // Nascondi tutto il container in modalità modifica per semplicità
+            document.getElementById('recurring-container').classList.toggle('hidden', tx !== null);
+
             // --- APPLICAZIONE COLORI PASTELLO DINAMICI ---
             const isInc = mode === 'income';
 
@@ -1142,10 +1373,10 @@
         function renderCategoryGrid() {
             const grid = document.getElementById('category-grid');
             grid.innerHTML = categories[currentMode].map(c => `
-                    <button onclick="selectCategory('${c.id}')" id="cat-${c.id}" class="cat-btn flex flex-col items-center justify-center p-3 border border-slate-200 rounded-xl bg-white shadow-sm outline-none">
-                        <i class="${c.icon} text-2xl" style="color: ${c.color}"></i>
-                        <span class="text-[10px] font-bold text-slate-600 mt-2 uppercase tracking-tight">${c.label}</span>
-                    </button>`).join('');
+                        <button onclick="selectCategory('${c.id}')" id="cat-${c.id}" class="cat-btn flex flex-col items-center justify-center p-3 border border-slate-200 rounded-xl bg-white shadow-sm outline-none">
+                            <i class="${c.icon} text-2xl" style="color: ${c.color}"></i>
+                            <span class="text-[10px] font-bold text-slate-600 mt-2 uppercase tracking-tight">${c.label}</span>
+                        </button>`).join('');
             selectCategory(selectedCategory);
         }
 
@@ -1173,11 +1404,31 @@
             const selectedDate = document.getElementById('date-input').value;
             const isoDate = selectedDate ? new Date(selectedDate + 'T12:00:00').toISOString() : new Date().toISOString();
 
+            // Controlla la ricorrenza
+            const isRecurring = document.getElementById('is-recurring-checkbox').checked;
+            const freq = document.getElementById('recurring-freq').value;
+
             if (editingTxId) {
                 const idx = transactions.findIndex(t => t.id === editingTxId);
                 transactions[idx] = { ...transactions[idx], amount: amt, description: desc, category: selectedCategory, accountId: targetAccId, date: isoDate };
             } else {
-                transactions.push({ id: Date.now(), amount: amt, description: desc, category: selectedCategory, type: currentMode, accountId: targetAccId, date: isoDate });
+                const newId = Date.now();
+                transactions.push({ id: newId, amount: amt, description: desc, category: selectedCategory, type: currentMode, accountId: targetAccId, date: isoDate });
+
+                // Se è una nuova transazione e l'utente ha scelto "Ricorrente"
+                if (isRecurring && selectedDate) {
+                    recurringTxs.push({
+                        id: 'rec_' + newId,
+                        amount: amt,
+                        description: desc,
+                        category: selectedCategory,
+                        type: currentMode,
+                        accountId: targetAccId,
+                        frequency: freq,
+                        nextDate: getNextDate(selectedDate, freq) // La prossima scatterà tra 1 mese/settimana
+                    });
+                    localStorage.setItem(STORAGE_REC, JSON.stringify(recurringTxs));
+                }
             }
             localStorage.setItem(STORAGE_TX, JSON.stringify(transactions));
             activeAccountId = targetAccId;
@@ -1190,12 +1441,27 @@
             txToDeleteId = id;
             document.getElementById('delete-tx-modal').classList.remove('hidden');
         }
+
         function closeDeleteTxModal() { document.getElementById('delete-tx-modal').classList.add('hidden'); txToDeleteId = null; }
+
         function confirmDeleteTx() {
             if (!txToDeleteId) return;
-            transactions = transactions.filter(t => t.id !== txToDeleteId);
+
+            const txToDelete = transactions.find(t => t.id === txToDeleteId);
+
+            // Se la transazione è legata a un'altra (es. un Giroconto), eliminiamo entrambe
+            if (txToDelete && txToDelete.linkedId) {
+                transactions = transactions.filter(t => t.id !== txToDeleteId && t.id !== txToDelete.linkedId);
+            } else {
+                // Eliminazione standard
+                transactions = transactions.filter(t => t.id !== txToDeleteId);
+            }
+
             localStorage.setItem(STORAGE_TX, JSON.stringify(transactions));
-            updateUI(); closeDeleteTxModal(); closeModal(); showToast("Movimento eliminato");
+            updateUI();
+            closeDeleteTxModal();
+            closeModal();
+            showToast("Movimento eliminato");
         }
 
         // --- GEMINI AI ---
@@ -1219,32 +1485,84 @@
         async function handleImage(event) {
             const file = event.target.files[0];
             if (!file || !apiKey) return;
+
             const loader = document.getElementById('camera-loader');
             loader.classList.remove('hidden');
+
             try {
                 const reader = new FileReader();
                 reader.readAsDataURL(file);
                 reader.onload = async () => {
                     try {
                         const b64 = reader.result.split(',')[1];
+
+                        // Chiamata all'API migliorata
                         const result = await analyzeReceipt(b64);
-                        if (result && result.amount) document.getElementById('amount-input').value = result.amount;
-                        if (result && result.description) document.getElementById('desc-input').value = result.description;
-                    } catch (apiError) { showSimpleAlert("Errore Scansione", apiError.message); }
-                    finally { loader.classList.add('hidden'); document.getElementById('camera-input').value = ''; }
+
+                        // Popoliamo i campi della UI
+                        if (result) {
+                            if (result.amount) document.getElementById('amount-input').value = result.amount;
+                            if (result.description) document.getElementById('desc-input').value = result.description;
+
+                            // Imposta la data se trovata
+                            if (result.date) {
+                                document.getElementById('date-input').value = result.date;
+                            }
+
+                            // Imposta la categoria evidenziando il pulsante corretto
+                            if (result.categoryId) {
+                                // Verifichiamo che l'ID restituito esista davvero
+                                const catExists = categories.expense.some(c => c.id === result.categoryId);
+                                if (catExists) {
+                                    selectCategory(result.categoryId);
+                                }
+                            }
+                        }
+                        showToast("Scontrino scansionato con successo!");
+
+                    } catch (apiError) {
+                        showSimpleAlert("Errore Scansione", apiError.message);
+                    } finally {
+                        loader.classList.add('hidden');
+                        document.getElementById('camera-input').value = '';
+                    }
                 };
-            } catch (err) { showSimpleAlert("Errore", err.message); loader.classList.add('hidden'); }
+            } catch (err) {
+                showSimpleAlert("Errore", err.message);
+                loader.classList.add('hidden');
+            }
         }
 
         async function analyzeReceipt(base64) {
-            // Passa le categorie disponibili a Gemini
-            const categoryList = categories.expense.map(c => c.id).join(', ');
+            // 1. Creiamo una stringa con le categorie disponibili per istruire il modello
+            const categoryList = categories.expense.map(c => `'${c.id}' (${c.label})`).join(', ');
 
-            const prompt = `Analizza questo scontrino. Restituisci: 
-            1. amount: il totale da pagare (numero decimale)
-            2. description: il nome del negozio o una breve sintesi
-            3. date: la data dello scontrino (formato YYYY-MM-DD)
-            4. category: scegli la più adatta tra queste: [${categoryList}]`;
+            const prompt = `Analizza questo scontrino. Estrai il totale, il nome del negozio, la data e assegna una categoria.
+            Devi scegliere ESATTAMENTE uno di questi ID categoria: [${categoryList}]. Se non sei sicuro, usa 'altro'.`;
+
+            // 2. Definiamo lo schema JSON esatto (Structured Output)
+            const schema = {
+                type: "OBJECT",
+                properties: {
+                    amount: {
+                        type: "NUMBER",
+                        description: "Il totale finale da pagare sullo scontrino (usa il punto per i decimali)."
+                    },
+                    description: {
+                        type: "STRING",
+                        description: "Il nome del negozio o brand."
+                    },
+                    date: {
+                        type: "STRING",
+                        description: "La data dello scontrino nel formato esatto YYYY-MM-DD. Se non c'è, usa la data di oggi."
+                    },
+                    categoryId: {
+                        type: "STRING",
+                        description: "L'ID della categoria più appropriata tra quelle fornite."
+                    }
+                },
+                required: ["amount", "description", "date", "categoryId"]
+            };
 
             const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
 
@@ -1252,16 +1570,28 @@
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    contents: [{ parts: [{ text: prompt }, { inlineData: { mimeType: "image/jpeg", data: base64 } }] }],
-                    // Forza l'output JSON
-                    generationConfig: { responseMimeType: "application/json" }
+                    contents: [{
+                        parts: [
+                            { text: prompt },
+                            { inlineData: { mimeType: "image/jpeg", data: base64 } }
+                        ]
+                    }],
+                    generationConfig: {
+                        responseMimeType: "application/json",
+                        responseSchema: schema // <-- Passiamo lo schema a Gemini!
+                    }
                 })
             });
+
             const data = await response.json();
             if (data.error) throw new Error(data.error.message);
-            if (!data.candidates || data.candidates.length === 0) throw new Error("Lettura fallita.");
-            try { return JSON.parse(data.candidates[0].content.parts[0].text); }
-            catch { throw new Error("Formato dati non riconosciuto."); }
+            if (!data.candidates || data.candidates.length === 0) throw new Error("Lettura fallita o scontrino illeggibile.");
+
+            try {
+                return JSON.parse(data.candidates[0].content.parts[0].text);
+            } catch {
+                throw new Error("Errore nel parse dei dati di Gemini.");
+            }
         }
 
         // --- RESET DATI ---
@@ -1273,7 +1603,10 @@
             setTimeout(() => location.reload(), 1000);
         }
 
-        window.onload = updateUI;
+        window.onload = () => {
+            processRecurringTransactions(); // Processa eventuali abbonamenti scaduti
+            updateUI(); // Renderizza l'interfaccia
+        };
 
         // ==========================================
         // SERVICE WORKER REGISTRATION
