@@ -1,14 +1,10 @@
-const CACHE_NAME = 'spesepro-cache-v5';
+const CACHE_NAME = 'spesepro-cache-v6';
 
 // I file base e le librerie esterne da salvare per l'uso offline
 const urlsToCache = [
     './',
     './index.html',
-    './manifest.json',
-    'https://cdn.tailwindcss.com',
-    'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css',
-    'https://cdn.jsdelivr.net/npm/chart.js',
-    'https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap'
+    './manifest.json'
 ];
 
 // FASE 1: Installazione (Salvataggio in Cache)
@@ -48,4 +44,5 @@ self.addEventListener('activate', event => {
         })
     );
 });
+
 
