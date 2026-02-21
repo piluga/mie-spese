@@ -24,7 +24,7 @@
 
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-
+    
     <!-- FontAwesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
@@ -48,25 +48,12 @@
         }
 
         @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(10px);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
-        .no-scrollbar::-webkit-scrollbar {
-            display: none;
-        }
-
-        .no-scrollbar {
-            -ms-overflow-style: none;
-            scrollbar-width: none;
-        }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
         .modal-overlay {
             background-color: rgba(0, 0, 0, 0.5);
@@ -83,19 +70,19 @@
             opacity: 0.7;
         }
 
-            .cat-btn.selected-income {
-                border-color: #10b981; /* Verde smeraldo */
-                background-color: #ecfdf5;
-                opacity: 1;
-                transform: scale(1.05);
-            }
+        .cat-btn.selected-income {
+            border-color: #10b981; /* Verde smeraldo */
+            background-color: #ecfdf5;
+            opacity: 1;
+            transform: scale(1.05);
+        }
 
-            .cat-btn.selected-expense {
-                border-color: #f43f5e; /* Rosso pastello */
-                background-color: #fff1f2;
-                opacity: 1;
-                transform: scale(1.05);
-            }
+        .cat-btn.selected-expense {
+            border-color: #f43f5e; /* Rosso pastello */
+            background-color: #fff1f2;
+            opacity: 1;
+            transform: scale(1.05);
+        }
 
         .toast {
             position: fixed;
@@ -124,15 +111,7 @@
             animation: spin 1s linear infinite;
         }
 
-        @keyframes spin {
-            0% {
-                transform: rotate(0deg);
-            }
-
-            100% {
-                transform: rotate(360deg);
-            }
-        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
         /* Nascondi frecce input number */
         input[type="number"]::-webkit-outer-spin-button,
@@ -140,7 +119,6 @@
             -webkit-appearance: none;
             margin: 0;
         }
-
         input[type="number"] {
             -moz-appearance: textfield; /* Firefox */
         }
@@ -170,10 +148,10 @@
 
     <!-- MAIN APP CONTAINER -->
     <main id="app-container" class="flex-1 overflow-y-auto no-scrollbar relative p-4 max-w-lg mx-auto w-full">
-
+        
         <!-- View Principale -->
         <section id="main-view" class="fade-in pb-24">
-
+            
             <input type="file" id="camera-input" accept="image/*" capture="environment" class="hidden" onchange="handleImage(event)">
             <div id="camera-loader" class="fixed inset-0 z-[100] modal-overlay flex flex-col items-center justify-center hidden">
                 <div class="bg-white p-6 rounded-2xl shadow-2xl flex flex-col items-center">
@@ -189,13 +167,13 @@
                     <h2 id="current-month-display" class="text-sm font-bold text-blue-800 uppercase tracking-wider">Mese</h2>
                     <button onclick="changeMonth(1)" class="w-8 h-8 rounded-full bg-white shadow-sm text-blue-500 hover:bg-blue-100 flex items-center justify-center transition-colors"><i class="fa-solid fa-chevron-right"></i></button>
                 </div>
-
+                
                 <p id="account-name-display" class="text-[10px] text-blue-500 font-bold uppercase mb-1 flex items-center justify-center gap-1 cursor-pointer" onclick="openAccountPicker()">
                     <span class="w-2 h-2 rounded-full bg-green-500 inline-block"></span>
                     <span>Conto</span> <i class="fa-solid fa-chevron-down ml-1"></i>
                 </p>
                 <div id="account-dots" class="flex justify-center gap-1.5 mb-2 hidden"></div>
-
+                
                 <div id="balance" class="text-4xl font-bold text-blue-900 tracking-tight">€ 0.00</div>
                 <div id="initial-balance-display" class="text-[10px] mt-2 text-blue-400 font-medium hidden"></div>
 
@@ -275,7 +253,7 @@
                     <button onclick="saveToFileSystem()" class="col-span-2 flex items-center justify-center gap-2 p-4 bg-emerald-50 text-emerald-700 border border-emerald-100 rounded-xl hover:bg-emerald-100 transition-colors active:scale-95 text-sm font-bold">
                         <i class="fa-solid fa-download"></i> Salva Backup
                     </button>
-
+                    
                     <label class="cursor-pointer flex flex-col items-center justify-center p-3 border border-slate-200 rounded-xl hover:bg-slate-50 transition-colors group active:scale-95">
                         <i class="fa-solid fa-upload text-blue-500 text-lg mb-1 group-hover:scale-110 transition-transform"></i>
                         <span class="text-[10px] font-bold text-slate-600 uppercase">Importa</span>
@@ -312,6 +290,7 @@
     </main>
 
     <!-- ================= MODALI (Stile MedicinePro) ================= -->
+
     <!-- Modal Inserimento (Add/Edit) -->
     <div id="modal" class="hidden fixed inset-0 modal-overlay z-[100] flex items-center justify-center p-4 fade-in">
         <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-0 overflow-hidden flex flex-col max-h-[90vh]">
@@ -546,19 +525,6 @@
         </div>
     </div>
 
-    <div id="modal-app-updated" class="hidden fixed inset-0 modal-overlay z-[200] flex items-center justify-center p-4 fade-in">
-        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6 text-center">
-            <div class="w-16 h-16 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center mx-auto mb-4 text-3xl shadow-sm animate-bounce">
-                <i class="fa-solid fa-arrows-rotate"></i>
-            </div>
-            <h3 class="text-xl font-bold text-slate-800 mb-2">App Aggiornata! 🎉</h3>
-            <p class="text-slate-500 mb-6 text-sm">Abbiamo appena scaricato una nuova versione di MedicinePro. Ricarica per applicare i miglioramenti.</p>
-            <button onclick="window.location.reload()" class="w-full py-3 bg-blue-600 text-white rounded-xl font-bold shadow-md hover:bg-blue-700 transition-transform active:scale-95 flex items-center justify-center gap-2">
-                <i class="fa-solid fa-rotate-right"></i> Ricarica ora
-            </button>
-        </div>
-    </div>
-
     <script>
         const STORAGE_TX = 'spese_v3_data';
         const STORAGE_ACC = 'spese_v3_accounts';
@@ -566,13 +532,13 @@
 
         const categories = {
             expense: [
-                { id: 'cibo', label: 'Cibo', icon: 'fa-solid fa-utensils', color: '#f87171' },
-                { id: 'casa', label: 'Casa', icon: 'fa-solid fa-house', color: '#60a5fa' },
-                { id: 'trasporti', label: 'Auto', icon: 'fa-solid fa-car', color: '#fbbf24' },
-                { id: 'svago', label: 'Svago', icon: 'fa-solid fa-gamepad', color: '#a78bfa' },
-                { id: 'salute', label: 'Salute', icon: 'fa-solid fa-heart-pulse', color: '#34d399' },
-                { id: 'shopping', label: 'Shopping', icon: 'fa-solid fa-bag-shopping', color: '#f472b6' },
-                { id: 'altro', label: 'Altro', icon: 'fa-solid fa-box', color: '#94a3b8' }
+                { id: 'cibo', label: 'Cibo', icon: 'fa-solid fa-utensils', color: '#f87171' },     
+                { id: 'casa', label: 'Casa', icon: 'fa-solid fa-house', color: '#60a5fa' },     
+                { id: 'trasporti', label: 'Auto', icon: 'fa-solid fa-car', color: '#fbbf24' }, 
+                { id: 'svago', label: 'Svago', icon: 'fa-solid fa-gamepad', color: '#a78bfa' },    
+                { id: 'salute', label: 'Salute', icon: 'fa-solid fa-heart-pulse', color: '#34d399' },  
+                { id: 'shopping', label: 'Shopping', icon: 'fa-solid fa-bag-shopping', color: '#f472b6' }, 
+                { id: 'altro', label: 'Altro', icon: 'fa-solid fa-box', color: '#94a3b8' }     
             ],
             income: [
                 { id: 'stipendio', label: 'Stipendio', icon: 'fa-solid fa-money-bill-wave', color: '#10b981' },
@@ -779,7 +745,7 @@
         }
         function toggleMoveSelect(show) { document.getElementById('target-acc-container').classList.toggle('hidden', !show); }
         function closeDeleteModal() { document.getElementById('delete-account-modal').classList.add('hidden'); accountToDeleteId = null; }
-
+        
         function confirmDeleteAccount() {
             if (!accountToDeleteId) return;
             const txCount = transactions.filter(t => t.accountId === accountToDeleteId).length;
@@ -835,46 +801,46 @@
         function renderSettingsAccounts() {
             const list = document.getElementById('account-list-settings');
             list.innerHTML = accounts.map(a => `
-                        <div class="p-3 border border-slate-100 rounded-xl bg-slate-50 flex items-center justify-between">
-                            <div class="overflow-hidden mr-2">
-                                <span class="font-bold text-sm truncate ${a.id === activeAccountId ? 'text-blue-600' : 'text-slate-700'}">${a.name}</span>
-                                <div class="text-[10px] text-slate-500 font-medium mt-0.5">Budget: € ${(a.budget || 0).toLocaleString('it-IT')} | Saldo: € ${(a.initialBalance || 0).toLocaleString('it-IT')}</div>
-                            </div>
-                            <div class="flex gap-1 shrink-0">
-                                <button onclick="setInitialBalance('${a.id}')" class="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center hover:bg-emerald-100 transition-colors"><i class="fa-solid fa-coins"></i></button>
-                                <button onclick="setBudget('${a.id}')" class="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center hover:bg-blue-100 transition-colors"><i class="fa-solid fa-bullseye"></i></button>
-                                <button onclick="renameAccount('${a.id}')" class="w-8 h-8 rounded-lg bg-slate-200 text-slate-500 flex items-center justify-center hover:bg-slate-300 transition-colors"><i class="fa-solid fa-pen"></i></button>
-                                <button onclick="deleteAccount('${a.id}')" class="w-8 h-8 rounded-lg bg-red-50 text-red-500 flex items-center justify-center hover:bg-red-100 transition-colors"><i class="fa-solid fa-trash"></i></button>
-                            </div>
-                        </div>`).join('');
+                <div class="p-3 border border-slate-100 rounded-xl bg-slate-50 flex items-center justify-between">
+                    <div class="overflow-hidden mr-2">
+                        <span class="font-bold text-sm truncate ${a.id === activeAccountId ? 'text-blue-600' : 'text-slate-700'}">${a.name}</span>
+                        <div class="text-[10px] text-slate-500 font-medium mt-0.5">Saldo: € ${(a.initialBalance || 0).toLocaleString('it-IT')} | Budget: € ${(a.budget || 0).toLocaleString('it-IT')}</div>
+                    </div>
+                    <div class="flex gap-1 shrink-0">
+                        <button onclick="setInitialBalance('${a.id}')" class="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center hover:bg-emerald-100 transition-colors"><i class="fa-solid fa-coins"></i></button>
+                        <button onclick="setBudget('${a.id}')" class="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center hover:bg-blue-100 transition-colors"><i class="fa-solid fa-bullseye"></i></button>
+                        <button onclick="renameAccount('${a.id}')" class="w-8 h-8 rounded-lg bg-slate-200 text-slate-500 flex items-center justify-center hover:bg-slate-300 transition-colors"><i class="fa-solid fa-pen"></i></button>
+                        <button onclick="deleteAccount('${a.id}')" class="w-8 h-8 rounded-lg bg-red-50 text-red-500 flex items-center justify-center hover:bg-red-100 transition-colors"><i class="fa-solid fa-trash"></i></button>
+                    </div>
+                </div>`).join('');
         }
 
         // --- ACCOUNT PICKER ---
         function openAccountPicker() {
             const list = document.getElementById('account-picker-list');
             const currentId = document.getElementById('modal-account-select')?.value || activeAccountId;
-
+            
             list.innerHTML = accounts.map(a => {
                 const isSelected = a.id === currentId;
                 const activeClass = isSelected ? 'bg-blue-50 border-blue-200' : 'bg-white border-slate-100 hover:bg-slate-50';
                 return `
-                            <button onclick="pickAccount('${a.id}', '${a.name}')" class="w-full flex items-center justify-between p-4 border rounded-xl ${activeClass} transition-colors text-left">
-                                <div class="flex items-center gap-3">
-                                    <div class="w-10 h-10 rounded-full bg-slate-100 text-slate-600 flex items-center justify-center font-bold text-lg"><i class="fa-solid fa-building-columns"></i></div>
-                                    <div>
-                                        <div class="font-bold text-slate-800 text-sm">${a.name}</div>
-                                        <div class="text-[10px] text-slate-400">Saldo Iniziale: € ${a.initialBalance}</div>
-                                    </div>
-                                </div>
-                                ${isSelected ? '<i class="fa-solid fa-check text-blue-600"></i>' : ''}
-                            </button>`;
+                    <button onclick="pickAccount('${a.id}', '${a.name}')" class="w-full flex items-center justify-between p-4 border rounded-xl ${activeClass} transition-colors text-left">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-full bg-slate-100 text-slate-600 flex items-center justify-center font-bold text-lg"><i class="fa-solid fa-building-columns"></i></div>
+                            <div>
+                                <div class="font-bold text-slate-800 text-sm">${a.name}</div>
+                                <div class="text-[10px] text-slate-400">Saldo Iniziale: € ${a.initialBalance}</div>
+                            </div>
+                        </div>
+                        ${isSelected ? '<i class="fa-solid fa-check text-blue-600"></i>' : ''}
+                    </button>`;
             }).join('');
             document.getElementById('account-picker-modal').classList.remove('hidden');
         }
         function closeAccountPicker() { document.getElementById('account-picker-modal').classList.add('hidden'); }
         function pickAccount(id, name) {
             const selectEl = document.getElementById('modal-account-select');
-            if (selectEl) {
+            if(selectEl) {
                 selectEl.value = id;
                 document.getElementById('selected-account-display').textContent = name;
             } else {
@@ -915,7 +881,7 @@
             // Aggiorna pallini indicatori conti
             const dotsContainer = document.getElementById('account-dots');
             if (accounts.length > 1) {
-                dotsContainer.innerHTML = accounts.map(a =>
+                dotsContainer.innerHTML = accounts.map(a => 
                     `<div class="w-1.5 h-1.5 rounded-full ${a.id === activeAccountId ? 'bg-blue-500 scale-125' : 'bg-blue-200'} transition-all"></div>`
                 ).join('');
                 dotsContainer.classList.remove('hidden');
@@ -942,36 +908,44 @@
                 initEl.classList.remove('hidden');
             } else { initEl.classList.add('hidden'); }
 
-            // Nuova gestione visiva del Budget Fissa
+            // Nuova gestione visiva del Budget Fissa con animazione dinamica
             const budgetContainer = document.getElementById('budget-container');
             const budget = currentAcc.budget || 0;
-
+            
             if (budget > 0) {
                 let perc = Math.min((exp / budget) * 100, 100);
+                const isOverBudget = exp > budget;
+                const barColorClass = isOverBudget ? 'bg-red-500' : 'bg-blue-500';
+                const spentColorClass = isOverBudget ? 'text-red-600' : 'text-blue-800';
+
+                // Disegna la barra inizialmente a larghezza 0%
                 budgetContainer.innerHTML = `
-                            <div class="flex justify-between text-[10px] font-bold text-blue-600 uppercase mb-1.5">
-                                <span>Speso: <strong id="budget-spent" class="text-blue-800">€${exp.toLocaleString('it-IT', { minimumFractionDigits: 2 })}</strong></span>
-                                <span>Budget: <strong id="budget-total" class="text-blue-800">€${budget.toLocaleString('it-IT', { minimumFractionDigits: 2 })}</strong></span>
-                            </div>
-                            <div class="w-full bg-blue-100 rounded-full h-2 overflow-hidden">
-                                <div id="budget-bar" class="bg-blue-500 h-full rounded-full transition-all duration-700" style="width: ${perc}%"></div>
-                            </div>
-                        `;
-                if (exp > budget) {
-                    document.getElementById('budget-bar').classList.replace('bg-blue-500', 'bg-red-500');
-                    document.getElementById('budget-spent').classList.add('text-red-600');
-                }
+                    <div class="flex justify-between text-[10px] font-bold text-blue-600 uppercase mb-1.5">
+                        <span>Speso: <strong id="budget-spent" class="${spentColorClass}">€${exp.toLocaleString('it-IT', { minimumFractionDigits: 2 })}</strong></span>
+                        <span>Budget: <strong id="budget-total" class="text-blue-800">€${budget.toLocaleString('it-IT', { minimumFractionDigits: 2 })}</strong></span>
+                    </div>
+                    <div class="w-full bg-blue-100 rounded-full h-2 overflow-hidden">
+                        <div id="budget-bar" class="${barColorClass} h-full rounded-full transition-all duration-1000 ease-out" style="width: 0%"></div>
+                    </div>
+                `;
+                
+                // Attiva l'animazione applicando la larghezza reale un istante dopo
+                setTimeout(() => {
+                    const bar = document.getElementById('budget-bar');
+                    if (bar) bar.style.width = perc + '%';
+                }, 50);
+
             } else {
                 budgetContainer.innerHTML = `
-                            <div class="flex items-center justify-center gap-2 text-xs font-bold text-blue-500 py-1">
-                                <i class="fa-solid fa-bullseye text-blue-400"></i> Imposta un Budget Mensile
-                            </div>
-                        `;
+                    <div class="flex items-center justify-center gap-2 text-xs font-bold text-blue-500 py-1">
+                        <i class="fa-solid fa-bullseye text-blue-400"></i> Imposta un Budget Mensile
+                    </div>
+                `;
             }
 
             const listEl = document.getElementById('transaction-list');
             const searchTerm = (document.getElementById('search-input')?.value || '').toLowerCase().trim();
-
+            
             let listTransactions = filtered;
             if (searchTerm) {
                 listTransactions = filtered.filter(t => {
@@ -985,7 +959,7 @@
             } else {
                 listTransactions.sort((a, b) => new Date(b.date) - new Date(a.date));
                 const groups = {};
-                listTransactions.forEach(t => { const d = t.date.split('T')[0]; if (!groups[d]) groups[d] = []; groups[d].push(t); });
+                listTransactions.forEach(t => { const d = t.date.split('T')[0]; if(!groups[d]) groups[d] = []; groups[d].push(t); });
 
                 listEl.innerHTML = Object.keys(groups).map(dateKey => {
                     const dailyTx = groups[dateKey];
@@ -996,33 +970,33 @@
                         const cat = [...categories.expense, ...categories.income].find(c => c.id === t.category);
                         const isInc = t.type === 'income';
                         const amountStr = `${isInc ? '+' : '-'} €${t.amount.toFixed(2)}`;
-
+                        
                         return `
-                                <div onclick="editTransaction(${t.id})" class="bg-white p-3 rounded-xl border border-slate-100 card-shadow mb-2 flex items-center justify-between cursor-pointer active:scale-98 transition-all relative overflow-hidden">
-                                    <div class="flex items-center gap-3 overflow-hidden z-10">
-                                        <div class="w-10 h-10 rounded-full flex items-center justify-center text-white shrink-0 shadow-sm" style="background-color: ${cat?.color || '#94a3b8'}">
-                                            <i class="${cat?.icon || 'fa-solid fa-box'}"></i>
-                                        </div>
-                                        <div class="truncate">
-                                            <h4 class="font-bold text-slate-800 text-sm truncate leading-tight">${t.description || cat?.label}</h4>
-                                            <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400">${cat?.label}</span>
-                                        </div>
-                                    </div>
-                                    <span class="font-bold whitespace-nowrap text-sm z-10 ${isInc ? 'text-emerald-600' : 'text-slate-800'}">${amountStr}</span>
-                                </div>`;
+                        <div onclick="editTransaction(${t.id})" class="bg-white p-3 rounded-xl border border-slate-100 card-shadow mb-2 flex items-center justify-between cursor-pointer active:scale-98 transition-all relative overflow-hidden">
+                            <div class="flex items-center gap-3 overflow-hidden z-10">
+                                <div class="w-10 h-10 rounded-full flex items-center justify-center text-white shrink-0 shadow-sm" style="background-color: ${cat?.color || '#94a3b8'}">
+                                    <i class="${cat?.icon || 'fa-solid fa-box'}"></i>
+                                </div>
+                                <div class="truncate">
+                                    <h4 class="font-bold text-slate-800 text-sm truncate leading-tight">${t.description || cat?.label}</h4>
+                                    <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400">${cat?.label}</span>
+                                </div>
+                            </div>
+                            <span class="font-bold whitespace-nowrap text-sm z-10 ${isInc ? 'text-emerald-600' : 'text-slate-800'}">${amountStr}</span>
+                        </div>`;
                     }).join('');
 
                     return `
-                            <div class="mb-4">
-                                <div onclick="toggleGroup('${dateKey}')" class="flex justify-between items-center px-2 mb-2 cursor-pointer select-none">
-                                    <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">${getFriendlyDate(dateKey)}</span>
-                                    <div class="flex items-center gap-2">
-                                        <span class="text-xs font-bold ${sumColor}">${dailySum > 0 ? '+' : ''}€${dailySum.toFixed(2)}</span>
-                                        <i id="group-icon-${dateKey}" class="fa-solid fa-chevron-down text-slate-300 text-[10px] transition-transform rotate-180"></i>
-                                    </div>
-                                </div>
-                                <div id="group-list-${dateKey}" class="space-y-0">${txHtml}</div>
-                            </div>`;
+                    <div class="mb-4">
+                        <div onclick="toggleGroup('${dateKey}')" class="flex justify-between items-center px-2 mb-2 cursor-pointer select-none">
+                            <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">${getFriendlyDate(dateKey)}</span>
+                            <div class="flex items-center gap-2">
+                                <span class="text-xs font-bold ${sumColor}">${dailySum > 0 ? '+' : ''}€${dailySum.toFixed(2)}</span>
+                                <i id="group-icon-${dateKey}" class="fa-solid fa-chevron-down text-slate-300 text-[10px] transition-transform rotate-180"></i>
+                            </div>
+                        </div>
+                        <div id="group-list-${dateKey}" class="space-y-0">${txHtml}</div>
+                    </div>`;
                 }).join('');
             }
             renderChart(filtered.filter(t => t.type === 'expense'));
@@ -1061,12 +1035,12 @@
 
         dashCard.addEventListener('touchstart', e => {
             touchStartX = e.changedTouches[0].screenX;
-        }, { passive: true });
+        }, {passive: true});
 
         dashCard.addEventListener('touchend', e => {
             touchEndX = e.changedTouches[0].screenX;
             handleSwipe();
-        }, { passive: true });
+        }, {passive: true});
 
         function handleSwipe() {
             const threshold = 50; // Distanza minima in pixel per considerare lo swipe valido
@@ -1095,7 +1069,7 @@
             // Aggiungo un piccolo feedback visivo animato alla card
             dashCard.style.transform = direction > 0 ? 'translateX(-15px)' : 'translateX(15px)';
             dashCard.style.opacity = '0.5';
-
+            
             setTimeout(() => {
                 updateUI();
                 dashCard.style.transform = 'translateX(0)';
@@ -1109,12 +1083,12 @@
             editingTxId = tx ? tx.id : null;
             selectedCategory = tx ? tx.category : categories[mode][0].id;
 
-            document.getElementById('modal-title').textContent = editingTxId ? (mode === 'income' ? 'Modifica Entrata' : 'Modifica Uscita') : (mode === 'income' ? 'Nuova Entrata' : 'Nuova Uscita');
+            document.getElementById('modal-title').textContent = editingTxId ? (mode==='income'?'Modifica Entrata':'Modifica Uscita') : (mode==='income'?'Nuova Entrata':'Nuova Uscita');
             document.getElementById('delete-btn').classList.toggle('hidden', !editingTxId);
 
             // --- APPLICAZIONE COLORI PASTELLO DINAMICI ---
             const isInc = mode === 'income';
-
+            
             // Header e Footer
             document.getElementById('modal-header').className = `p-4 border-b flex justify-between items-center shrink-0 transition-colors ${isInc ? 'bg-emerald-50 border-emerald-100' : 'bg-rose-50 border-rose-100'}`;
             document.getElementById('modal-title').className = `text-lg font-bold ${isInc ? 'text-emerald-900' : 'text-rose-900'}`;
@@ -1147,10 +1121,10 @@
         function renderCategoryGrid() {
             const grid = document.getElementById('category-grid');
             grid.innerHTML = categories[currentMode].map(c => `
-                        <button onclick="selectCategory('${c.id}')" id="cat-${c.id}" class="cat-btn flex flex-col items-center justify-center p-3 border border-slate-200 rounded-xl bg-white shadow-sm outline-none">
-                            <i class="${c.icon} text-2xl" style="color: ${c.color}"></i>
-                            <span class="text-[10px] font-bold text-slate-600 mt-2 uppercase tracking-tight">${c.label}</span>
-                        </button>`).join('');
+                <button onclick="selectCategory('${c.id}')" id="cat-${c.id}" class="cat-btn flex flex-col items-center justify-center p-3 border border-slate-200 rounded-xl bg-white shadow-sm outline-none">
+                    <i class="${c.icon} text-2xl" style="color: ${c.color}"></i>
+                    <span class="text-[10px] font-bold text-slate-600 mt-2 uppercase tracking-tight">${c.label}</span>
+                </button>`).join('');
             selectCategory(selectedCategory);
         }
 
@@ -1211,7 +1185,7 @@
         function closeApiKeyModal() { document.getElementById('api-key-modal').classList.add('hidden'); }
         function saveApiKey() {
             const key = document.getElementById('modal-api-key').value.trim();
-            if (key) { apiKey = key; localStorage.setItem('gemini_api_key', key); showToast("API Key salvata!"); }
+            if (key) { apiKey = key; localStorage.setItem('gemini_api_key', key); showToast("API Key salvata!"); } 
             else { apiKey = ""; localStorage.removeItem('gemini_api_key'); showToast("API Key rimossa"); }
             closeApiKeyModal();
         }
@@ -1235,7 +1209,7 @@
                         const result = await analyzeReceipt(b64);
                         if (result && result.amount) document.getElementById('amount-input').value = result.amount;
                         if (result && result.description) document.getElementById('desc-input').value = result.description;
-                    } catch (apiError) { showSimpleAlert("Errore Scansione", apiError.message); }
+                    } catch (apiError) { showSimpleAlert("Errore Scansione", apiError.message); } 
                     finally { loader.classList.add('hidden'); document.getElementById('camera-input').value = ''; }
                 };
             } catch (err) { showSimpleAlert("Errore", err.message); loader.classList.add('hidden'); }
@@ -1252,7 +1226,7 @@
             const data = await response.json();
             if (data.error) throw new Error(data.error.message);
             if (!data.candidates || data.candidates.length === 0) throw new Error("Lettura fallita.");
-            try { return JSON.parse(data.candidates[0].content.parts[0].text); }
+            try { return JSON.parse(data.candidates[0].content.parts[0].text); } 
             catch { throw new Error("Formato dati non riconosciuto."); }
         }
 
@@ -1267,30 +1241,11 @@
 
         window.onload = updateUI;
 
-        // ==========================================
-        // SERVICE WORKER REGISTRATION CON CONTROLLO UPDATE
-        // ==========================================
         if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('sw.js')
-                .then(registration => {
-                    console.log('✅ ServiceWorker registrato con successo! Scope:', registration.scope);
-                })
-                .catch(error => {
-                    console.error('❌ Registrazione ServiceWorker fallita:', error);
-                });
-
-            // Ascolta l'evento in cui un NUOVO service worker prende il controllo
-            let refreshing = false;
-            navigator.serviceWorker.addEventListener('controllerchange', () => {
-                // Evita che il modale venga chiamato più volte di fila o ricarichi all'infinito
-                if (!refreshing) {
-                    refreshing = true;
-                    // Mostra il modale per avvisare l'utente
-                    app.showModal('modal-app-updated');
-                }
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('sw.js').catch(error => console.log('❌ SW error:', error));
             });
         }
-
     </script>
 </body>
 </html>
