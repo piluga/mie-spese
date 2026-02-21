@@ -1,4 +1,4 @@
-const CACHE_NAME = 'spesepro-cache-v1';
+const CACHE_NAME = 'spesepro-cache-v5';
 
 // I file base e le librerie esterne da salvare per l'uso offline
 const urlsToCache = [
@@ -48,3 +48,4 @@ self.addEventListener('activate', event => {
         })
     );
 });
+
