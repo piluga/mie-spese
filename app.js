@@ -4,11 +4,12 @@
                 tx: 'spese_v3_data',
                 acc: 'spese_v3_accounts',
                 rec: 'spese_v3_recurring',
-                apiKey: 'gemini_api_key'
+                apiKey: 'gemini_api_key',
+                goals: 'spese_v3_goals'
             },
             _get(key, defaultValue) {
                 try {
-                    const data = localStorage.getItem(key);
+                    const data = localStorage.getItem(key)
                     return data ? JSON.parse(data) : defaultValue;
                 } catch (error) {
                     console.error(`Errore nel caricamento di ${key}:`, error);
@@ -30,6 +31,8 @@
             saveAccounts: (data) => StorageManager._set(StorageManager.keys.acc, data),
             getRecurring: () => StorageManager._get(StorageManager.keys.rec, []),
             saveRecurring: (data) => StorageManager._set(StorageManager.keys.rec, data),
+            getGoals: () => StorageManager._get(StorageManager.keys.goals, []),
+            saveGoals: (data) => StorageManager._set(StorageManager.keys.goals, data),
             getApiKey: () => localStorage.getItem(StorageManager.keys.apiKey) || "",
             saveApiKey: (key) => localStorage.setItem(StorageManager.keys.apiKey, key),
             removeApiKey: () => localStorage.removeItem(StorageManager.keys.apiKey),
@@ -53,7 +56,7 @@
         let transactions = StorageManager.getTransactions();
         let rawAccounts = StorageManager.getAccounts();
         let accounts = rawAccounts.map(a => ({ ...a, budget: a.budget || 0, initialBalance: a.initialBalance || 0 }));
-
+        let goals = StorageManager.getGoals();
         let activeAccountId = accounts[0].id;
         let viewDate = new Date();
         let currentMode = 'expense';
@@ -61,6 +64,123 @@
         let editingTxId = null;
         let chartInstance = null;
         let numberCallback = null;
+        let isDarkMode = localStorage.getItem('spese_v3_darkmode') === 'true';
+
+        // --- CONFIGURAZIONE FIREBASE CLOUD ---
+        const firebaseConfig = {
+            apiKey: "AIzaSyB0wl1VJZihOiecNiL_Z5KNkrnKvXJ-5yA",
+            authDomain: "spesepro-cloud.firebaseapp.com",
+            projectId: "spesepro-cloud",
+            storageBucket: "spesepro-cloud.firebasestorage.app",
+            messagingSenderId: "767241795466",
+            appId: "1:767241795466:web:1769402e202eee02adba73"
+        };
+
+        // Inizializzazione
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+
+        // --- LOGICA AUTENTICAZIONE ---
+        auth.onAuthStateChanged(user => {
+            const loginSec = document.getElementById('cloud-login-section');
+            const userSec = document.getElementById('cloud-user-section');
+            if (!loginSec || !userSec) return;
+
+            if (user) {
+                document.getElementById('cloud-user-name').textContent = user.displayName || user.email;
+                document.getElementById('cloud-user-pic').src = user.photoURL || 'https://via.placeholder.com/150';
+                loginSec.classList.add('hidden');
+                userSec.classList.remove('hidden');
+            } else {
+                loginSec.classList.remove('hidden');
+                userSec.classList.add('hidden');
+            }
+        });
+
+        function loginWithGoogle() {
+            const provider = new firebase.auth.GoogleAuthProvider();
+            auth.signInWithPopup(provider).catch(err => showToast("Errore Login: " + err.message));
+        }
+
+        function logout() {
+            auth.signOut();
+            showToast("Disconnesso.");
+        }
+
+        // --- GESTIONE MODALE CLOUD AUTH ---
+        function openCloudAuthModal() {
+            document.getElementById('modal-cloud-auth').classList.remove('hidden');
+        }
+
+        function closeCloudAuthModal() {
+            document.getElementById('modal-cloud-auth').classList.add('hidden');
+        }
+
+        // --- LOGICA BACKUP E RIPRISTINO ---
+        async function backupToCloud() {
+            const user = auth.currentUser;
+            if (!user) {
+                openCloudAuthModal(); // <--- ORA APRE IL MODALE BELLO
+                return;
+            }
+
+            // Qui raccogliamo tutto ciò che è salvato nel localStorage per SpesePro
+            // Aggiusta i nomi ('transactions', 'accounts', 'recurringTxs') se nel tuo StorageManager li hai chiamati diversamente
+            const cloudData = {
+                transactions: localStorage.getItem('transactions') || '[]',
+                accounts: localStorage.getItem('accounts') || '[]',
+                recurringTxs: localStorage.getItem('recurringTxs') || '[]',
+                goals: localStorage.getItem('spese_v3_goals') || '[]' // <--- NUOVO
+            };
+
+            try {
+                showToast("Salvataggio nel Cloud in corso...");
+
+                await db.collection('backups').doc(user.uid).set({
+                    backupData: JSON.stringify(cloudData),
+                    timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                });
+
+                alert("✅ Successo! Il tuo backup è ora al sicuro nel Cloud!");
+            } catch (error) {
+                console.error(error);
+                alert("❌ Errore durante il salvataggio: " + error.message);
+            }
+        }
+
+        async function restoreFromCloud() {
+            const user = auth.currentUser;
+            if (!user) {
+                openCloudAuthModal(); // <--- ORA APRE IL MODALE BELLO
+                return;
+            }
+
+            if (!confirm("⚠️ ATTENZIONE: Il ripristino sovrascriverà tutti i dati attualmente presenti su questo telefono. Vuoi continuare?")) return;
+
+            try {
+                showToast("Scaricamento dal Cloud...");
+                const doc = await db.collection('backups').doc(user.uid).get();
+
+                if (doc.exists) {
+                    const cloudData = JSON.parse(doc.data().backupData);
+
+                    // Rimettiamo i dati nel localStorage
+                    if (cloudData.transactions) localStorage.setItem('transactions', cloudData.transactions);
+                    if (cloudData.accounts) localStorage.setItem('accounts', cloudData.accounts);
+                    if (cloudData.recurringTxs) localStorage.setItem('recurringTxs', cloudData.recurringTxs);
+                    if (cloudData.goals) localStorage.setItem('spese_v3_goals', cloudData.goals); // <--- NUOVO
+
+                    alert("✅ Ripristino Completato! L'app si riavvierà per applicare i dati.");
+                    window.location.reload();
+                } else {
+                    alert("Nessun backup trovato per questo account nel Cloud.");
+                }
+            } catch (error) {
+                console.error(error);
+                alert("❌ Errore durante il ripristino: " + error.message);
+            }
+        }
 
         // UI TOAST
         function showToast(msg) {
@@ -143,49 +263,13 @@
             closeNumberModal();
         }
 
-        // --- BACKUP & EXPORT ---
-        function getBackupData() {
-            const timestamp = new Date().toISOString().split('T')[0];
-            const filename = `backup_spesepro_${timestamp}.json`;
-            const data = { app: "SpesePro", version: "3.2", exportedAt: new Date().toISOString(), transactions, accounts };
-            return { json: JSON.stringify(data, null, 2), filename };
-        }
-
-        async function saveToFileSystem() {
-            const { json, filename } = getBackupData();
-            if ('showSaveFilePicker' in window) {
-                try {
-                    const handle = await window.showSaveFilePicker({ suggestedName: filename, types: [{ description: 'JSON File', accept: { 'application/json': ['.json'] } }] });
-                    const writable = await handle.createWritable();
-                    await writable.write(json);
-                    await writable.close();
-                    showToast("Salvato su disco!");
-                } catch (err) {
-                    if (err.name !== 'AbortError') showToast("Salvataggio annullato");
-                }
-            } else {
-                downloadBackupManual(json, filename);
-            }
-        }
-
-        function downloadBackupManual(json, filename) {
-            const blob = new Blob([json], { type: 'application/json' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.style.display = 'none';
-            a.href = url;
-            a.download = filename;
-            document.body.appendChild(a);
-            a.click();
-            setTimeout(() => { document.body.removeChild(a); URL.revokeObjectURL(url); showToast("Backup scaricato!"); }, 100);
-        }
-
+        // --- EXPORT DATI (REPORT) ---
         function exportCSV() {
             const headers = ["Data", "Descrizione", "Importo", "Categoria", "Tipo", "Conto", "Budget Conto"];
             const rows = transactions.map(t => {
                 const acc = accounts.find(a => a.id === t.accountId);
                 return [
-                    new Date(t.date).toLocaleDateString(),
+                    new Date(t.date).toLocaleDateString('it-IT'),
                     t.description || '',
                     t.amount.toFixed(2),
                     t.category,
@@ -194,28 +278,121 @@
                     acc?.budget || 0
                 ].join(';')
             });
-            const blob = new Blob(["\ufeff" + [headers.join(';'), ...rows].join('\n')], { type: 'text/csv' });
-            downloadBackupManual(blob, `spese_export.csv`);
+
+            // Crea e scarica il file in autonomia
+            const csvContent = "\ufeff" + [headers.join(';'), ...rows].join('\n');
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.style.display = 'none';
+            a.href = url;
+            a.download = `SpesePro_Report_${new Date().toISOString().split('T')[0]}.csv`;
+            document.body.appendChild(a);
+            a.click();
+            setTimeout(() => { document.body.removeChild(a); URL.revokeObjectURL(url); showToast("Report CSV scaricato!"); }, 100);
         }
 
-        function importJSON(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-            const r = new FileReader();
-            r.onload = (e) => {
-                try {
-                    const d = JSON.parse(e.target.result);
-                    if (confirm("Vuoi ripristinare il backup? I dati attuali andranno persi.")) {
-                        transactions = d.transactions || [];
-                        accounts = d.accounts || accounts;
-                        StorageManager.saveTransactions(transactions);
-                        StorageManager.saveAccounts(accounts);
-                        location.reload();
-                    }
-                } catch { showToast("File non valido"); }
-            };
-            r.readAsText(file);
-        }
+function exportPDF() {
+    if (typeof html2pdf === 'undefined') {
+        showSimpleAlert("Attesa", "La libreria PDF si sta ancora caricando, riprova tra un istante.");
+        return;
+    }
+
+    showToast("Generazione PDF in corso...");
+
+    const m = viewDate.getMonth();
+    const y = viewDate.getFullYear();
+    const monthName = viewDate.toLocaleDateString('it-IT', { month: 'long', year: 'numeric' });
+    const currentAcc = accounts.find(a => a.id === activeAccountId) || accounts[0];
+
+    const filtered = transactions.filter(t => {
+        const d = new Date(t.date);
+        return d.getMonth() === m && d.getFullYear() === y && t.accountId === activeAccountId;
+    });
+
+    const inc = filtered.filter(t => t.type === 'income').reduce((s, t) => s + t.amount, 0);
+    const exp = filtered.filter(t => t.type === 'expense').reduce((s, t) => s + t.amount, 0);
+
+    let chartImgHtml = '';
+    const chartCanvas = document.getElementById('expenseChart');
+    if (exp > 0 && chartCanvas) {
+        const imgData = chartCanvas.toDataURL('image/png', 1.0);
+        chartImgHtml = `
+            <div style="text-align: center; margin: 20px 0;">
+                <h4 style="color: #64748b; font-size: 14px; margin-bottom: 10px; text-transform: uppercase;">Riepilogo Uscite</h4>
+                <img src="${imgData}" style="max-width: 250px; height: auto; margin: 0 auto;">
+            </div>`;
+    }
+
+    filtered.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+    // Torniamo al layout moderno e allineato
+    const tableRows = filtered.map(t => {
+        const d = new Date(t.date).toLocaleDateString('it-IT');
+        const isInc = t.type === 'income';
+        const color = isInc ? '#10b981' : '#f43f5e';
+        const cat = [...categories.expense, ...categories.income].find(c => c.id === t.category)?.label || t.category;
+        return `
+            <div class="pdf-row" style="display: flex; justify-content: space-between; border-bottom: 1px solid #e2e8f0; padding: 12px 8px; page-break-inside: avoid; break-inside: avoid;">
+                <div style="width: 25%; font-size: 12px; color: #64748b;">${d}</div>
+                <div style="width: 50%; font-size: 12px; color: #1e293b; font-weight: bold;">${t.description || cat}</div>
+                <div style="width: 25%; font-size: 12px; color: ${color}; font-weight: bold; text-align: right;">${isInc ? '+' : '-'} €${t.amount.toFixed(2)}</div>
+            </div>`;
+    }).join('');
+
+    const reportHtml = `
+        <div style="font-family: 'Inter', sans-serif; padding: 10px; color: #0f172a; background: #ffffff;">
+            
+            <div style="text-align: center; border-bottom: 2px solid #e2e8f0; padding-bottom: 15px; margin-bottom: 25px;">
+                <h1 style="color: #2563eb; font-size: 28px; margin: 0 0 5px 0; font-weight: bold;">SpesePro Report</h1>
+                <h2 style="color: #475569; font-size: 16px; margin: 0; text-transform: uppercase;">${currentAcc.name} - ${monthName}</h2>
+            </div>
+            
+            <div style="display: flex; justify-content: space-between; margin-bottom: 25px;">
+                <div style="background: #ecfdf5; padding: 15px; border-radius: 12px; width: 48%; text-align: center; box-sizing: border-box;">
+                    <div style="color: #059669; font-size: 12px; font-weight: bold; margin-bottom: 5px;">ENTRATE</div>
+                    <div style="color: #047857; font-size: 20px; font-weight: bold;">€ ${inc.toFixed(2)}</div>
+                </div>
+                <div style="background: #fff1f2; padding: 15px; border-radius: 12px; width: 48%; text-align: center; box-sizing: border-box;">
+                    <div style="color: #e11d48; font-size: 12px; font-weight: bold; margin-bottom: 5px;">USCITE</div>
+                    <div style="color: #be123c; font-size: 20px; font-weight: bold;">€ ${exp.toFixed(2)}</div>
+                </div>
+            </div>
+
+            ${chartImgHtml}
+
+            <h3 style="color: #1e293b; font-size: 16px; margin-bottom: 15px; margin-top: 30px;">Dettaglio Movimenti</h3>
+            
+            <div style="display: flex; justify-content: space-between; background: #f8fafc; padding: 10px 8px; border-bottom: 2px solid #e2e8f0; border-top: 1px solid #e2e8f0;">
+                <div style="width: 25%; font-size: 12px; color: #64748b; font-weight: bold;">Data</div>
+                <div style="width: 50%; font-size: 12px; color: #64748b; font-weight: bold;">Descrizione</div>
+                <div style="width: 25%; font-size: 12px; color: #64748b; font-weight: bold; text-align: right;">Importo</div>
+            </div>
+            
+            <div style="display: flex; flex-direction: column;">
+                ${tableRows || '<div style="text-align: center; padding: 20px; color: #94a3b8; font-size: 12px;">Nessun movimento registrato.</div>'}
+            </div>
+            
+            <div style="height: 100px; width: 100%;"></div>
+            
+        </div>`;
+
+    const tempDiv = document.createElement('div');
+    tempDiv.innerHTML = reportHtml;
+
+    const opt = {
+        margin: 10,
+        filename: `Report_${monthName.replace(' ', '_')}.pdf`,
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2, scrollY: 0 },
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+        pagebreak: { mode: 'css', avoid: '.pdf-row' }
+    };
+
+    html2pdf().set(opt).from(tempDiv).save().then(() => {
+        showToast("PDF esportato con successo!");
+    });
+}
 
         // --- CONTI ---
         function openAddAccountModal() {
@@ -314,24 +491,188 @@
             });
         }
 
-        // --- RENDER IMPOSTAZIONI ---
-        function toggleSettings(show) {
-            const main = document.getElementById('main-view');
-            const settings = document.getElementById('settings-view');
-            const backBtn = document.getElementById('btn-back');
+        // ==========================================
+        // 4. NAVIGAZIONE (4 VIEW)
+        // ==========================================
+        function goHome() {
+            document.getElementById('main-view').classList.remove('hidden');
+            document.getElementById('settings-view').classList.add('hidden');
+            document.getElementById('goals-view').classList.add('hidden');
+            document.getElementById('stats-view').classList.add('hidden');
+            document.getElementById('btn-back').classList.add('hidden');
+            updateUI();
+        }
 
-            if (show) {
-                renderSettingsAccounts();
-                renderSettingsRecurring();
-                main.classList.add('hidden');
-                settings.classList.remove('hidden');
-                backBtn.classList.remove('hidden');
-            } else {
-                main.classList.remove('hidden');
-                settings.classList.add('hidden');
-                backBtn.classList.add('hidden');
-                updateUI();
+        function toggleSettings(show) {
+            document.getElementById('main-view').classList.toggle('hidden', show);
+            document.getElementById('goals-view').classList.add('hidden');
+            document.getElementById('stats-view').classList.add('hidden');
+            document.getElementById('settings-view').classList.toggle('hidden', !show);
+            document.getElementById('btn-back').classList.toggle('hidden', !show);
+            if (show) { renderSettingsAccounts(); renderSettingsRecurring(); } else { updateUI(); }
+        }
+
+        function toggleGoals(show) {
+            document.getElementById('main-view').classList.toggle('hidden', show);
+            document.getElementById('settings-view').classList.add('hidden');
+            document.getElementById('stats-view').classList.add('hidden');
+            document.getElementById('goals-view').classList.toggle('hidden', !show);
+            document.getElementById('btn-back').classList.toggle('hidden', !show);
+            if (show) { renderGoals(); } else { updateUI(); }
+        }
+
+        function toggleStats(show) {
+            document.getElementById('main-view').classList.toggle('hidden', show);
+            document.getElementById('settings-view').classList.add('hidden');
+            document.getElementById('goals-view').classList.add('hidden');
+            document.getElementById('stats-view').classList.toggle('hidden', !show);
+            document.getElementById('btn-back').classList.toggle('hidden', !show);
+            if (show) { renderStats(); } else { updateUI(); }
+        }
+
+        // ==========================================
+        // 5. OBIETTIVI / SALVADANAI
+        // ==========================================
+        function renderGoals() {
+            const list = document.getElementById('goals-list');
+            if (goals.length === 0) {
+                list.innerHTML = `<div class="text-center py-10 opacity-50"><i class="fa-solid fa-piggy-bank text-4xl text-slate-300 mb-3"></i><p class="text-sm font-bold text-slate-500">Nessun obiettivo attivo. Inizia a risparmiare!</p></div>`;
+                return;
             }
+
+            list.innerHTML = goals.map(g => {
+                let perc = Math.min((g.currentAmount / g.targetAmount) * 100, 100);
+                let isCompleted = perc >= 100;
+
+                return `
+                <div class="bg-white p-5 rounded-3xl card-shadow border ${isCompleted ? 'border-emerald-300 bg-emerald-50' : 'border-slate-100'} relative overflow-hidden mb-4">
+                    ${isCompleted ? '<div class="absolute -right-4 -top-4 w-16 h-16 bg-emerald-400 rounded-full opacity-20"></div>' : ''}
+                    <div class="flex justify-between items-start mb-3 relative z-10">
+                        <div>
+                            <h4 class="font-bold text-slate-800 text-lg">${escapeHTML(g.name)}</h4>
+                            <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Obiettivo: € ${g.targetAmount.toLocaleString('it-IT')}</p>
+                        </div>
+                        <div class="flex gap-2">
+                             <button onclick="openFundModal('${g.id}')" class="w-9 h-9 rounded-xl ${isCompleted ? 'bg-emerald-200 text-emerald-700' : 'bg-blue-50 text-blue-600'} flex items-center justify-center hover:scale-105 active:scale-95 transition-all shadow-sm"><i class="fa-solid fa-plus"></i></button>
+                             <button onclick="editGoal('${g.id}')" class="w-9 h-9 rounded-xl bg-slate-100 text-slate-500 flex items-center justify-center hover:bg-slate-200 active:scale-95 transition-all"><i class="fa-solid fa-pen"></i></button>
+                             <button onclick="deleteGoal('${g.id}')" class="w-9 h-9 rounded-xl bg-red-50 text-red-500 flex items-center justify-center hover:bg-red-100 active:scale-95 transition-all"><i class="fa-solid fa-trash"></i></button>
+                        </div>
+                    </div>
+                    <div class="flex justify-between text-xs font-bold ${isCompleted ? 'text-emerald-700' : 'text-blue-600'} mb-2 relative z-10">
+                        <span>Messi da parte: € ${g.currentAmount.toLocaleString('it-IT')}</span>
+                        <span>${perc.toFixed(0)}%</span>
+                    </div>
+                    <div class="w-full ${isCompleted ? 'bg-emerald-200' : 'bg-slate-100'} rounded-full h-3 overflow-hidden shadow-inner relative z-10">
+                        <div class="${isCompleted ? 'bg-emerald-500' : 'bg-blue-500'} h-full rounded-full transition-all duration-1000 ease-out" style="width: 0%" data-target-width="${perc}%"></div>
+                    </div>
+                </div>
+                `;
+            }).join('');
+
+            setTimeout(() => {
+                document.querySelectorAll('[data-target-width]').forEach(el => { el.style.width = el.getAttribute('data-target-width'); });
+            }, 50);
+        }
+
+        // NUOVA FUNZIONE: Elimina il salvadanaio
+        let goalToDeleteId = null;
+
+        function deleteGoal(id) {
+            goalToDeleteId = id;
+            document.getElementById('delete-goal-modal').classList.remove('hidden');
+        }
+
+        function closeDeleteGoalModal() {
+            document.getElementById('delete-goal-modal').classList.add('hidden');
+            goalToDeleteId = null;
+        }
+
+        function confirmDeleteGoal() {
+            if (!goalToDeleteId) return;
+
+            // Filtra e salva
+            goals = goals.filter(g => g.id !== goalToDeleteId);
+            StorageManager.saveGoals(goals);
+
+            // Aggiorna interfaccia
+            renderGoals();
+            closeDeleteGoalModal();
+            showToast("Salvadanaio eliminato");
+        }
+
+        function openGoalModal() {
+            editingGoalId = null;
+            document.getElementById('goal-modal-title').textContent = "Nuovo Salvadanaio";
+            document.getElementById('goal-name-input').value = '';
+            document.getElementById('goal-target-input').value = '';
+            document.getElementById('goal-modal').classList.remove('hidden');
+            setTimeout(() => document.getElementById('goal-name-input').focus(), 50);
+        }
+
+        function editGoal(id) {
+            const g = goals.find(x => x.id === id);
+            if (!g) return;
+            editingGoalId = id;
+            document.getElementById('goal-modal-title').textContent = "Modifica Salvadanaio";
+            document.getElementById('goal-name-input').value = g.name;
+            document.getElementById('goal-target-input').value = g.targetAmount;
+            document.getElementById('goal-modal').classList.remove('hidden');
+        }
+
+        function closeGoalModal() { document.getElementById('goal-modal').classList.add('hidden'); }
+
+        function saveGoal() {
+            const name = document.getElementById('goal-name-input').value.trim();
+            const target = parseFloat(document.getElementById('goal-target-input').value);
+
+            if (!name || isNaN(target) || target <= 0) {
+                showSimpleAlert("Attenzione", "Inserisci un nome e un importo valido.");
+                return;
+            }
+
+            if (editingGoalId) {
+                const g = goals.find(x => x.id === editingGoalId);
+                g.name = name;
+                g.targetAmount = target;
+            } else {
+                goals.push({ id: 'goal_' + Date.now(), name, targetAmount: target, currentAmount: 0 });
+            }
+
+            StorageManager.saveGoals(goals);
+            renderGoals();
+            closeGoalModal();
+            showToast("Salvadanaio salvato!");
+        }
+
+        let fundGoalId = null;
+        function openFundModal(id) {
+            const g = goals.find(x => x.id === id);
+            if (!g) return;
+            fundGoalId = id;
+            document.getElementById('fund-goal-name').textContent = "Aggiungi a: " + g.name;
+            document.getElementById('fund-amount-input').value = '';
+            document.getElementById('fund-modal').classList.remove('hidden');
+            setTimeout(() => document.getElementById('fund-amount-input').focus(), 50);
+        }
+
+        function closeFundModal() { document.getElementById('fund-modal').classList.add('hidden'); fundGoalId = null; }
+
+        function confirmAddFunds() {
+            const amt = parseFloat(document.getElementById('fund-amount-input').value.replace(',', '.'));
+            if (isNaN(amt) || amt <= 0) return;
+
+            const g = goals.find(x => x.id === fundGoalId);
+            if (g) {
+                g.currentAmount += amt;
+                StorageManager.saveGoals(goals);
+                renderGoals();
+                showToast("Fondi aggiunti con successo!");
+
+                if (g.currentAmount >= g.targetAmount) {
+                    setTimeout(() => showSimpleAlert("Congratulazioni! 🎉", `Hai raggiunto l'obiettivo per: ${g.name}!`), 500);
+                }
+            }
+            closeFundModal();
         }
 
         function renderSettingsAccounts() {
@@ -619,59 +960,59 @@
             renderChart(filtered.filter(t => t.type === 'expense'));
         }
 
-function renderChart(exps) {
-    const ctx = document.getElementById('expenseChart');
-    const container = document.getElementById('chart-container');
+        function renderChart(exps) {
+            const ctx = document.getElementById('expenseChart');
+            const container = document.getElementById('chart-container');
 
-    if (exps.length === 0) {
-        container.classList.add('hidden');
-        return;
-    }
+            if (exps.length === 0) {
+                container.classList.add('hidden');
+                return;
+            }
 
-    container.classList.remove('hidden');
+            container.classList.remove('hidden');
 
-    const dataMap = {};
-    let totalExpense = 0; // Inizializziamo il totale
+            const dataMap = {};
+            let totalExpense = 0; // Inizializziamo il totale
 
-    // Raggruppiamo i dati e calcoliamo il totale
-    exps.forEach(e => {
-        const label = categories.expense.find(c => c.id === e.category)?.label || 'Altro';
-        dataMap[label] = (dataMap[label] || 0) + e.amount;
-        totalExpense += e.amount;
-    });
+            // Raggruppiamo i dati e calcoliamo il totale
+            exps.forEach(e => {
+                const label = categories.expense.find(c => c.id === e.category)?.label || 'Altro';
+                dataMap[label] = (dataMap[label] || 0) + e.amount;
+                totalExpense += e.amount;
+            });
 
-    if (chartInstance) chartInstance.destroy();
+            if (chartInstance) chartInstance.destroy();
 
-    // 1. Plugin Custom: Scrive il totale esatto al centro della ciambella
-    const centerTextPlugin = {
-        id: 'centerText',
-        beforeDraw: function (chart) {
-            if (chart.getDatasetMeta(0).data.length === 0) return;
-            const ctx = chart.ctx;
-            // Troviamo il centro esatto calcolato da Chart.js
-            const centerX = chart.getDatasetMeta(0).data[0].x;
-            const centerY = chart.getDatasetMeta(0).data[0].y;
+            // 1. Plugin Custom: Scrive il totale esatto al centro della ciambella
+            const centerTextPlugin = {
+                id: 'centerText',
+                beforeDraw: function (chart) {
+                    if (chart.getDatasetMeta(0).data.length === 0) return;
+                    const ctx = chart.ctx;
+                    // Troviamo il centro esatto calcolato da Chart.js
+                    const centerX = chart.getDatasetMeta(0).data[0].x;
+                    const centerY = chart.getDatasetMeta(0).data[0].y;
 
-            ctx.restore();
+                    ctx.restore();
 
-            // Stile per il numero (Totale)
-            ctx.font = "bold 1.1rem Inter";
-            ctx.textBaseline = "middle";
-            ctx.fillStyle = "#1e293b"; // Colore slate-800
-            const text = "€ " + totalExpense.toLocaleString('it-IT', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-            const textX = centerX - (ctx.measureText(text).width / 2);
-            ctx.fillText(text, textX, centerY - 8);
+                    // Stile per il numero (Totale)
+                    ctx.font = "bold 1.1rem Inter";
+                    ctx.textBaseline = "middle";
+                    ctx.fillStyle = isDarkMode ? "#f8fafc" : "#1e293b";
+                    const text = "€ " + totalExpense.toLocaleString('it-IT', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+                    const textX = centerX - (ctx.measureText(text).width / 2);
+                    ctx.fillText(text, textX, centerY - 8);
 
-            // Stile per l'etichetta "USCITE"
-            ctx.font = "600 0.65rem Inter";
-            ctx.fillStyle = "#94a3b8"; // Colore slate-400
-            const subText = "USCITE";
-            const subTextX = centerX - (ctx.measureText(subText).width / 2);
-            ctx.fillText(subText, subTextX, centerY + 12);
+                    // Stile per l'etichetta "USCITE"
+                    ctx.font = "600 0.65rem Inter";
+                    ctx.fillStyle = "#94a3b8"; // Colore slate-400
+                    const subText = "USCITE";
+                    const subTextX = centerX - (ctx.measureText(subText).width / 2);
+                    ctx.fillText(subText, subTextX, centerY + 12);
 
-            ctx.save();
-        }
-    };
+                    ctx.save();
+                }
+            };
 
             // 2. Creazione del nuovo grafico
             chartInstance = new Chart(ctx, {
@@ -980,6 +1321,122 @@ function renderChart(exps) {
             showToast("Movimento eliminato");
         }
 
+        // ==========================================
+        // STATISTICHE ANNUALI (VISTA GLOBALE)
+        // ==========================================
+        let statsYear = new Date().getFullYear();
+        let annualChartInstance = null;
+
+        function changeStatsYear(delta) {
+            statsYear += delta;
+            renderStats();
+        }
+
+        function renderStats() {
+            document.getElementById('stats-year-display').textContent = statsYear;
+
+            const currentAcc = accounts.find(a => a.id === activeAccountId) || accounts[0];
+            document.getElementById('stats-account-subtitle').textContent = `Conto: ${currentAcc.name}`;
+
+            // Filtra transazioni per l'anno e il conto corrente
+            const yearTxs = transactions.filter(t => {
+                const d = new Date(t.date);
+                return d.getFullYear() === statsYear && t.accountId === activeAccountId;
+            });
+
+            let totalInc = 0;
+            let totalExp = 0;
+            const monthlyInc = Array(12).fill(0);
+            const monthlyExp = Array(12).fill(0);
+
+            yearTxs.forEach(t => {
+                const month = new Date(t.date).getMonth();
+                if (t.type === 'income') {
+                    monthlyInc[month] += t.amount;
+                    totalInc += t.amount;
+                } else if (t.type === 'expense') {
+                    monthlyExp[month] += t.amount;
+                    totalExp += t.amount;
+                }
+            });
+
+            const netSavings = totalInc - totalExp;
+
+            // Aggiorna le carte riepilogative
+            document.getElementById('stats-income-total').textContent = `€ ${totalInc.toLocaleString('it-IT', { minimumFractionDigits: 2 })}`;
+            document.getElementById('stats-expense-total').textContent = `€ ${totalExp.toLocaleString('it-IT', { minimumFractionDigits: 2 })}`;
+
+            const netEl = document.getElementById('stats-net-total');
+            netEl.textContent = `${netSavings >= 0 ? '+' : ''}€ ${netSavings.toLocaleString('it-IT', { minimumFractionDigits: 2 })}`;
+            netEl.className = `text-3xl font-bold tracking-tight relative z-10 ${netSavings >= 0 ? 'text-blue-800' : 'text-rose-600'}`;
+
+            renderAnnualChart(monthlyInc, monthlyExp);
+        }
+
+        function renderAnnualChart(incomeData, expenseData) {
+            const ctx = document.getElementById('annualChart');
+            if (annualChartInstance) annualChartInstance.destroy();
+
+            // Colori dinamici per la Dark Mode
+            const textColor = isDarkMode ? "#f8fafc" : "#64748b";
+            const gridColor = isDarkMode ? "#334155" : "#f1f5f9";
+
+            annualChartInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Gen', 'Feb', 'Mar', 'Apr', 'Mag', 'Giu', 'Lug', 'Ago', 'Set', 'Ott', 'Nov', 'Dic'],
+                    datasets: [
+                        {
+                            label: 'Entrate',
+                            data: incomeData,
+                            backgroundColor: '#10b981', // Emerald 500
+                            borderRadius: 4,
+                            barPercentage: 0.6,
+                            categoryPercentage: 0.8
+                        },
+                        {
+                            label: 'Uscite',
+                            data: expenseData,
+                            backgroundColor: '#f43f5e', // Rose 500
+                            borderRadius: 4,
+                            barPercentage: 0.6,
+                            categoryPercentage: 0.8
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: { mode: 'index', intersect: false },
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                            labels: { color: textColor, usePointStyle: true, boxWidth: 8, font: { family: 'Inter', size: 11, weight: '600' } }
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(15, 23, 42, 0.9)',
+                            titleFont: { family: 'Inter', size: 12 },
+                            bodyFont: { family: 'Inter', size: 12, weight: 'bold' },
+                            padding: 10,
+                            cornerRadius: 8,
+                            callbacks: { label: function (context) { return ` ${context.dataset.label}: € ${context.parsed.y.toLocaleString('it-IT', { minimumFractionDigits: 2 })}`; } }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: { color: gridColor, drawBorder: false },
+                            ticks: { color: textColor, font: { family: 'Inter', size: 10 }, callback: function (value) { return '€' + value; } }
+                        },
+                        x: {
+                            grid: { display: false, drawBorder: false },
+                            ticks: { color: textColor, font: { family: 'Inter', size: 10 } }
+                        }
+                    }
+                }
+            });
+        }
+
         // --- GEMINI AI ---
         function openApiKeyModal() {
             document.getElementById('modal-api-key').value = apiKey;
@@ -1131,9 +1588,32 @@ function renderChart(exps) {
         }
 
         window.onload = () => {
-            processRecurringTransactions(); // Processa eventuali abbonamenti scaduti
-            updateUI(); // Renderizza l'interfaccia
+            // Applica il tema scuro se salvato
+            if (isDarkMode) {
+                document.documentElement.classList.add('dark');
+                document.getElementById('dark-mode-btn').innerHTML = '<i class="fa-solid fa-sun text-yellow-300"></i>';
+            }
+
+            processRecurringTransactions();
+            updateUI();
         };
+
+        function toggleDarkMode() {
+            isDarkMode = !isDarkMode;
+            localStorage.setItem('spese_v3_darkmode', isDarkMode);
+
+            if (isDarkMode) {
+                document.documentElement.classList.add('dark');
+                document.getElementById('dark-mode-btn').innerHTML = '<i class="fa-solid fa-sun text-yellow-300"></i>';
+            } else {
+                document.documentElement.classList.remove('dark');
+                document.getElementById('dark-mode-btn').innerHTML = '<i class="fa-solid fa-moon"></i>';
+            }
+
+            // Ricarica la grafica per aggiornare i colori dei grafici
+            if (chartInstance) updateUI();
+            if (annualChartInstance && !document.getElementById('stats-view').classList.contains('hidden')) renderStats();
+        }
 
         // ==========================================
         // SERVICE WORKER REGISTRATION
