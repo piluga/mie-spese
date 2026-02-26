@@ -20,15 +20,93 @@
 
     <!-- Tailwind -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
 
     <!-- FontAwesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-    <!-- Chart -->
+    <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
     <!-- CSS ESTERNO -->
     <link rel="stylesheet" href="style.css">
+
+    <style>
+        html.dark {
+            background-color: #0f172a;
+            color: #f8fafc;
+        }
+
+            html.dark body {
+                background-color: #0f172a;
+                color: #f8fafc;
+            }
+            /* Sfondi principali e Modali */
+            html.dark .bg-white {
+                background-color: #1e293b !important;
+                border-color: #334155 !important;
+            }
+
+            html.dark header.bg-blue-600 {
+                background-color: #1e293b !important;
+                border-bottom: 1px solid #334155;
+            }
+
+            html.dark header button:hover {
+                background-color: #334155 !important;
+            }
+
+            html.dark .modal-overlay {
+                background-color: rgba(0,0,0,0.8) !important;
+            }
+            /* Sfondi secondari (box, pulsanti chiari) */
+            html.dark .bg-slate-50, html.dark .bg-blue-50, html.dark .bg-emerald-50, html.dark .bg-rose-50, html.dark .bg-violet-50, html.dark .bg-sky-50, html.dark .bg-orange-50 {
+                background-color: #0f172a !important;
+                border-color: #1e293b !important;
+            }
+            /* Testi */
+            html.dark .text-slate-800 {
+                color: #f8fafc !important;
+            }
+
+            html.dark .text-slate-700 {
+                color: #e2e8f0 !important;
+            }
+
+            html.dark .text-slate-500 {
+                color: #94a3b8 !important;
+            }
+
+            html.dark .text-emerald-900 {
+                color: #34d399 !important;
+            }
+
+            html.dark .text-rose-900 {
+                color: #fb7185 !important;
+            }
+
+            html.dark .text-violet-900 {
+                color: #a78bfa !important;
+            }
+
+            html.dark .text-blue-900, html.dark .text-blue-800 {
+                color: #60a5fa !important;
+            }
+            /* Bordi e Input */
+            html.dark .border-slate-100, html.dark .border-slate-200, html.dark .border-slate-300 {
+                border-color: #334155 !important;
+            }
+
+            html.dark input, html.dark select {
+                background-color: #0f172a !important;
+                color: #f8fafc !important;
+                border-color: #334155 !important;
+            }
+    </style>
 </head>
 
 <body class="text-slate-800 h-screen flex flex-col overflow-hidden">
@@ -38,7 +116,7 @@
     <!-- HEADER -->
     <header class="bg-blue-600 text-white p-4 shadow-md z-20 flex justify-between items-center shrink-0 h-16">
         <div class="flex items-center gap-3">
-            <button id="btn-back" onclick="toggleSettings(false)" class="hidden text-xl p-1 active:scale-95 transition-transform">
+            <button id="btn-back" onclick="goHome()" class="hidden text-xl p-1 active:scale-95 transition-transform">
                 <i class="fa-solid fa-arrow-left"></i>
             </button>
             <h1 class="text-xl font-bold tracking-wide flex items-center gap-2">
@@ -47,7 +125,16 @@
         </div>
 
         <div class="flex gap-2">
-            <button onclick="toggleSettings(true)" class="text-xl p-2 hover:bg-blue-700 rounded-full transition-colors" title="Impostazioni">
+            <button onclick="toggleDarkMode()" id="dark-mode-btn" class="text-xl p-2 hover:bg-blue-700 rounded-full transition-colors">
+                <i class="fa-solid fa-moon"></i>
+            </button>
+            <button onclick="toggleStats(true)" class="text-xl p-2 hover:bg-blue-700 rounded-full transition-colors">
+                <i class="fa-solid fa-chart-column"></i>
+            </button>
+            <button onclick="toggleGoals(true)" class="text-xl p-2 hover:bg-blue-700 rounded-full transition-colors">
+                <i class="fa-solid fa-piggy-bank"></i>
+            </button>
+            <button onclick="toggleSettings(true)" class="text-xl p-2 hover:bg-blue-700 rounded-full transition-colors">
                 <i class="fa-solid fa-cog"></i>
             </button>
         </div>
@@ -135,6 +222,58 @@
             <div id="transaction-list" class="space-y-3"></div>
         </section>
 
+        <section id="goals-view" class="hidden fade-in space-y-6 pb-24">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-2xl font-bold text-slate-800 flex items-center gap-2">
+                    <i class="fa-solid fa-bullseye text-blue-500"></i> Obiettivi
+                </h2>
+                <button onclick="openGoalModal()" class="bg-blue-100 text-blue-600 px-4 py-2 rounded-xl font-bold text-sm active:scale-95 transition-all shadow-sm">
+                    <i class="fa-solid fa-plus"></i> Nuovo
+                </button>
+            </div>
+            <p class="text-xs text-slate-500 mb-4 leading-relaxed">Crea dei salvadanai virtuali per i tuoi prossimi acquisti o viaggi. Aggiungi fondi periodicamente per raggiungere l'obiettivo!</p>
+
+            <div id="goals-list" class="space-y-4">
+            </div>
+        </section>
+
+        <section id="stats-view" class="hidden fade-in space-y-6 pb-24">
+            <div class="flex justify-between items-center mb-2">
+                <h2 class="text-2xl font-bold text-slate-800 flex items-center gap-2">
+                    <i class="fa-solid fa-chart-pie text-blue-500"></i> Andamento
+                </h2>
+            </div>
+            <p id="stats-account-subtitle" class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-4">Conto: -</p>
+
+            <div class="bg-white p-4 rounded-2xl card-shadow border border-slate-100 flex justify-between items-center mb-6">
+                <button onclick="changeStatsYear(-1)" class="w-10 h-10 rounded-full bg-slate-50 text-blue-600 hover:bg-slate-100 flex items-center justify-center transition-colors"><i class="fa-solid fa-chevron-left"></i></button>
+                <h3 id="stats-year-display" class="text-xl font-bold text-slate-800">2024</h3>
+                <button onclick="changeStatsYear(1)" class="w-10 h-10 rounded-full bg-slate-50 text-blue-600 hover:bg-slate-100 flex items-center justify-center transition-colors"><i class="fa-solid fa-chevron-right"></i></button>
+            </div>
+
+            <div class="grid grid-cols-2 gap-3 mb-6">
+                <div class="bg-emerald-50 border border-emerald-100 p-4 rounded-2xl card-shadow">
+                    <p class="text-[10px] font-bold text-emerald-600 uppercase mb-1">Entrate Totali</p>
+                    <p id="stats-income-total" class="text-lg font-bold text-emerald-700">€ 0.00</p>
+                </div>
+                <div class="bg-rose-50 border border-rose-100 p-4 rounded-2xl card-shadow">
+                    <p class="text-[10px] font-bold text-rose-600 uppercase mb-1">Uscite Totali</p>
+                    <p id="stats-expense-total" class="text-lg font-bold text-rose-700">€ 0.00</p>
+                </div>
+                <div class="col-span-2 bg-blue-50 border border-blue-100 p-4 rounded-2xl card-shadow text-center relative overflow-hidden">
+                    <p class="text-[10px] font-bold text-blue-600 uppercase mb-1 relative z-10">Risparmio Netto (Cashflow)</p>
+                    <p id="stats-net-total" class="text-3xl font-bold text-blue-800 tracking-tight relative z-10">€ 0.00</p>
+                </div>
+            </div>
+
+            <div class="bg-white p-5 rounded-2xl card-shadow border border-slate-100">
+                <h4 class="text-xs font-bold text-slate-500 uppercase mb-4 text-center">Entrate vs Uscite Mensili</h4>
+                <div class="h-64 relative">
+                    <canvas id="annualChart"></canvas>
+                </div>
+            </div>
+        </section>
+
         <!-- View Impostazioni -->
         <section id="settings-view" class="hidden fade-in space-y-6">
             <div class="flex items-center gap-4 mb-2">
@@ -162,28 +301,58 @@
             </div>
 
             <!-- Dati & Backup -->
-            <div class="bg-white p-5 rounded-2xl card-shadow">
-                <h3 class="font-bold text-slate-800 mb-3 flex items-center gap-2">
-                    <i class="fa-solid fa-server text-emerald-500"></i> Gestione Dati
+            <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 mb-6 mt-4">
+                <h3 class="text-sm font-bold text-slate-800 mb-3 flex items-center gap-2">
+                    <i class="fa-brands fa-google text-blue-500"></i> Account Cloud
                 </h3>
-                <p class="text-[11px] text-slate-400 mb-4 leading-relaxed">
-                    Salva una copia di sicurezza o esporta i movimenti in formato CSV per Excel.
-                </p>
 
-                <div class="grid grid-cols-2 gap-3 mb-3">
-                    <button onclick="saveToFileSystem()" class="col-span-2 flex items-center justify-center gap-2 p-4 bg-emerald-50 text-emerald-700 border border-emerald-100 rounded-xl hover:bg-emerald-100 transition-colors active:scale-95 text-sm font-bold">
-                        <i class="fa-solid fa-download"></i> Salva Backup
+                <div id="cloud-login-section">
+                    <p class="text-xs text-slate-500 mb-3">Accedi per salvare le tue finanze al sicuro nel Cloud.</p>
+                    <button onclick="loginWithGoogle()" class="w-full py-3 bg-blue-50 text-blue-600 rounded-xl font-bold border border-blue-200 active:scale-95 transition-transform flex items-center justify-center gap-2 text-sm">
+                        <i class="fa-brands fa-google"></i> Accedi con Google
                     </button>
+                </div>
 
-                    <label class="cursor-pointer flex flex-col items-center justify-center p-3 border border-slate-200 rounded-xl hover:bg-slate-50 transition-colors group active:scale-95">
-                        <i class="fa-solid fa-upload text-blue-500 text-lg mb-1 group-hover:scale-110 transition-transform"></i>
-                        <span class="text-[10px] font-bold text-slate-600 uppercase">Importa</span>
-                        <input type="file" id="import-json" class="hidden" accept=".json" onchange="importJSON(event)">
-                    </label>
+                <div id="cloud-user-section" class="hidden">
+                    <div class="flex items-center justify-between bg-emerald-50 border border-emerald-100 p-3 rounded-xl mb-3">
+                        <div class="flex items-center gap-3">
+                            <img id="cloud-user-pic" src="" class="w-8 h-8 rounded-full border border-emerald-200" alt="User">
+                            <div>
+                                <p id="cloud-user-name" class="text-xs font-bold text-emerald-800">Nome</p>
+                                <p class="text-[10px] text-emerald-600">Connesso e Sicuro</p>
+                            </div>
+                        </div>
+                        <button onclick="logout()" class="text-xs font-bold text-rose-500 px-3 py-1.5 bg-white border border-rose-100 rounded-lg shadow-sm hover:bg-rose-50 active:scale-95">Esci</button>
+                    </div>
+                </div>
+            </div>
 
-                    <button onclick="exportCSV()" class="flex flex-col items-center justify-center p-3 border border-slate-200 rounded-xl hover:bg-slate-50 transition-colors group active:scale-95">
-                        <i class="fa-solid fa-file-csv text-green-500 text-lg mb-1 group-hover:scale-110 transition-transform"></i>
-                        <span class="text-[10px] font-bold text-slate-600 uppercase">Esporta CSV</span>
+            <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 mb-6">
+                <h3 class="text-sm font-bold text-slate-800 mb-3 flex items-center gap-2">
+                    <i class="fa-solid fa-cloud text-blue-500"></i> Backup Dati
+                </h3>
+                <p class="text-xs text-slate-500 mb-4">Salva le transazioni e i conti o ripristinali in caso di nuovo dispositivo.</p>
+                <div class="grid grid-cols-2 gap-3">
+                    <button onclick="backupToCloud()" class="py-3 bg-blue-600 text-white rounded-xl font-bold shadow-md hover:bg-blue-700 active:scale-95 transition-all text-xs flex flex-col items-center gap-1">
+                        <i class="fa-solid fa-cloud-arrow-up text-lg"></i> Salva nel Cloud
+                    </button>
+                    <button onclick="restoreFromCloud()" class="py-3 bg-white text-blue-600 border-2 border-blue-100 rounded-xl font-bold shadow-sm hover:bg-blue-50 active:scale-95 transition-all text-xs flex flex-col items-center gap-1">
+                        <i class="fa-solid fa-cloud-arrow-down text-lg"></i> Ripristina Dati
+                    </button>
+                </div>
+            </div>
+
+            <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 mb-6">
+                <h3 class="text-sm font-bold text-slate-800 mb-3 flex items-center gap-2">
+                    <i class="fa-solid fa-file-pdf text-rose-500"></i> Esporta Report
+                </h3>
+                <p class="text-xs text-slate-500 mb-4">Scarica un riepilogo del mese in PDF impaginato, o tutti i dati grezzi in formato CSV (Excel).</p>
+                <div class="grid grid-cols-2 gap-3">
+                    <button onclick="exportPDF()" class="py-3 bg-rose-50 text-rose-600 rounded-xl font-bold border border-rose-200 active:scale-95 transition-all text-sm flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-file-pdf"></i> Report PDF
+                    </button>
+                    <button onclick="exportCSV()" class="py-3 bg-emerald-50 text-emerald-600 rounded-xl font-bold border border-emerald-200 active:scale-95 transition-all text-sm flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-file-csv"></i> Dati CSV
                     </button>
                 </div>
             </div>
@@ -217,7 +386,7 @@
             <div id="modal-header" class="p-4 border-b flex justify-between items-center shrink-0 transition-colors">
                 <div class="flex items-center gap-3">
                     <h3 id="modal-title" class="text-lg font-bold">Nuova Transazione</h3>
-                    <button id="modal-camera-btn" onclick="triggerCamera()" class="w-10 h-10 flex items-center justify-center rounded-full active:scale-95 transition-all shadow-sm" title="Scansiona scontrino">
+                    <button id="modal-camera-btn" onclick="triggerCamera()" class="w-10 h-10 flex items-center justify-center rounded-full active:scale-95 transition-all shadow-sm">
                         <i class="fa-solid fa-camera"></i>
                     </button>
                 </div>
@@ -491,6 +660,79 @@
                 <button onclick="saveTransfer()" class="flex-1 py-3 bg-violet-600 text-white rounded-xl font-bold shadow-md hover:bg-violet-700 transition-all active:scale-95">
                     Conferma Giroconto
                 </button>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-cloud-auth" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm hidden z-50 flex items-center justify-center p-4 transition-opacity">
+        <div class="bg-white rounded-3xl w-full max-w-sm overflow-hidden shadow-2xl text-center p-6 border border-slate-100">
+
+            <div class="w-16 h-16 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center mx-auto mb-4 text-3xl shadow-sm border border-blue-100">
+                <i class="fa-solid fa-user-lock"></i>
+            </div>
+
+            <h3 class="text-xl font-bold text-slate-800 mb-2">Accesso Richiesto</h3>
+            <p class="text-slate-500 text-sm mb-6 leading-relaxed">
+                Per proteggere i tuoi dati finanziari nel Cloud e sincronizzarli, devi prima collegare il tuo account in modo sicuro.
+            </p>
+
+            <div class="flex flex-col gap-3">
+                <button onclick="loginWithGoogle(); closeCloudAuthModal();" class="w-full py-3 bg-blue-600 text-white rounded-xl font-bold shadow-md hover:bg-blue-700 active:scale-95 transition-all text-sm flex items-center justify-center gap-2">
+                    <i class="fa-brands fa-google"></i> Accedi con Google
+                </button>
+                <button onclick="closeCloudAuthModal()" class="w-full py-3 bg-slate-100 text-slate-600 rounded-xl font-bold hover:bg-slate-200 active:scale-95 transition-all text-sm">
+                    Più tardi
+                </button>
+            </div>
+
+        </div>
+    </div>
+
+    <div id="goal-modal" class="hidden fixed inset-0 modal-overlay z-[100] flex items-center justify-center p-4 fade-in">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6 text-center">
+            <div class="w-12 h-12 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center mx-auto mb-4 text-xl">
+                <i class="fa-solid fa-piggy-bank"></i>
+            </div>
+            <h3 id="goal-modal-title" class="text-xl font-bold text-slate-800 mb-4">Nuovo Salvadanaio</h3>
+            <div class="space-y-4 mb-6">
+                <input type="text" id="goal-name-input" class="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm font-bold text-slate-700" placeholder="Es. MacBook Pro, Vacanza...">
+                <div>
+                    <label class="block text-left text-[10px] font-bold text-slate-500 uppercase mb-1 ml-1">Costo Totale (€)</label>
+                    <input type="number" id="goal-target-input" step="0.01" class="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm font-bold text-slate-700" placeholder="0.00">
+                </div>
+            </div>
+            <div class="flex gap-3">
+                <button onclick="closeGoalModal()" class="flex-1 py-3 text-slate-500 font-bold hover:bg-slate-50 rounded-xl transition-colors">Annulla</button>
+                <button onclick="saveGoal()" class="flex-1 py-3 bg-blue-600 text-white rounded-xl font-bold shadow-md hover:bg-blue-700 active:scale-95 transition-all">Salva</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="fund-modal" class="hidden fixed inset-0 modal-overlay z-[100] flex items-center justify-center p-4 fade-in">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6 text-center">
+            <h3 class="text-lg font-bold text-emerald-600 mb-2"><i class="fa-solid fa-coins mr-1"></i> Versa Risparmi</h3>
+            <p id="fund-goal-name" class="text-slate-500 text-sm mb-4 font-medium">Salvadanaio</p>
+            <input type="number" id="fund-amount-input" inputmode="decimal" step="0.01" class="w-full p-4 border border-emerald-200 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none text-2xl font-bold text-emerald-700 text-center mb-6 bg-emerald-50" placeholder="€ 0.00">
+            <div class="flex gap-3">
+                <button onclick="closeFundModal()" class="flex-1 py-3 text-slate-500 font-bold hover:bg-slate-50 rounded-xl transition-colors">Annulla</button>
+                <button onclick="confirmAddFunds()" class="flex-1 py-3 bg-emerald-500 text-white rounded-xl font-bold shadow-md hover:bg-emerald-600 active:scale-95 transition-all">Aggiungi</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="delete-goal-modal" class="hidden fixed inset-0 modal-overlay z-[110] flex items-center justify-center p-4 fade-in">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6 text-center">
+            <div class="w-12 h-12 rounded-full bg-red-100 text-red-600 flex items-center justify-center mx-auto mb-4 text-xl relative">
+                <i class="fa-solid fa-piggy-bank"></i>
+                <i class="fa-solid fa-xmark absolute -bottom-1 -right-1 text-red-700 text-xs bg-white rounded-full w-4 h-4 flex items-center justify-center"></i>
+            </div>
+
+            <h3 class="text-xl font-bold text-slate-800 mb-2">Elimina Salvadanaio?</h3>
+            <p class="text-slate-500 mb-6 text-sm">Il salvadanaio verrà rimosso definitivamente e i fondi registrati qui andranno persi.</p>
+
+            <div class="flex gap-3">
+                <button onclick="closeDeleteGoalModal()" class="flex-1 py-3 text-slate-500 font-bold hover:bg-slate-50 rounded-xl transition-colors">Annulla</button>
+                <button onclick="confirmDeleteGoal()" class="flex-1 py-3 bg-red-600 text-white rounded-xl font-bold shadow-md hover:bg-red-700 active:scale-95 transition-all">Elimina</button>
             </div>
         </div>
     </div>
